@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>DnDGen.Stress</id>
+    <version>1.0.0</version>
+    <title>DnDGen.Stress</title>
+    <authors>Karl M. Speer</authors>
+    <owners>cidthecoatrack</owners>
+    <description>
+      A framework for running stress tests against random generators
+    </description>
+    <releaseNotes>
+    </releaseNotes>
+    <summary>
+      This is an event logger that manages events based on client IDs.
+    </summary>
+    <language>en-US</language>
+    <projectUrl>https://github.com/DnDGen/DnDGen.Stress</projectUrl>
+    <iconUrl>http://www.downloadclipart.net/thumb/18531-twenty-sided-dice-vector-thumb.png</iconUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <licenseUrl>http://opensource.org/licenses/Apache-2.0</licenseUrl>
+    <copyright>Copyright 2017</copyright>
+    <dependencies>
+    </dependencies>
+    <references></references>
+    <tags> dungeons dragons d20 dnd 3.5 generator dndgen stress test nunit load loadtest performance </tags>
+  </metadata>
+  <files>
+    <file src="bin/Release/DnDGen.Stress.dll" target="lib" />
+  </files>
+</package>

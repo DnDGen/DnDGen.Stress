@@ -4,7 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 
-namespace StressGen
+namespace DnDGen.Stress
 {
     [TestFixture]
     public class Stressor
@@ -32,6 +32,9 @@ namespace StressGen
             IsFullStress = isFullStress;
             stressStopwatch = new Stopwatch();
             StressTestCount = CountStressTestsIn(runningAssembly);
+
+            if (StressTestCount == 0)
+                throw new ArgumentException("No tests were detected in the running assembly");
 
             if (!IsFullStress)
             {
@@ -100,7 +103,7 @@ namespace StressGen
 
             Console.WriteLine($"Stress test complete");
             Console.WriteLine($"\tTime: {stressStopwatch.Elapsed} ({timePercentage}%)");
-            Console.WriteLine($"\tIterations: {iterations} ({iterationPercentage}%)");
+            Console.WriteLine($"\tCompleted Iterations: {iterations} ({iterationPercentage}%)");
             Console.WriteLine($"\tIterations Per Second: {iterationsPerSecond}");
             Console.WriteLine($"\tLikely Status: {status}");
         }

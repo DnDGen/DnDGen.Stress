@@ -1,5 +1,5 @@
  
-echo "Deploying StressGen to NuGet"
+echo "Deploying DnDGen.Stress to NuGet"
 
 ApiKey=$1
 Source=$2
@@ -8,19 +8,19 @@ echo "Nuget Source is $Source"
 echo "Nuget API Key is $ApiKey (should be secure)"
 
 echo "Listing bin directory"
-for entry in "./StressGen/bin"/*
+for entry in "./DnDGen.Stress/bin"/*
 do
   echo "$entry"
 done
 
-echo "Packing StressGen"
-nuget pack ./StressGen/StressGen.nuspec -Verbosity detailed
+echo "Packing DnDGen.Stress"
+nuget pack ./DnDGen.Stress/DnDGen.Stress.nuspec -Verbosity detailed
 
-echo "Packing StressGen.Events"
-nuget pack ./StressGen.Events/StressGen.Events.nuspec -Verbosity detailed
+echo "Packing DnDGen.Stress.Events"
+nuget pack ./DnDGen.Stress.Events/DnDGen.Stress.Events.nuspec -Verbosity detailed
 
-echo "Pushing StressGen"
-nuget push ./StressGen.*.nupkg -Verbosity detailed -ApiKey $ApiKey -Source $Source
+echo "Pushing DnDGen.Stress"
+nuget push ./DnDGen.Stress.*.nupkg -Verbosity detailed -ApiKey $ApiKey -Source $Source
 
-echo "Pushing StressGen.Events"
-nuget push ./StressGen.Events.*.nupkg -Verbosity detailed -ApiKey $ApiKey -Source $Source
+echo "Pushing DnDGen.Stress.Events"
+nuget push ./DnDGen.Stress.Events.*.nupkg -Verbosity detailed -ApiKey $ApiKey -Source $Source

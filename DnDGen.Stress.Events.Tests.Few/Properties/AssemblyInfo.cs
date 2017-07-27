@@ -5,11 +5,11 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("StressGen")]
+[assembly: AssemblyTitle("DnDGen.Stress.Events.Tests.Few")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("StressGen")]
+[assembly: AssemblyProduct("DnDGen.Stress.Events.Tests.Few")]
 [assembly: AssemblyCopyright("Copyright ©  2017")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
@@ -20,7 +20,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("17ae53cf-55a5-4be3-be61-6a4853e9a579")]
+[assembly: Guid("f7188bb8-7efa-4f67-8072-172d5710976d")]
 
 // Version information for an assembly consists of the following four values:
 //

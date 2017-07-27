@@ -4,7 +4,7 @@ using System;
 using System.Linq;
 using System.Reflection;
 
-namespace StressGen.Events
+namespace DnDGen.Stress.Events
 {
     [TestFixture]
     public class StressorWithEvents : Stressor
@@ -19,6 +19,9 @@ namespace StressGen.Events
         public StressorWithEvents(bool isFullStress, Assembly runningAssembly, ClientIDManager clientIdManager, GenEventQueue eventQueue)
             : base(isFullStress, runningAssembly)
         {
+            this.clientIdManager = clientIdManager;
+            this.eventQueue = eventQueue;
+
             var types = runningAssembly.GetTypes();
             source = types.First().AssemblyQualifiedName.Split('.')[0];
         }
