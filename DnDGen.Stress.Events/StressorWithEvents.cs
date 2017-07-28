@@ -1,6 +1,7 @@
 ﻿using EventGen;
 using NUnit.Framework;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 
@@ -9,21 +10,21 @@ namespace DnDGen.Stress.Events
     [TestFixture]
     public class StressorWithEvents : Stressor
     {
+        private const int EventSummaryCount = 10;
+
         private readonly ClientIDManager clientIdManager;
         private readonly GenEventQueue eventQueue;
         private readonly string source;
 
         private Guid clientId;
-        private DateTime eventCheckpoint;
+        private List<GenEvent> events;
 
-        public StressorWithEvents(bool isFullStress, Assembly runningAssembly, ClientIDManager clientIdManager, GenEventQueue eventQueue)
+        public StressorWithEvents(bool isFullStress, Assembly runningAssembly, ClientIDManager clientIdManager, GenEventQueue eventQueue, string source)
             : base(isFullStress, runningAssembly)
         {
             this.clientIdManager = clientIdManager;
             this.eventQueue = eventQueue;
-
-            var types = runningAssembly.GetTypes();
-            source = types.First().AssemblyQualifiedName.Split('.')[0];
+            this.source = source;
         }
 
         protected override void StressSetup()
@@ -31,7 +32,7 @@ namespace DnDGen.Stress.Events
             clientId = Guid.NewGuid();
             clientIdManager.SetClientID(clientId);
 
-            eventCheckpoint = new DateTime();
+            events = new List<GenEvent>();
 
             base.StressSetup();
         }
@@ -45,13 +46,7 @@ namespace DnDGen.Stress.Events
 
         private void WriteEventSummary()
         {
-            var events = eventQueue.DequeueAll(clientId);
-
-            //INFO: Get the 10 most recent events for the source.  We assume the events are ordered chronologically already
-            events = events.Where(e => e.Source == source);
-            events = events.Reverse();
-            events = events.Take(10);
-            events = events.Reverse();
+            GetDequeuedEventsAndAddToEvents();
 
             foreach (var genEvent in events)
                 Console.WriteLine(GetMessage(genEvent));
@@ -86,38 +81,43 @@ namespace DnDGen.Stress.Events
             AssertEventSpacing();
         }
 
-        protected override void RunStress(Action setup, Action test, Action teardown)
+        protected override void RunInLoop(Action setup, Action test, Action teardown)
         {
-            base.RunStress(setup, () => RunAndAssertEvent(test), teardown);
+            base.RunInLoop(setup, () => RunAndAssertEvent(test), teardown);
         }
 
-        protected override void RunStress(Action test)
+        protected override void RunInLoop(Action test)
         {
-            base.RunStress(() => RunAndAssertEvent(test));
+            base.RunInLoop(() => RunAndAssertEvent(test));
         }
 
         private void AssertEventSpacing()
         {
-            var events = eventQueue.DequeueAll(clientId);
+            var dequeuedEvents = GetDequeuedEventsAndAddToEvents().ToArray();
 
-            //INFO: Have to put the events back in the queue for the summary at the end of the test
-            foreach (var genEvent in events)
-                eventQueue.Enqueue(genEvent);
-
+            Assert.That(dequeuedEvents, Is.Ordered.By("When"));
             Assert.That(events, Is.Ordered.By("When"));
 
-            var newEvents = events.Where(e => e.When > eventCheckpoint).ToArray();
-
-            Assert.That(newEvents, Is.Ordered.By("When"));
-
-            for (var i = 1; i < newEvents.Length; i++)
+            for (var i = 1; i < dequeuedEvents.Length; i++)
             {
-                var failureMessage = $"{GetMessage(newEvents[i - 1])}\n{GetMessage(newEvents[i])}";
-                Assert.That(newEvents[i].When, Is.EqualTo(newEvents[i - 1].When).Within(1).Seconds, failureMessage);
+                var failureMessage = $"{GetMessage(dequeuedEvents[i - 1])}\n{GetMessage(dequeuedEvents[i])}";
+                Assert.That(dequeuedEvents[i].When, Is.EqualTo(dequeuedEvents[i - 1].When).Within(1).Seconds, failureMessage);
             }
+        }
 
-            if (newEvents.Any())
-                eventCheckpoint = newEvents.Last().When;
+        private IEnumerable<GenEvent> GetDequeuedEventsAndAddToEvents()
+        {
+            var dequeuedEvents = eventQueue.DequeueAll(clientId);
+            events.AddRange(dequeuedEvents);
+
+            //INFO: Get the 10 most recent events for the source.  We assume the events are ordered chronologically already
+            events = events.Where(e => e.Source == source)
+                .Reverse()
+                .Take(EventSummaryCount)
+                .Reverse()
+                .ToList();
+
+            return dequeuedEvents;
         }
     }
 }

@@ -115,23 +115,24 @@ namespace DnDGen.Stress
 
         public void Stress(Action setup, Action test, Action teardown)
         {
-            RunAction(() => RunStress(setup, test, teardown));
+            RunAction(
+                StressSetup,
+                () => RunInLoop(setup, test, teardown),
+                StressTearDown);
         }
 
-        protected virtual void RunStress(Action setup, Action test, Action teardown)
+        protected virtual void RunInLoop(Action setup, Action test, Action teardown)
         {
             do
             {
-                setup();
-                test();
-                teardown();
+                RunAction(setup, test, teardown);
             }
             while (TestShouldKeepRunning());
         }
 
-        private void RunAction(Action action)
+        private void RunAction(Action setup, Action action, Action teardown)
         {
-            StressSetup();
+            setup();
 
             try
             {
@@ -143,7 +144,7 @@ namespace DnDGen.Stress
             }
             finally
             {
-                StressTearDown();
+                teardown();
             }
         }
 
@@ -173,10 +174,10 @@ namespace DnDGen.Stress
 
         public void Stress(Action test)
         {
-            RunAction(() => RunStress(test));
+            RunAction(StressSetup, () => RunInLoop(test), StressTearDown);
         }
 
-        protected virtual void RunStress(Action test)
+        protected virtual void RunInLoop(Action test)
         {
             do
             {
