@@ -7,8 +7,8 @@
     <ProjectGuid>{E88C659C-2A98-4CFA-89D5-7B31326487D7}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>StressGen.Events</RootNamespace>
-    <AssemblyName>StressGen.Events</AssemblyName>
+    <RootNamespace>DnDGen.Stress.Events</RootNamespace>
+    <AssemblyName>DnDGen.Stress.Events</AssemblyName>
     <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
