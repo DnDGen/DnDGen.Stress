@@ -32,6 +32,17 @@ namespace DnDGen.Stress.Tests
             Console.SetOut(writer);
         }
 
+        [TearDown]
+        public void Teardown()
+        {
+            var standardOutput = new StreamWriter(Console.OpenStandardOutput());
+            standardOutput.AutoFlush = true;
+            Console.SetOut(standardOutput);
+
+            var output = console.ToString();
+            Console.WriteLine(output);
+        }
+
         [Test]
         public void Confidence()
         {
@@ -196,8 +207,8 @@ namespace DnDGen.Stress.Tests
             Assert.That(lines.Length, Is.EqualTo(6));
             Assert.That(lines[1], Is.EqualTo($"Stress test complete"));
             Assert.That(lines[2], Does.StartWith($"\tTime: 00:00:0"));
-            Assert.That(lines[3], Is.EqualTo($"\tCompleted Iterations: "));
-            Assert.That(lines[4], Does.StartWith($"\tIterations Per Second: 1"));
+            Assert.That(lines[3], Does.StartWith($"\tCompleted Iterations: "));
+            Assert.That(lines[4], Does.StartWith($"\tIterations Per Second: "));
             Assert.That(lines[5], Is.EqualTo($"\tLikely Status: PASSED"));
         }
 

@@ -51,6 +51,17 @@ namespace DnDGen.Stress.Events.Tests
             });
         }
 
+        [TearDown]
+        public void Teardown()
+        {
+            var standardOutput = new StreamWriter(Console.OpenStandardOutput());
+            standardOutput.AutoFlush = true;
+            Console.SetOut(standardOutput);
+
+            var output = console.ToString();
+            Console.WriteLine(output);
+        }
+
         [Test]
         public void Confidence()
         {
