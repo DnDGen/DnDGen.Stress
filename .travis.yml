@@ -8,11 +8,11 @@ script:
   - set -e
   - mono ./testrunner/NUnit.ConsoleRunner.*/tools/nunit3-console.exe ./DnDGen.Stress.Tests/bin/Release/DnDGen.Stress.Tests.dll
   - set -e
-  - mono ./testrunner/NUnit.ConsoleRunner.*/tools/nunit3-console.exe ./DnDGen.Stress.Tests/bin/Release/DnDGen.Stress.Tests.Few.dll
+  - mono ./testrunner/NUnit.ConsoleRunner.*/tools/nunit3-console.exe ./DnDGen.Stress.Tests.Few/bin/Release/DnDGen.Stress.Tests.Few.dll
   - set -e
-  - mono ./testrunner/NUnit.ConsoleRunner.*/tools/nunit3-console.exe ./DnDGen.Stress.Tests/bin/Release/DnDGen.Stress.Events.Tests.dll
+  - mono ./testrunner/NUnit.ConsoleRunner.*/tools/nunit3-console.exe ./DnDGen.Stress.Events.Tests/bin/Release/DnDGen.Stress.Events.Tests.dll
   - set -e
-  - mono ./testrunner/NUnit.ConsoleRunner.*/tools/nunit3-console.exe ./DnDGen.Stress.Tests/bin/Release/DnDGen.Stress.Events.Tests.Few.dll
+  - mono ./testrunner/NUnit.ConsoleRunner.*/tools/nunit3-console.exe ./DnDGen.Stress.Events.Tests.Few/bin/Release/DnDGen.Stress.Events.Tests.Few.dll
 deploy:
   skip_cleanup: true
   provider: script
