@@ -2,7 +2,7 @@
 <package >
   <metadata>
     <id>DnDGen.Stress.Events</id>
-    <version>1.0.0</version>
+    <version>1.0.1</version>
     <title>DnDGen.Stress.Events</title>
     <authors>Karl M. Speer</authors>
     <owners>cidthecoatrack</owners>

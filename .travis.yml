@@ -18,6 +18,6 @@ deploy:
   provider: script
   script: chmod +x ./deploy/deploy.sh && ./deploy/deploy.sh $NUGET_API_KEY $NUGET_SOURCE
   on:
-    branch: develop
+    branch: master
 matrix:
   fast_finish: true
