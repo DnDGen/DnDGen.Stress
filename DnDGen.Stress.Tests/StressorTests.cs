@@ -156,6 +156,8 @@ namespace DnDGen.Stress.Tests
         [Test]
         public void StopsWhenConfidenceIterationsHit()
         {
+            stressor = new Stressor(true, runningAssembly);
+
             var count = 0;
 
             stopwatch.Start();
@@ -246,7 +248,7 @@ namespace DnDGen.Stress.Tests
         {
             var count = 0;
             stressor.Stress(() => FastTest(ref count));
-            Assert.That(count, Is.EqualTo(Stressor.ConfidentIterations));
+            Assert.That(count, Is.AtLeast(200000));
         }
 
         [Test]
@@ -257,9 +259,9 @@ namespace DnDGen.Stress.Tests
             var teardown = 0;
 
             stressor.Stress(() => TestSetup(ref count, ref setup), () => FastTest(ref count), () => TestTeardown(ref count, ref teardown));
-            Assert.That(count, Is.EqualTo(2));
-            Assert.That(setup, Is.EqualTo(Stressor.ConfidentIterations));
-            Assert.That(teardown, Is.EqualTo(Stressor.ConfidentIterations));
+            Assert.That(count, Is.EqualTo(2), "Fast Test");
+            Assert.That(setup, Is.AtLeast(200000), "Setup");
+            Assert.That(teardown, Is.AtLeast(200000), "Tear Down");
         }
 
         private void TestSetup(ref int count, ref int setup)

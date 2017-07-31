@@ -200,8 +200,8 @@ namespace DnDGen.Stress.Events.Tests
             Assert.That(lines.Length, Is.EqualTo(16));
             Assert.That(lines[1], Is.EqualTo($"Stress test complete"));
             Assert.That(lines[2], Does.StartWith($"\tTime: 00:00:01.0"));
-            Assert.That(lines[3], Does.StartWith($"\tCompleted Iterations: 6"));
-            Assert.That(lines[4], Does.StartWith($"\tIterations Per Second: 6"));
+            Assert.That(lines[3], Does.StartWith($"\tCompleted Iterations: "));
+            Assert.That(lines[4], Does.StartWith($"\tIterations Per Second: "));
             Assert.That(lines[5], Is.EqualTo($"\tLikely Status: PASSED"));
         }
 
