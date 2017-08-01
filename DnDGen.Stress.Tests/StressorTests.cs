@@ -12,7 +12,7 @@ namespace DnDGen.Stress.Tests
     [TestFixture]
     public class StressorTests
     {
-        private const int TestCount = 21;
+        private const int TestCount = 22;
         private const int TestCaseCount = 2;
 
         private Stressor stressor;
@@ -52,7 +52,7 @@ namespace DnDGen.Stress.Tests
         [Test]
         public void TravisBuildLimit()
         {
-            Assert.That(Stressor.TravisJobBuildTimeLimit, Is.EqualTo(50 * 60 - 3 * 60));
+            Assert.That(Stressor.TravisJobBuildTimeLimit, Is.EqualTo(50 * 60));
         }
 
         [Test]
@@ -62,10 +62,16 @@ namespace DnDGen.Stress.Tests
         }
 
         [Test]
+        public void StressorTimeLimitPercentage()
+        {
+            Assert.That(Stressor.TimeLimitPercentage, Is.EqualTo(.9));
+        }
+
+        [Test]
         public void WhenFullStress_DurationIsLong()
         {
             stressor = new Stressor(true, runningAssembly);
-            var expectedTimeLimit = new TimeSpan(0, 2, 2);
+            var expectedTimeLimit = new TimeSpan(0, 1, 52);
 
             Assert.That(stressor.IsFullStress, Is.True);
             Assert.That(stressor.TimeLimit, Is.EqualTo(expectedTimeLimit));
@@ -125,8 +131,8 @@ namespace DnDGen.Stress.Tests
         public void DurationIsTotalDurationDividedByTestCount()
         {
             stressor = new Stressor(true, runningAssembly);
-            var seconds = Stressor.TravisJobBuildTimeLimit / (TestCount + TestCaseCount);
-            var expectedTimeLimit = new TimeSpan(0, 0, seconds);
+            var seconds = Stressor.TravisJobBuildTimeLimit * Stressor.TimeLimitPercentage / (TestCount + TestCaseCount);
+            var expectedTimeLimit = new TimeSpan((long)seconds * TimeSpan.TicksPerSecond);
 
             Assert.That(stressor.IsFullStress, Is.True);
             Assert.That(stressor.TimeLimit, Is.EqualTo(expectedTimeLimit));

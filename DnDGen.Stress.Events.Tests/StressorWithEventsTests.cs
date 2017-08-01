@@ -15,7 +15,7 @@ namespace DnDGen.Stress.Events.Tests
     [TestFixture]
     public class StressorWithEventsTests
     {
-        private const int TestCount = 31;
+        private const int TestCount = 32;
         private const int TestCaseCount = 2;
 
         private StressorWithEvents stressor;
@@ -71,7 +71,7 @@ namespace DnDGen.Stress.Events.Tests
         [Test]
         public void TravisBuildLimit()
         {
-            Assert.That(Stressor.TravisJobBuildTimeLimit, Is.EqualTo(50 * 60 - 3 * 60));
+            Assert.That(Stressor.TravisJobBuildTimeLimit, Is.EqualTo(50 * 60));
         }
 
         [Test]
@@ -81,10 +81,16 @@ namespace DnDGen.Stress.Events.Tests
         }
 
         [Test]
+        public void StressorTimeLimitPercentage()
+        {
+            Assert.That(Stressor.TimeLimitPercentage, Is.EqualTo(.9));
+        }
+
+        [Test]
         public void WhenFullStress_DurationIsLong()
         {
             stressor = new StressorWithEvents(true, runningAssembly, mockClientIdManager.Object, mockEventQueue.Object, "Unit Test");
-            var expectedTimeLimit = new TimeSpan(0, 1, 25);
+            var expectedTimeLimit = new TimeSpan(0, 1, 19);
 
             Assert.That(stressor.IsFullStress, Is.True);
             Assert.That(stressor.TimeLimit, Is.EqualTo(expectedTimeLimit));
@@ -144,8 +150,8 @@ namespace DnDGen.Stress.Events.Tests
         public void DurationIsTotalDurationDividedByTestCount()
         {
             stressor = new StressorWithEvents(true, runningAssembly, mockClientIdManager.Object, mockEventQueue.Object, "Unit Test");
-            var seconds = Stressor.TravisJobBuildTimeLimit / (TestCount + TestCaseCount);
-            var expectedTimeLimit = new TimeSpan(0, 0, seconds);
+            var seconds = Stressor.TravisJobBuildTimeLimit * Stressor.TimeLimitPercentage / (TestCount + TestCaseCount);
+            var expectedTimeLimit = new TimeSpan((long)seconds * TimeSpan.TicksPerSecond);
 
             Assert.That(stressor.IsFullStress, Is.True);
             Assert.That(stressor.TimeLimit, Is.EqualTo(expectedTimeLimit));

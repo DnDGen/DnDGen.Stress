@@ -4,6 +4,7 @@ using NUnit.Framework;
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Text;
 
@@ -57,10 +58,10 @@ namespace DnDGen.Stress.Events.Tests.Few
         }
 
         [Test]
-        public void DurationIs10MinutesMinus10Seconds()
+        public void DurationIs90PercentOf10Minutes()
         {
             stressor = new StressorWithEvents(true, runningAssembly, mockClientIdManager.Object, mockEventQueue.Object, "Unit Test");
-            var expectedTimeLimit = new TimeSpan(0, 9, 50);
+            var expectedTimeLimit = new TimeSpan(0, 9, 0);
 
             Assert.That(stressor.IsFullStress, Is.True);
             Assert.That(stressor.TimeLimit, Is.EqualTo(expectedTimeLimit));
@@ -69,6 +70,11 @@ namespace DnDGen.Stress.Events.Tests.Few
         [Test]
         public void StopsWhenConfidenceIterationsHit()
         {
+            //INFO: Things with events will be slower (for the event assertions), so they will not hit the confidence iteration limit before the time limit
+            //So, we will return no events and let it be fester here - which is also the most likely use case where something with events would hit the confidence limit
+            //before the time limit
+            mockEventQueue.Setup(q => q.DequeueAll(It.Is<Guid>(g => g == clientId))).Returns(Enumerable.Empty<GenEvent>());
+
             //INFO: Need longer timeout to hit confidence iterations, as event logging takes more time
             stressor = new StressorWithEvents(true, runningAssembly, mockClientIdManager.Object, mockEventQueue.Object, "Unit Test");
 

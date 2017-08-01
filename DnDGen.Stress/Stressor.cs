@@ -14,14 +14,15 @@ namespace DnDGen.Stress
 
         public TimeSpan TimeLimit
         {
-            get { return new TimeSpan(0, 0, timeLimitInSeconds); }
+            get { return new TimeSpan((long)timeLimitInSeconds * TimeSpan.TicksPerSecond); }
         }
 
         public const int ConfidentIterations = 1000000;
         public const int TravisJobOutputTimeLimit = 10 * 60;
-        public const int TravisJobBuildTimeLimit = 50 * 60 - 3 * 60; //INFO: Taking 3 minutes off to account for initial build time before running the stress tests
+        public const int TravisJobBuildTimeLimit = 50 * 60;
+        public const double TimeLimitPercentage = .9;
 
-        private readonly int timeLimitInSeconds;
+        private readonly double timeLimitInSeconds;
         private readonly Stopwatch stressStopwatch;
 
         private int iterations;
@@ -42,8 +43,8 @@ namespace DnDGen.Stress
             }
             else
             {
-                var timeLimitPerTest = TravisJobBuildTimeLimit / StressTestCount;
-                timeLimitInSeconds = Math.Min(timeLimitPerTest, TravisJobOutputTimeLimit - 10);
+                var timeLimitPerTest = TravisJobBuildTimeLimit * TimeLimitPercentage / StressTestCount;
+                timeLimitInSeconds = Math.Min(timeLimitPerTest, TravisJobOutputTimeLimit * TimeLimitPercentage);
             }
         }
 
@@ -169,7 +170,7 @@ namespace DnDGen.Stress
         private bool TestShouldKeepRunning()
         {
             iterations++;
-            return stressStopwatch.Elapsed.TotalSeconds < timeLimitInSeconds && iterations < ConfidentIterations;
+            return stressStopwatch.Elapsed < TimeLimit && iterations < ConfidentIterations;
         }
 
         public void Stress(Action test)

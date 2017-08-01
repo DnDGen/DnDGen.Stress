@@ -16,10 +16,10 @@ namespace DnDGen.Stress.Tests.Few
         }
 
         [Test]
-        public void DurationIs10MinutesMinus10Seconds()
+        public void DurationIs90PercentOf10Minutes()
         {
             stressor = new Stressor(true, Assembly.GetExecutingAssembly());
-            var expectedTimeLimit = new TimeSpan(0, 9, 50);
+            var expectedTimeLimit = new TimeSpan(0, 9, 0);
 
             Assert.That(stressor.IsFullStress, Is.True);
             Assert.That(stressor.TimeLimit, Is.EqualTo(expectedTimeLimit));
