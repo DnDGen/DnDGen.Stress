@@ -10,15 +10,15 @@ using System.Text;
 namespace DnDGen.Stress.Events.Tests.Few
 {
     [TestFixture]
-    public class StressorWithEventsTests
+    public class GenerateOrFailTests
     {
         private Stressor stressor;
+        private Assembly runningAssembly;
+        private StringBuilder console;
         private Mock<ClientIDManager> mockClientIdManager;
         private Mock<GenEventQueue> mockEventQueue;
-        private Assembly runningAssembly;
-        private Stopwatch stopwatch;
-        private StringBuilder console;
         private Guid clientId;
+        private Stopwatch stopwatch;
 
         [SetUp]
         public void Setup()
@@ -26,8 +26,7 @@ namespace DnDGen.Stress.Events.Tests.Few
             mockClientIdManager = new Mock<ClientIDManager>();
             mockEventQueue = new Mock<GenEventQueue>();
             runningAssembly = Assembly.GetExecutingAssembly();
-            stressor = new StressorWithEvents(false, runningAssembly, mockClientIdManager.Object, mockEventQueue.Object, "Unit Test");
-
+            stressor = new StressorWithEvents(true, runningAssembly, mockClientIdManager.Object, mockEventQueue.Object, "Unit Test");
             stopwatch = new Stopwatch();
             console = new StringBuilder();
             var writer = new StringWriter(console);
@@ -42,6 +41,7 @@ namespace DnDGen.Stress.Events.Tests.Few
             {
                 new GenEvent("Unit Test", $"Event {count++} for {g}"),
                 new GenEvent("Unit Test", $"Event {count++} for {g}"),
+                new GenEvent("Wrong Source", $"Wrong event for {g}"),
             });
         }
 
@@ -52,17 +52,20 @@ namespace DnDGen.Stress.Events.Tests.Few
             standardOutput.AutoFlush = true;
             Console.SetOut(standardOutput);
 
-            Console.WriteLine("Test for base stressor properties on StressorWithEvents with few tests completed.");
+            Console.WriteLine("Test for GenerateOrFail() on StressorWithEvents with few tests completed.");
         }
 
         [Test]
-        public void DurationIs90PercentOf10Minutes()
+        public void StopsWhenConfidenceIterationsHit()
         {
-            stressor = new StressorWithEvents(true, runningAssembly, mockClientIdManager.Object, mockEventQueue.Object, "Unit Test");
-            var expectedTimeLimit = new TimeSpan(0, 9, 0);
+            var count = 0;
 
-            Assert.That(stressor.IsFullStress, Is.True);
-            Assert.That(stressor.TimeLimit, Is.EqualTo(expectedTimeLimit));
+            stopwatch.Start();
+            Assert.That(() => stressor.GenerateOrFail(() => count++, c => c < 0), Throws.InstanceOf<AssertionException>().With.Message.EqualTo("Generation timed out"));
+            stopwatch.Stop();
+
+            Assert.That(stopwatch.Elapsed, Is.LessThan(stressor.TimeLimit));
+            Assert.That(count, Is.EqualTo(Stressor.ConfidentIterations));
         }
     }
 }

@@ -1,77 +1,39 @@
 ﻿using NUnit.Framework;
 using System;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading;
 
 namespace DnDGen.Stress.Tests
 {
     [TestFixture]
     public class StressorTests
     {
-        private const int TestCount = 22;
-        private const int TestCaseCount = 2;
+        private const int TestCount = 39;
+        private const int TestCaseCount = 6;
 
         private Stressor stressor;
         private Assembly runningAssembly;
-        private Stopwatch stopwatch;
-        private StringBuilder console;
 
         [SetUp]
         public void Setup()
         {
             runningAssembly = Assembly.GetExecutingAssembly();
             stressor = new Stressor(false, runningAssembly);
-            stopwatch = new Stopwatch();
-            console = new StringBuilder();
-            var writer = new StringWriter(console);
-
-            Console.SetOut(writer);
         }
 
-        [TearDown]
-        public void Teardown()
+        [TestCase(Stressor.ConfidentIterations, 1000000)]
+        [TestCase(Stressor.TravisJobBuildTimeLimit, 50 * 60)]
+        [TestCase(Stressor.TravisJobOutputTimeLimit, 10 * 60)]
+        [TestCase(Stressor.TimeLimitPercentage, .9)]
+        public void StressorConstant(double constant, double value)
         {
-            var standardOutput = new StreamWriter(Console.OpenStandardOutput());
-            standardOutput.AutoFlush = true;
-            Console.SetOut(standardOutput);
-
-            var output = console.ToString();
-            Console.WriteLine(output);
-        }
-
-        [Test]
-        public void Confidence()
-        {
-            Assert.That(Stressor.ConfidentIterations, Is.EqualTo(1000000));
-        }
-
-        [Test]
-        public void TravisBuildLimit()
-        {
-            Assert.That(Stressor.TravisJobBuildTimeLimit, Is.EqualTo(50 * 60));
-        }
-
-        [Test]
-        public void TravisOutputLimit()
-        {
-            Assert.That(Stressor.TravisJobOutputTimeLimit, Is.EqualTo(10 * 60));
-        }
-
-        [Test]
-        public void StressorTimeLimitPercentage()
-        {
-            Assert.That(Stressor.TimeLimitPercentage, Is.EqualTo(.9));
+            Assert.That(constant, Is.EqualTo(value));
         }
 
         [Test]
         public void WhenFullStress_DurationIsLong()
         {
             stressor = new Stressor(true, runningAssembly);
-            var expectedTimeLimit = new TimeSpan(0, 1, 52);
+            var expectedTimeLimit = new TimeSpan(0, 1, 0);
 
             Assert.That(stressor.IsFullStress, Is.True);
             Assert.That(stressor.TimeLimit, Is.EqualTo(expectedTimeLimit));
@@ -143,192 +105,6 @@ namespace DnDGen.Stress.Tests
         {
             runningAssembly = Assembly.GetAssembly(typeof(int));
             Assert.That(() => stressor = new Stressor(true, runningAssembly), Throws.ArgumentException.With.Message.EqualTo("No tests were detected in the running assembly"));
-        }
-
-        [Test]
-        public void StopsWhenTimeLimitHit()
-        {
-            var count = 0;
-
-            stopwatch.Start();
-            stressor.Stress(() => SlowTest(ref count));
-            stopwatch.Stop();
-
-            Assert.That(stopwatch.Elapsed, Is.EqualTo(stressor.TimeLimit).Within(.01).Seconds);
-            Assert.That(count, Is.LessThan(Stressor.ConfidentIterations));
-        }
-
-        private void SlowTest(ref int count)
-        {
-            FastTest(ref count);
-            Thread.Sleep(1);
-        }
-
-        private void FastTest(ref int count)
-        {
-            count++;
-            Assert.That(count, Is.Positive);
-        }
-
-        [Test]
-        public void StopsWhenConfidenceIterationsHit()
-        {
-            stressor = new Stressor(true, runningAssembly);
-
-            var count = 0;
-
-            stopwatch.Start();
-            stressor.Stress(() => FastTest(ref count));
-            stopwatch.Stop();
-
-            Assert.That(stopwatch.Elapsed, Is.LessThan(stressor.TimeLimit));
-            Assert.That(count, Is.EqualTo(Stressor.ConfidentIterations));
-        }
-
-        [Test]
-        public void WritesStressDurationToConsole()
-        {
-            var count = 0;
-            stressor.Stress(() => FastTest(ref count));
-
-            var output = console.ToString();
-            var lines = output.Split('\r', '\n').Where(s => !string.IsNullOrEmpty(s)).ToArray();
-
-            Assert.That(output, Is.Not.Empty);
-            Assert.That(lines, Is.Not.Empty);
-            Assert.That(lines[0], Is.EqualTo($"Stress timeout is {stressor.TimeLimit}"));
-        }
-
-        [Test]
-        public void WritesStressSummaryToConsole()
-        {
-            var count = 0;
-            stressor.Stress(() => FastTest(ref count));
-
-            var output = console.ToString();
-            var lines = output.Split('\r', '\n').Where(s => !string.IsNullOrEmpty(s)).ToArray();
-
-            Assert.That(output, Is.Not.Empty);
-            Assert.That(lines, Is.Not.Empty);
-            Assert.That(lines.Length, Is.EqualTo(6));
-            Assert.That(lines[1], Is.EqualTo($"Stress test complete"));
-            Assert.That(lines[2], Does.StartWith($"\tTime: 00:00:0"));
-            Assert.That(lines[3], Does.StartWith($"\tCompleted Iterations: "));
-            Assert.That(lines[4], Does.StartWith($"\tIterations Per Second: "));
-            Assert.That(lines[5], Is.EqualTo($"\tLikely Status: PASSED"));
-        }
-
-        [Test]
-        public void WritesFailedStressSummaryToConsole()
-        {
-            Assert.That(() => stressor.Stress(FailedTest), Throws.InstanceOf<AssertionException>());
-
-            var output = console.ToString();
-            var lines = output.Split('\r', '\n').Where(s => !string.IsNullOrEmpty(s)).ToArray();
-
-            Assert.That(output, Is.Not.Empty);
-            Assert.That(lines, Is.Not.Empty);
-            Assert.That(lines.Length, Is.EqualTo(6));
-            Assert.That(lines[1], Is.EqualTo($"Stress test complete"));
-            Assert.That(lines[2], Does.StartWith($"\tTime: 00:00:00.0"));
-            Assert.That(lines[3], Is.EqualTo($"\tCompleted Iterations: 0 (0%)"));
-            Assert.That(lines[4], Is.EqualTo($"\tIterations Per Second: 0"));
-            Assert.That(lines[5], Is.EqualTo($"\tLikely Status: FAILED"));
-        }
-
-        private void FailedTest()
-        {
-            Assert.Fail("This test should fail");
-        }
-
-        [Test]
-        public void WritesStressSlowSummaryToConsole()
-        {
-            var count = 0;
-            stressor.Stress(() => SlowTest(ref count));
-
-            var output = console.ToString();
-            var lines = output.Split('\r', '\n').Where(s => !string.IsNullOrEmpty(s)).ToArray();
-
-            Assert.That(output, Is.Not.Empty);
-            Assert.That(lines, Is.Not.Empty);
-            Assert.That(lines.Length, Is.EqualTo(6));
-            Assert.That(lines[1], Is.EqualTo($"Stress test complete"));
-            Assert.That(lines[2], Does.StartWith($"\tTime: 00:00:01.0"));
-            Assert.That(lines[3], Does.StartWith($"\tCompleted Iterations: "));
-            Assert.That(lines[4], Does.StartWith($"\tIterations Per Second: "));
-            Assert.That(lines[5], Is.EqualTo($"\tLikely Status: PASSED"));
-        }
-
-        [Test]
-        public void StressATest()
-        {
-            var count = 0;
-            stressor.Stress(() => FastTest(ref count));
-            Assert.That(count, Is.AtLeast(200000));
-        }
-
-        [Test]
-        public void StressATestWithSetupAndTeardown()
-        {
-            var count = 0;
-            var setup = 0;
-            var teardown = 0;
-
-            stressor.Stress(() => TestSetup(ref count, ref setup), () => FastTest(ref count), () => TestTeardown(ref count, ref teardown));
-            Assert.That(count, Is.EqualTo(2), "Fast Test");
-            Assert.That(setup, Is.AtLeast(200000), "Setup");
-            Assert.That(teardown, Is.AtLeast(200000), "Tear Down");
-        }
-
-        private void TestSetup(ref int count, ref int setup)
-        {
-            count = 0;
-            setup++;
-        }
-
-        private void TestTeardown(ref int count, ref int teardown)
-        {
-            if (count == 1)
-                count++;
-
-            teardown++;
-        }
-
-        [Test]
-        public void Generate()
-        {
-            var count = 0;
-            var result = stressor.Generate(() => count++, c => c == 9266);
-            Assert.That(result, Is.EqualTo(9266));
-        }
-
-        [Test]
-        public void GenerateBeyondTimeout()
-        {
-            var count = 0;
-
-            stopwatch.Start();
-            var result = stressor.Generate(() => count++, c => c == 926600000);
-            stopwatch.Stop();
-
-            Assert.That(result, Is.EqualTo(926600000));
-            Assert.That(stopwatch.Elapsed, Is.GreaterThan(stressor.TimeLimit));
-        }
-
-        [Test]
-        public void GenerateAndSucceed()
-        {
-            var count = 0;
-            var result = stressor.GenerateOrFail(() => count++, c => c == 9266);
-            Assert.That(result, Is.EqualTo(9266));
-        }
-
-        [Test]
-        public void GenerateAndFail()
-        {
-            var count = 0;
-            Assert.That(() => stressor.GenerateOrFail(() => count++, c => c == 9266000), Throws.InstanceOf<AssertionException>().With.Message.EqualTo("Generation timed out"));
         }
     }
 }

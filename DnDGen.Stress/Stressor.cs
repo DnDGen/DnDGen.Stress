@@ -27,6 +27,7 @@ namespace DnDGen.Stress
 
         private int iterations;
         private bool generatedSuccessfully;
+        private bool generationFailed;
 
         public Stressor(bool isFullStress, Assembly runningAssembly)
         {
@@ -80,6 +81,7 @@ namespace DnDGen.Stress
         {
             iterations = 0;
             generatedSuccessfully = false;
+            generationFailed = false;
 
             Console.WriteLine($"Stress timeout is {TimeLimit}");
 
@@ -111,10 +113,10 @@ namespace DnDGen.Stress
 
         private bool IsLikelySuccess(double timePercentage, double iterationPercentage)
         {
-            return timePercentage >= 100 || iterationPercentage >= 100 || generatedSuccessfully;
+            return (timePercentage >= 100 || iterationPercentage >= 100 || generatedSuccessfully) && !generationFailed;
         }
 
-        public void Stress(Action setup, Action test, Action teardown)
+        public virtual void Stress(Action setup, Action test, Action teardown)
         {
             RunAction(
                 StressSetup,
@@ -122,7 +124,7 @@ namespace DnDGen.Stress
                 StressTearDown);
         }
 
-        protected virtual void RunInLoop(Action setup, Action test, Action teardown)
+        private void RunInLoop(Action setup, Action test, Action teardown)
         {
             do
             {
@@ -173,12 +175,12 @@ namespace DnDGen.Stress
             return stressStopwatch.Elapsed < TimeLimit && iterations < ConfidentIterations;
         }
 
-        public void Stress(Action test)
+        public virtual void Stress(Action test)
         {
             RunAction(StressSetup, () => RunInLoop(test), StressTearDown);
         }
 
-        protected virtual void RunInLoop(Action test)
+        private void RunInLoop(Action test)
         {
             do
             {
@@ -187,12 +189,8 @@ namespace DnDGen.Stress
             while (TestShouldKeepRunning());
         }
 
-        public T Generate<T>(Func<T> generate, Func<T, bool> isValid)
-        {
-            return RunFunction(() => RunGenerate(generate, isValid));
-        }
-
-        protected virtual T RunGenerate<T>(Func<T> generate, Func<T, bool> isValid)
+        //INFO: We are explicitly not doing the setup or teardown here, as Generate is often used within a Stress or GenerateOrFail call, which will handle the setup
+        public virtual T Generate<T>(Func<T> generate, Func<T, bool> isValid)
         {
             T generatedObject;
 
@@ -205,23 +203,29 @@ namespace DnDGen.Stress
             return generatedObject;
         }
 
-        public T GenerateOrFail<T>(Func<T> generate, Func<T, bool> isValid)
+        public virtual T GenerateOrFail<T>(Func<T> generate, Func<T, bool> isValid)
         {
             return RunFunction(() => RunGenerateOrFail(generate, isValid));
         }
 
-        protected virtual T RunGenerateOrFail<T>(Func<T> generate, Func<T, bool> isValid)
+        private T RunGenerateOrFail<T>(Func<T> generate, Func<T, bool> isValid)
         {
             T generatedObject;
+            var shouldKeepRunning = false;
 
             do
             {
                 generatedObject = generate();
+                generatedSuccessfully = isValid(generatedObject);
+                shouldKeepRunning = TestShouldKeepRunning();
             }
-            while (TestShouldKeepRunning() && !isValid(generatedObject));
+            while (shouldKeepRunning && !generatedSuccessfully);
 
-            if (!TestShouldKeepRunning() && !isValid(generatedObject))
+            if (!generatedSuccessfully && !shouldKeepRunning)
+            {
+                generationFailed = true;
                 Assert.Fail($"Generation timed out");
+            }
 
             return generatedObject;
         }

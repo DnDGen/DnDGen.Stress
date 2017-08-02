@@ -15,9 +15,9 @@ namespace DnDGen.Stress.Events
         private readonly ClientIDManager clientIdManager;
         private readonly GenEventQueue eventQueue;
         private readonly string source;
+        private readonly List<GenEvent> events;
 
         private Guid clientId;
-        private List<GenEvent> events;
 
         public StressorWithEvents(bool isFullStress, Assembly runningAssembly, ClientIDManager clientIdManager, GenEventQueue eventQueue, string source)
             : base(isFullStress, runningAssembly)
@@ -25,6 +25,8 @@ namespace DnDGen.Stress.Events
             this.clientIdManager = clientIdManager;
             this.eventQueue = eventQueue;
             this.source = source;
+
+            events = new List<GenEvent>();
         }
 
         protected override void StressSetup()
@@ -32,8 +34,7 @@ namespace DnDGen.Stress.Events
             clientId = Guid.NewGuid();
             clientIdManager.SetClientID(clientId);
 
-            events = new List<GenEvent>();
-
+            events.Clear();
             base.StressSetup();
         }
 
@@ -57,14 +58,14 @@ namespace DnDGen.Stress.Events
             return $"[{genEvent.When.ToLongTimeString()}] {genEvent.Source}: {genEvent.Message}";
         }
 
-        protected override T RunGenerate<T>(Func<T> generate, Func<T, bool> isValid)
+        public override T Generate<T>(Func<T> generate, Func<T, bool> isValid)
         {
-            return base.RunGenerate(() => GenerateAndAssertEvent(generate), isValid);
+            return base.Generate(() => GenerateAndAssertEvent(generate), isValid);
         }
 
-        protected override T RunGenerateOrFail<T>(Func<T> generate, Func<T, bool> isValid)
+        public override T GenerateOrFail<T>(Func<T> generate, Func<T, bool> isValid)
         {
-            return base.RunGenerateOrFail(() => GenerateAndAssertEvent(generate), isValid);
+            return base.GenerateOrFail(() => GenerateAndAssertEvent(generate), isValid);
         }
 
         private T GenerateAndAssertEvent<T>(Func<T> generate)
@@ -81,14 +82,14 @@ namespace DnDGen.Stress.Events
             AssertEventSpacing();
         }
 
-        protected override void RunInLoop(Action setup, Action test, Action teardown)
+        public override void Stress(Action setup, Action test, Action teardown)
         {
-            base.RunInLoop(setup, () => RunAndAssertEvent(test), teardown);
+            base.Stress(setup, () => RunAndAssertEvent(test), teardown);
         }
 
-        protected override void RunInLoop(Action test)
+        public override void Stress(Action test)
         {
-            base.RunInLoop(() => RunAndAssertEvent(test));
+            base.Stress(() => RunAndAssertEvent(test));
         }
 
         private void AssertEventSpacing()
@@ -111,11 +112,15 @@ namespace DnDGen.Stress.Events
             events.AddRange(dequeuedEvents);
 
             //INFO: Get the 10 most recent events for the source.  We assume the events are ordered chronologically already
-            events = events.Where(e => e.Source == source)
+            //Execute immediately, so that the items are preserved after we clear the list
+            var filteredEvents = events.Where(e => e.Source == source)
                 .Reverse()
                 .Take(EventSummaryCount)
                 .Reverse()
-                .ToList();
+                .ToArray();
+
+            events.Clear();
+            events.AddRange(filteredEvents);
 
             return dequeuedEvents;
         }

@@ -56,8 +56,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="GenerateOrFailTests.cs" />
+    <Compile Include="GenerateTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="StressorWithEventsTests.cs" />
+    <Compile Include="StressTests.cs" />
+    <Compile Include="StressWithSetupAndTeardownTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
