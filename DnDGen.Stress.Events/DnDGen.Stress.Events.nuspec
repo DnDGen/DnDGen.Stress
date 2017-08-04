@@ -2,7 +2,7 @@
 <package >
   <metadata>
     <id>DnDGen.Stress.Events</id>
-    <version>1.1.0</version>
+    <version>1.2.0</version>
     <title>DnDGen.Stress.Events</title>
     <authors>Karl M. Speer</authors>
     <owners>cidthecoatrack</owners>
@@ -10,7 +10,7 @@
       A framework for running stress tests against random generators, including assertions of event spacing
     </description>
     <releaseNotes>
-     Bug #1
+     Bug #2
     </releaseNotes>
     <summary>
       This is an event logger that manages events based on client IDs.
@@ -23,7 +23,7 @@
     <copyright>Copyright 2017</copyright>
     <dependencies>
       <dependency id="EventGen" version="2.0.1" />
-      <dependency id="DnDGen.Stress" version="1.1.0" />
+      <dependency id="DnDGen.Stress" version="1.2.0" />
     </dependencies>
     <references></references>
     <tags> dungeons dragons d20 dnd 3.5 generator dndgen stress test nunit load loadtest performance </tags>

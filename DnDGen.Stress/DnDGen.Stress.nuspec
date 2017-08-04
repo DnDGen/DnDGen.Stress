@@ -2,7 +2,7 @@
 <package >
   <metadata>
     <id>DnDGen.Stress</id>
-    <version>1.1.0</version>
+    <version>1.2.0</version>
     <title>DnDGen.Stress</title>
     <authors>Karl M. Speer</authors>
     <owners>cidthecoatrack</owners>
@@ -10,7 +10,7 @@
       A framework for running stress tests against random generators
     </description>
     <releaseNotes>
-     Bug #1
+     Bug #2
     </releaseNotes>
     <summary>
       This is an event logger that manages events based on client IDs.
