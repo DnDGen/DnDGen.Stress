@@ -4,6 +4,7 @@ using NUnit.Framework;
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Text;
 
@@ -64,6 +65,10 @@ namespace DnDGen.Stress.Events.Tests.Few
         [Test]
         public void StopsWhenConfidenceIterationsHit()
         {
+            //Returning no events, as that makes the generation go faster, and is more likely to actually hit the iteration limit within the time frame
+            //Separate tests exist that verify that event spacing and order are asserted for this method
+            mockEventQueue.Setup(q => q.DequeueAll(It.Is<Guid>(g => g == clientId))).Returns(Enumerable.Empty<GenEvent>());
+
             var count = 0;
 
             stopwatch.Start();
