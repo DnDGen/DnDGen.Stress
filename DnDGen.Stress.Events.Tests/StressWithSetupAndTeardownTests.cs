@@ -143,6 +143,10 @@ namespace DnDGen.Stress.Events.Tests
         [Test]
         public void StopsWhenConfidenceIterationsHit()
         {
+            //Returning no events, as that makes the generation go faster, and is more likely to actually hit the iteration limit within the time frame
+            //Separate tests exist that verify that event spacing and order are asserted for this method
+            mockEventQueue.Setup(q => q.DequeueAll(It.Is<Guid>(g => g == clientId))).Returns(Enumerable.Empty<GenEvent>());
+
             options.IsFullStress = true;
             options.RunningAssembly = null;
             options.TestCount = 1;

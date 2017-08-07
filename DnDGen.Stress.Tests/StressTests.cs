@@ -215,7 +215,7 @@ namespace DnDGen.Stress.Tests
             stressor.Stress(() => TestWithGenerate(ref count));
             stopwatch.Stop();
 
-            Assert.That(stopwatch.Elapsed, Is.LessThan(stressor.TimeLimit).Or.EqualTo(stressor.TimeLimit).Within(.01).Seconds);
+            Assert.That(stopwatch.Elapsed, Is.LessThan(stressor.TimeLimit).Or.EqualTo(stressor.TimeLimit).Within(.1).Seconds);
             Assert.That(count, Is.LessThan(Stressor.ConfidentIterations));
         }
 
