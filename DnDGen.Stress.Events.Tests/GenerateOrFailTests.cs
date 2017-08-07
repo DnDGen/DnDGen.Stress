@@ -15,35 +15,79 @@ namespace DnDGen.Stress.Events.Tests
     [TestFixture]
     public class GenerateOrFailTests
     {
-        private Stressor stressor;
-        private Assembly runningAssembly;
+        private StressorWithEvents stressor;
         private StringBuilder console;
         private Mock<ClientIDManager> mockClientIdManager;
         private Mock<GenEventQueue> mockEventQueue;
         private Guid clientId;
         private Stopwatch stopwatch;
+        private StressorWithEventsOptions options;
+        private int runTestCount;
+        private int runTestTotal;
+
+        [OneTimeSetUp]
+        public void OneTimeSetup()
+        {
+            runTestCount = 0;
+            runTestTotal = CountTotalTests();
+        }
+
+        private int CountTotalTests()
+        {
+            var type = GetType();
+            var methods = type.GetMethods();
+            var activeStressTests = methods.Where(m => IsActiveTest(m));
+            var testsCount = activeStressTests.Sum(m => m.GetCustomAttributes<TestAttribute>(true).Count());
+            var testCasesCount = activeStressTests.Sum(m => m.GetCustomAttributes<TestCaseAttribute>().Count(tc => TestCaseIsActive(tc)));
+            var testsTotal = testsCount + testCasesCount;
+
+            return testsTotal;
+        }
+
+        private bool IsActiveTest(MethodInfo method)
+        {
+            if (method.GetCustomAttributes<IgnoreAttribute>(true).Any())
+                return false;
+
+            if (method.GetCustomAttributes<TestAttribute>(true).Any())
+                return true;
+
+            return method.GetCustomAttributes<TestCaseAttribute>(true).Any(tc => TestCaseIsActive(tc));
+        }
+
+        private bool TestCaseIsActive(TestCaseAttribute testCase)
+        {
+            return string.IsNullOrEmpty(testCase.Ignore) && string.IsNullOrEmpty(testCase.IgnoreReason);
+        }
 
         [SetUp]
         public void Setup()
         {
             mockClientIdManager = new Mock<ClientIDManager>();
             mockEventQueue = new Mock<GenEventQueue>();
-            runningAssembly = Assembly.GetExecutingAssembly();
-            stressor = new StressorWithEvents(false, runningAssembly, mockClientIdManager.Object, mockEventQueue.Object, "Unit Test");
-            stopwatch = new Stopwatch();
+
+            options = new StressorWithEventsOptions();
+            options.RunningAssembly = Assembly.GetExecutingAssembly();
+            options.ClientIdManager = mockClientIdManager.Object;
+            options.EventQueue = mockEventQueue.Object;
+            options.Source = "Unit Test";
+
+            stressor = new StressorWithEvents(options);
+
             console = new StringBuilder();
             var writer = new StringWriter(console);
 
             Console.SetOut(writer);
 
+            stopwatch = new Stopwatch();
             clientId = Guid.Empty;
             var count = 1;
 
             mockClientIdManager.Setup(m => m.SetClientID(It.IsAny<Guid>())).Callback((Guid g) => clientId = g);
             mockEventQueue.Setup(q => q.DequeueAll(It.Is<Guid>(g => g == clientId))).Returns((Guid g) => new[]
             {
-                new GenEvent("Unit Test", $"Event {count++} for {g}"),
-                new GenEvent("Unit Test", $"Event {count++} for {g}"),
+                new GenEvent(options.Source, $"Event {count++} for {g}"),
+                new GenEvent(options.Source, $"Event {count++} for {g}"),
                 new GenEvent("Wrong Source", $"Wrong event for {g}"),
             });
         }
@@ -54,6 +98,9 @@ namespace DnDGen.Stress.Events.Tests
             var standardOutput = new StreamWriter(Console.OpenStandardOutput());
             standardOutput.AutoFlush = true;
             Console.SetOut(standardOutput);
+
+            runTestCount++;
+            Console.WriteLine($"Test {runTestCount} of {runTestTotal} for GenerateOrFail() method for StressorWithEvents completed");
         }
 
         [Test]
@@ -67,6 +114,25 @@ namespace DnDGen.Stress.Events.Tests
 
             Assert.That(stopwatch.Elapsed, Is.EqualTo(stressor.TimeLimit).Within(.01).Seconds);
             Assert.That(count, Is.LessThan(Stressor.ConfidentIterations));
+        }
+
+        [Test]
+        public void StopsWhenConfidenceIterationsHit()
+        {
+            options.IsFullStress = true;
+            options.RunningAssembly = null;
+            options.TestCount = 1;
+
+            stressor = new StressorWithEvents(options);
+
+            var count = 0;
+
+            stopwatch.Start();
+            Assert.That(() => stressor.GenerateOrFail(() => count++, c => c < 0), Throws.InstanceOf<AssertionException>().With.Message.EqualTo("Generation timed out"));
+            stopwatch.Stop();
+
+            Assert.That(stopwatch.Elapsed, Is.LessThan(stressor.TimeLimit));
+            Assert.That(count, Is.EqualTo(Stressor.ConfidentIterations));
         }
 
         private int SlowGenerate(ref int count)

@@ -59,6 +59,7 @@
     <Compile Include="GenerateOrFailTests.cs" />
     <Compile Include="GenerateTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="StressorWithEventsOptionsTests.cs" />
     <Compile Include="StressorWithEventsTests.cs" />
     <Compile Include="StressTests.cs" />
     <Compile Include="StressWithSetupAndTeardownTests.cs" />

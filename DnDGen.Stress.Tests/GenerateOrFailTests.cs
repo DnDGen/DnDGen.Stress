@@ -13,15 +13,54 @@ namespace DnDGen.Stress.Tests
     public class GenerateOrFailTests
     {
         private Stressor stressor;
-        private Assembly runningAssembly;
+        private StressorOptions options;
         private Stopwatch stopwatch;
         private StringBuilder console;
+        private int runTestCount;
+        private int runTestTotal;
+
+        [OneTimeSetUp]
+        public void OneTimeSetup()
+        {
+            runTestCount = 0;
+            runTestTotal = CountTotalTests();
+        }
+
+        private int CountTotalTests()
+        {
+            var type = GetType();
+            var methods = type.GetMethods();
+            var activeStressTests = methods.Where(m => IsActiveTest(m));
+            var testsCount = activeStressTests.Sum(m => m.GetCustomAttributes<TestAttribute>(true).Count());
+            var testCasesCount = activeStressTests.Sum(m => m.GetCustomAttributes<TestCaseAttribute>().Count(tc => TestCaseIsActive(tc)));
+            var testsTotal = testsCount + testCasesCount;
+
+            return testsTotal;
+        }
+
+        private bool IsActiveTest(MethodInfo method)
+        {
+            if (method.GetCustomAttributes<IgnoreAttribute>(true).Any())
+                return false;
+
+            if (method.GetCustomAttributes<TestAttribute>(true).Any())
+                return true;
+
+            return method.GetCustomAttributes<TestCaseAttribute>(true).Any(tc => TestCaseIsActive(tc));
+        }
+
+        private bool TestCaseIsActive(TestCaseAttribute testCase)
+        {
+            return string.IsNullOrEmpty(testCase.Ignore) && string.IsNullOrEmpty(testCase.IgnoreReason);
+        }
 
         [SetUp]
         public void Setup()
         {
-            runningAssembly = Assembly.GetExecutingAssembly();
-            stressor = new Stressor(false, runningAssembly);
+            options = new StressorOptions();
+            options.RunningAssembly = Assembly.GetExecutingAssembly();
+
+            stressor = new Stressor(options);
             stopwatch = new Stopwatch();
             console = new StringBuilder();
             var writer = new StringWriter(console);
@@ -35,6 +74,9 @@ namespace DnDGen.Stress.Tests
             var standardOutput = new StreamWriter(Console.OpenStandardOutput());
             standardOutput.AutoFlush = true;
             Console.SetOut(standardOutput);
+
+            runTestCount++;
+            Console.WriteLine($"Test {runTestCount} of {runTestTotal} for GenerateOrFail() method for Stressor completed");
         }
 
         [Test]
@@ -183,7 +225,13 @@ namespace DnDGen.Stress.Tests
             var count = 0;
 
             stopwatch.Start();
-            Assert.That(() => stressor.GenerateOrFail(() => stressor.Generate(() => count++, c => c % 9266 == 0), c => c < 0), Throws.InstanceOf<AssertionException>());
+            Assert.That(
+                () => stressor.GenerateOrFail(
+                    () => stressor.Generate(
+                        () => count++,
+                        c => c % 9266 == 0),
+                    c => c < 0),
+                Throws.InstanceOf<AssertionException>());
             stopwatch.Stop();
 
             Assert.That(stopwatch.Elapsed, Is.EqualTo(stressor.TimeLimit).Within(.01).Seconds);

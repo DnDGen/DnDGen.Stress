@@ -44,6 +44,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="StressorOptionsTests.cs" />
     <Compile Include="StressTests.cs" />
     <Compile Include="StressWithSetupAndTeardownTests.cs" />
     <Compile Include="GenerateOrFailTests.cs" />

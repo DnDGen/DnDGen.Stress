@@ -15,35 +15,79 @@ namespace DnDGen.Stress.Events.Tests
     [TestFixture]
     public class StressWithSetupAndTeardownTests
     {
-        private Stressor stressor;
-        private Assembly runningAssembly;
+        private StressorWithEvents stressor;
         private StringBuilder console;
         private Mock<ClientIDManager> mockClientIdManager;
         private Mock<GenEventQueue> mockEventQueue;
         private Guid clientId;
         private Stopwatch stopwatch;
+        private StressorWithEventsOptions options;
+        private int runTestCount;
+        private int runTestTotal;
+
+        [OneTimeSetUp]
+        public void OneTimeSetup()
+        {
+            runTestCount = 0;
+            runTestTotal = CountTotalTests();
+        }
+
+        private int CountTotalTests()
+        {
+            var type = GetType();
+            var methods = type.GetMethods();
+            var activeStressTests = methods.Where(m => IsActiveTest(m));
+            var testsCount = activeStressTests.Sum(m => m.GetCustomAttributes<TestAttribute>(true).Count());
+            var testCasesCount = activeStressTests.Sum(m => m.GetCustomAttributes<TestCaseAttribute>().Count(tc => TestCaseIsActive(tc)));
+            var testsTotal = testsCount + testCasesCount;
+
+            return testsTotal;
+        }
+
+        private bool IsActiveTest(MethodInfo method)
+        {
+            if (method.GetCustomAttributes<IgnoreAttribute>(true).Any())
+                return false;
+
+            if (method.GetCustomAttributes<TestAttribute>(true).Any())
+                return true;
+
+            return method.GetCustomAttributes<TestCaseAttribute>(true).Any(tc => TestCaseIsActive(tc));
+        }
+
+        private bool TestCaseIsActive(TestCaseAttribute testCase)
+        {
+            return string.IsNullOrEmpty(testCase.Ignore) && string.IsNullOrEmpty(testCase.IgnoreReason);
+        }
 
         [SetUp]
         public void Setup()
         {
             mockClientIdManager = new Mock<ClientIDManager>();
             mockEventQueue = new Mock<GenEventQueue>();
-            runningAssembly = Assembly.GetExecutingAssembly();
-            stressor = new StressorWithEvents(false, runningAssembly, mockClientIdManager.Object, mockEventQueue.Object, "Unit Test");
-            stopwatch = new Stopwatch();
+
+            options = new StressorWithEventsOptions();
+            options.RunningAssembly = Assembly.GetExecutingAssembly();
+            options.ClientIdManager = mockClientIdManager.Object;
+            options.EventQueue = mockEventQueue.Object;
+            options.Source = "Unit Test";
+
+            stressor = new StressorWithEvents(options);
+
             console = new StringBuilder();
             var writer = new StringWriter(console);
 
             Console.SetOut(writer);
 
+            stopwatch = new Stopwatch();
             clientId = Guid.Empty;
             var count = 1;
 
             mockClientIdManager.Setup(m => m.SetClientID(It.IsAny<Guid>())).Callback((Guid g) => clientId = g);
             mockEventQueue.Setup(q => q.DequeueAll(It.Is<Guid>(g => g == clientId))).Returns((Guid g) => new[]
             {
-                new GenEvent("Unit Test", $"Event {count++} for {g}"),
-                new GenEvent("Unit Test", $"Event {count++} for {g}"),
+                new GenEvent(options.Source, $"Event {count++} for {g}"),
+                new GenEvent(options.Source, $"Event {count++} for {g}"),
                 new GenEvent("Wrong Source", $"Wrong event for {g}"),
             });
         }
@@ -54,6 +98,9 @@ namespace DnDGen.Stress.Events.Tests
             var standardOutput = new StreamWriter(Console.OpenStandardOutput());
             standardOutput.AutoFlush = true;
             Console.SetOut(standardOutput);
+
+            runTestCount++;
+            Console.WriteLine($"Test {runTestCount} of {runTestTotal} for Stress() method with setup and teardown for StressorWithEvents completed");
         }
 
         [Test]
@@ -96,7 +143,11 @@ namespace DnDGen.Stress.Events.Tests
         [Test]
         public void StopsWhenConfidenceIterationsHit()
         {
-            stressor = new Stressor(true, runningAssembly);
+            options.IsFullStress = true;
+            options.RunningAssembly = null;
+            options.TestCount = 1;
+
+            stressor = new StressorWithEvents(options);
 
             var count = 0;
             var setup = 0;
@@ -529,6 +580,40 @@ namespace DnDGen.Stress.Events.Tests
             Assert.That(lines[14], Does.EndWith($"] Unit Test: First message"));
             Assert.That(lines[15], Does.EndWith($"] Unit Test: Last message"));
             Assert.That(clientId, Is.Not.EqualTo(Guid.Empty));
+        }
+
+        [TestCase(65)]
+        [TestCase(70)]
+        public void PercentageIsAccurate(int testCount)
+        {
+            options.IsFullStress = true;
+            options.TestCount = testCount;
+            options.RunningAssembly = null;
+
+            stressor = new StressorWithEvents(options);
+
+            var count = 0;
+            var setup = 0;
+            var teardown = 0;
+
+            stressor.Stress(
+                () => TestSetup(ref setup),
+                () => SlowTest(ref count),
+                () => TestTeardown(ref teardown));
+
+            var output = console.ToString();
+            var lines = output.Split('\r', '\n').Where(s => !string.IsNullOrEmpty(s)).ToArray();
+            var time = stressor.TimeLimit.ToString().Substring(0, 10);
+
+            Assert.That(output, Is.Not.Empty);
+            Assert.That(lines, Is.Not.Empty);
+            Assert.That(lines.Length, Is.EqualTo(16));
+            Assert.That(lines[1], Is.EqualTo($"Stress test complete"));
+            Assert.That(lines[2], Does.StartWith($"\tTime: {time}"));
+            Assert.That(lines[2], Does.Contain($"(100"));
+            Assert.That(lines[3], Does.StartWith($"\tCompleted Iterations: "));
+            Assert.That(lines[4], Does.StartWith($"\tIterations Per Second: "));
+            Assert.That(lines[5], Is.EqualTo($"\tLikely Status: PASSED"));
         }
     }
 }

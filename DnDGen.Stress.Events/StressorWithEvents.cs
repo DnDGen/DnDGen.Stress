@@ -3,7 +3,6 @@ using NUnit.Framework;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 
 namespace DnDGen.Stress.Events
 {
@@ -19,12 +18,12 @@ namespace DnDGen.Stress.Events
 
         private Guid clientId;
 
-        public StressorWithEvents(bool isFullStress, Assembly runningAssembly, ClientIDManager clientIdManager, GenEventQueue eventQueue, string source)
-            : base(isFullStress, runningAssembly)
+        public StressorWithEvents(StressorWithEventsOptions options)
+            : base(options)
         {
-            this.clientIdManager = clientIdManager;
-            this.eventQueue = eventQueue;
-            this.source = source;
+            clientIdManager = options.ClientIdManager;
+            eventQueue = options.EventQueue;
+            source = options.Source;
 
             events = new List<GenEvent>();
         }

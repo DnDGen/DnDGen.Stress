@@ -13,15 +13,54 @@ namespace DnDGen.Stress.Tests
     public class StressTests
     {
         private Stressor stressor;
-        private Assembly runningAssembly;
+        private StressorOptions options;
         private Stopwatch stopwatch;
         private StringBuilder console;
+        private int runTestCount;
+        private int runTestTotal;
+
+        [OneTimeSetUp]
+        public void OneTimeSetup()
+        {
+            runTestCount = 0;
+            runTestTotal = CountTotalTests();
+        }
+
+        private int CountTotalTests()
+        {
+            var type = GetType();
+            var methods = type.GetMethods();
+            var activeStressTests = methods.Where(m => IsActiveTest(m));
+            var testsCount = activeStressTests.Sum(m => m.GetCustomAttributes<TestAttribute>(true).Count());
+            var testCasesCount = activeStressTests.Sum(m => m.GetCustomAttributes<TestCaseAttribute>().Count(tc => TestCaseIsActive(tc)));
+            var testsTotal = testsCount + testCasesCount;
+
+            return testsTotal;
+        }
+
+        private bool IsActiveTest(MethodInfo method)
+        {
+            if (method.GetCustomAttributes<IgnoreAttribute>(true).Any())
+                return false;
+
+            if (method.GetCustomAttributes<TestAttribute>(true).Any())
+                return true;
+
+            return method.GetCustomAttributes<TestCaseAttribute>(true).Any(tc => TestCaseIsActive(tc));
+        }
+
+        private bool TestCaseIsActive(TestCaseAttribute testCase)
+        {
+            return string.IsNullOrEmpty(testCase.Ignore) && string.IsNullOrEmpty(testCase.IgnoreReason);
+        }
 
         [SetUp]
         public void Setup()
         {
-            runningAssembly = Assembly.GetExecutingAssembly();
-            stressor = new Stressor(false, runningAssembly);
+            options = new StressorOptions();
+            options.RunningAssembly = Assembly.GetExecutingAssembly();
+
+            stressor = new Stressor(options);
             stopwatch = new Stopwatch();
             console = new StringBuilder();
             var writer = new StringWriter(console);
@@ -35,6 +74,9 @@ namespace DnDGen.Stress.Tests
             var standardOutput = new StreamWriter(Console.OpenStandardOutput());
             standardOutput.AutoFlush = true;
             Console.SetOut(standardOutput);
+
+            runTestCount++;
+            Console.WriteLine($"Test {runTestCount} of {runTestTotal} for Stress() method for Stressor completed");
         }
 
         [Test]
@@ -65,7 +107,11 @@ namespace DnDGen.Stress.Tests
         [Test]
         public void StopsWhenConfidenceIterationsHit()
         {
-            stressor = new Stressor(true, runningAssembly);
+            options.IsFullStress = true;
+            options.TestCount = 1;
+            options.RunningAssembly = null;
+
+            stressor = new Stressor(options);
 
             var count = 0;
 
@@ -178,6 +224,34 @@ namespace DnDGen.Stress.Tests
             var innerCount = count;
             count = stressor.Generate(() => innerCount++, c => c > 1);
             Assert.That(count, Is.AtLeast(2));
+        }
+
+        [TestCase(65)]
+        [TestCase(70)]
+        public void PercentageIsAccurate(int testCount)
+        {
+            options.IsFullStress = true;
+            options.TestCount = testCount;
+            options.RunningAssembly = null;
+
+            stressor = new Stressor(options);
+
+            var count = 0;
+            stressor.Stress(() => SlowTest(ref count));
+
+            var output = console.ToString();
+            var lines = output.Split('\r', '\n').Where(s => !string.IsNullOrEmpty(s)).ToArray();
+            var time = stressor.TimeLimit.ToString().Substring(0, 10);
+
+            Assert.That(output, Is.Not.Empty);
+            Assert.That(lines, Is.Not.Empty);
+            Assert.That(lines.Length, Is.EqualTo(6));
+            Assert.That(lines[1], Is.EqualTo($"Stress test complete"));
+            Assert.That(lines[2], Does.StartWith($"\tTime: {time}"));
+            Assert.That(lines[2], Does.Contain($"(100"));
+            Assert.That(lines[3], Does.StartWith($"\tCompleted Iterations: "));
+            Assert.That(lines[4], Does.StartWith($"\tIterations Per Second: "));
+            Assert.That(lines[5], Is.EqualTo($"\tLikely Status: PASSED"));
         }
     }
 }

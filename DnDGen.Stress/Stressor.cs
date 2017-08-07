@@ -11,16 +11,20 @@ namespace DnDGen.Stress
     {
         public readonly bool IsFullStress;
         public readonly int StressTestCount;
+        public readonly double TimeLimitPercentage;
 
         public TimeSpan TimeLimit
         {
-            get { return new TimeSpan((long)timeLimitInSeconds * TimeSpan.TicksPerSecond); }
+            get
+            {
+                var timeLimitInTicks = timeLimitInSeconds * TimeSpan.TicksPerSecond;
+                return new TimeSpan((long)timeLimitInTicks);
+            }
         }
 
         public const int ConfidentIterations = 1000000;
         public const int TravisJobOutputTimeLimit = 10 * 60;
         public const int TravisJobBuildTimeLimit = 50 * 60;
-        public const double TimeLimitPercentage = .9;
 
         private readonly double timeLimitInSeconds;
         private readonly Stopwatch stressStopwatch;
@@ -29,27 +33,38 @@ namespace DnDGen.Stress
         private bool generatedSuccessfully;
         private bool generationFailed;
 
-        public Stressor(bool isFullStress, Assembly runningAssembly)
+        public Stressor(StressorOptions options)
         {
-            IsFullStress = isFullStress;
-            stressStopwatch = new Stopwatch();
-            StressTestCount = CountStressTestsIn(runningAssembly);
+            if (!options.AreValid)
+                throw new ArgumentException("Stressor Options are not valid");
 
+            IsFullStress = options.IsFullStress;
+            stressStopwatch = new Stopwatch();
+
+            if (options.RunningAssembly != null)
+                StressTestCount = CountStressTestsIn(options.RunningAssembly);
+            else if (options.TestCount > 0)
+                StressTestCount = options.TestCount;
+
+            TimeLimitPercentage = options.TimeLimitPercentage;
+            timeLimitInSeconds = GetTimeLimitInSeconds();
+        }
+
+        private double GetTimeLimitInSeconds()
+        {
             if (StressTestCount == 0)
                 throw new ArgumentException("No tests were detected in the running assembly");
 
             if (!IsFullStress)
             {
-                timeLimitInSeconds = 1;
+                return 1;
             }
-            else
-            {
-                var timeLimitPerTest = TravisJobBuildTimeLimit * TimeLimitPercentage / StressTestCount;
-                timeLimitInSeconds = Math.Min(timeLimitPerTest, TravisJobOutputTimeLimit * TimeLimitPercentage);
-            }
+
+            var timeLimitPerTest = TravisJobBuildTimeLimit * TimeLimitPercentage / StressTestCount;
+            return Math.Min(timeLimitPerTest, TravisJobOutputTimeLimit * TimeLimitPercentage);
         }
 
-        private int CountStressTestsIn(Assembly runningAssembly)
+        public static int CountStressTestsIn(Assembly runningAssembly)
         {
             var types = runningAssembly.GetTypes();
             var methods = types.SelectMany(t => t.GetMethods());
@@ -61,7 +76,7 @@ namespace DnDGen.Stress
             return stressTestsTotal;
         }
 
-        private bool IsActiveTest(MethodInfo method)
+        private static bool IsActiveTest(MethodInfo method)
         {
             if (method.GetCustomAttributes<IgnoreAttribute>(true).Any())
                 return false;
@@ -72,7 +87,7 @@ namespace DnDGen.Stress
             return method.GetCustomAttributes<TestCaseAttribute>(true).Any(tc => TestCaseIsActive(tc));
         }
 
-        private bool TestCaseIsActive(TestCaseAttribute testCase)
+        private static bool TestCaseIsActive(TestCaseAttribute testCase)
         {
             return string.IsNullOrEmpty(testCase.Ignore) && string.IsNullOrEmpty(testCase.IgnoreReason);
         }
@@ -100,7 +115,7 @@ namespace DnDGen.Stress
         private void WriteStressSummary()
         {
             var iterationsPerSecond = Math.Round(iterations / stressStopwatch.Elapsed.TotalSeconds, 2);
-            var timePercentage = Math.Round(stressStopwatch.Elapsed.TotalSeconds / timeLimitInSeconds * 100, 2);
+            var timePercentage = Math.Round(stressStopwatch.Elapsed.TotalSeconds / TimeLimit.TotalSeconds * 100, 2);
             var iterationPercentage = Math.Round((double)iterations / ConfidentIterations * 100, 2);
             var status = IsLikelySuccess(timePercentage, iterationPercentage) ? "PASSED" : "FAILED";
 

@@ -50,6 +50,7 @@
   <ItemGroup>
     <Compile Include="StressorWithEvents.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="StressorWithEventsOptions.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\DnDGen.Stress\DnDGen.Stress.csproj">
