@@ -107,19 +107,19 @@ namespace DnDGen.Stress.Events
 
         private IEnumerable<GenEvent> GetDequeuedEventsAndAddToEvents()
         {
-            var dequeuedEvents = eventQueue.DequeueAll(clientId);
-            events.AddRange(dequeuedEvents);
-
             //INFO: Get the 10 most recent events for the source.  We assume the events are ordered chronologically already
-            //Execute immediately, so that the items are preserved after we clear the list
-            var filteredEvents = events.Where(e => e.Source == source)
-                .Reverse()
-                .Take(EventSummaryCount)
-                .Reverse()
-                .ToArray();
+
+            var dequeuedEvents = eventQueue.DequeueAll(clientId);
+            var filteredDequeuedEvents = dequeuedEvents.Where(e => e.Source == source);
+
+            events.AddRange(filteredDequeuedEvents);
+            var skipTotal = Math.Max(events.Count - EventSummaryCount, 0);
+
+            //INFO: Execute immediately, so that the items are preserved after we clear the list
+            var summaryEvents = events.Skip(skipTotal).Take(EventSummaryCount).ToArray();
 
             events.Clear();
-            events.AddRange(filteredEvents);
+            events.AddRange(summaryEvents);
 
             return dequeuedEvents;
         }
