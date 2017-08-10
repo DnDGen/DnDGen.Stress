@@ -209,7 +209,7 @@ namespace DnDGen.Stress.Events.Tests
 
             Assert.That(output, Is.Not.Empty);
             Assert.That(lines, Is.Not.Empty);
-            Assert.That(lines.Length, Is.EqualTo(16));
+            Assert.That(lines.Length, Is.EqualTo(20));
             Assert.That(lines[1], Is.EqualTo($"Stress test complete"));
             Assert.That(lines[2], Does.StartWith($"\tTime: 00:00:0"));
             Assert.That(lines[3], Does.StartWith($"\tCompleted Iterations: "));
@@ -232,7 +232,7 @@ namespace DnDGen.Stress.Events.Tests
 
             Assert.That(output, Is.Not.Empty);
             Assert.That(lines, Is.Not.Empty);
-            Assert.That(lines.Length, Is.EqualTo(8));
+            Assert.That(lines.Length, Is.EqualTo(7));
             Assert.That(lines[1], Is.EqualTo($"Stress test complete"));
             Assert.That(lines[2], Does.StartWith($"\tTime: 00:00:00.0"));
             Assert.That(lines[3], Is.EqualTo($"\tCompleted Iterations: 0 (0%)"));
@@ -262,12 +262,106 @@ namespace DnDGen.Stress.Events.Tests
 
             Assert.That(output, Is.Not.Empty);
             Assert.That(lines, Is.Not.Empty);
-            Assert.That(lines.Length, Is.EqualTo(16));
+            Assert.That(lines.Length, Is.EqualTo(20));
             Assert.That(lines[1], Is.EqualTo($"Stress test complete"));
             Assert.That(lines[2], Does.StartWith($"\tTime: 00:00:01.0"));
             Assert.That(lines[3], Does.StartWith($"\tCompleted Iterations: "));
             Assert.That(lines[4], Does.StartWith($"\tIterations Per Second: "));
             Assert.That(lines[5], Is.EqualTo($"\tLikely Status: PASSED"));
+        }
+
+        [Test]
+        public void WritesEventSummaryToConsole()
+        {
+            var count = 0;
+            var setup = 0;
+            var teardown = 0;
+
+            stressor.Stress(() => TestSetup(ref setup), () => FastTest(ref count), () => TestTeardown(ref teardown));
+            Assert.That(count, Is.AtLeast(100), "Count");
+            Assert.That(setup, Is.AtLeast(100), "Setup");
+            Assert.That(teardown, Is.AtLeast(100), "Tear Down");
+
+            var output = console.ToString();
+            var lines = output.Split('\r', '\n').Where(s => !string.IsNullOrEmpty(s)).ToArray();
+
+            Assert.That(output, Is.Not.Empty);
+            Assert.That(lines, Is.Not.Empty);
+            Assert.That(lines.Length, Is.EqualTo(20));
+            Assert.That(lines[6], Does.EndWith($" events were logged in total"));
+            Assert.That(lines[7], Does.EndWith($" from Unit Test"));
+            Assert.That(lines[8], Does.EndWith($" from Wrong Source"));
+            Assert.That(lines[9], Is.EqualTo($"Last 10 events from Unit Test:"));
+            Assert.That(lines[10], Does.Contain(clientId.ToString()));
+            Assert.That(lines[11], Does.Contain(clientId.ToString()));
+            Assert.That(lines[12], Does.Contain(clientId.ToString()));
+            Assert.That(lines[13], Does.Contain(clientId.ToString()));
+            Assert.That(lines[14], Does.Contain(clientId.ToString()));
+            Assert.That(lines[15], Does.Contain(clientId.ToString()));
+            Assert.That(lines[16], Does.Contain(clientId.ToString()));
+            Assert.That(lines[17], Does.Contain(clientId.ToString()));
+            Assert.That(lines[18], Does.Contain(clientId.ToString()));
+            Assert.That(lines[19], Does.Contain(clientId.ToString()));
+            Assert.That(clientId, Is.Not.EqualTo(Guid.Empty));
+        }
+
+        [Test]
+        public void ClearsRemainingEvents()
+        {
+            var count = 0;
+            var setup = 0;
+            var teardown = 0;
+
+            stressor.Stress(() => TestSetup(ref setup), () => FastTest(ref count), () => TestTeardown(ref teardown));
+            Assert.That(count, Is.AtLeast(100), "Count");
+            Assert.That(setup, Is.AtLeast(100), "Setup");
+            Assert.That(teardown, Is.AtLeast(100), "Tear Down");
+
+            mockEventQueue.Verify(q => q.Clear(clientId), Times.Once);
+
+            var output = console.ToString();
+            var lines = output.Split('\r', '\n').Where(s => !string.IsNullOrEmpty(s)).ToArray();
+
+            Assert.That(output, Is.Not.Empty);
+            Assert.That(lines, Is.Not.Empty);
+            Assert.That(lines.Length, Is.EqualTo(20));
+            Assert.That(lines[6], Does.EndWith($" events were logged in total"));
+            Assert.That(lines[7], Does.EndWith($" from Unit Test"));
+            Assert.That(lines[8], Does.EndWith($" from Wrong Source"));
+            Assert.That(lines[9], Is.EqualTo($"Last 10 events from Unit Test:"));
+            Assert.That(lines[10], Does.Contain(clientId.ToString()));
+            Assert.That(lines[11], Does.Contain(clientId.ToString()));
+            Assert.That(lines[12], Does.Contain(clientId.ToString()));
+            Assert.That(lines[13], Does.Contain(clientId.ToString()));
+            Assert.That(lines[14], Does.Contain(clientId.ToString()));
+            Assert.That(lines[15], Does.Contain(clientId.ToString()));
+            Assert.That(lines[16], Does.Contain(clientId.ToString()));
+            Assert.That(lines[17], Does.Contain(clientId.ToString()));
+            Assert.That(lines[18], Does.Contain(clientId.ToString()));
+            Assert.That(lines[19], Does.Contain(clientId.ToString()));
+            Assert.That(clientId, Is.Not.EqualTo(Guid.Empty));
+        }
+
+        [Test]
+        public void ClearsRemainingEventsOnFailure()
+        {
+            var setup = 0;
+            var teardown = 0;
+
+            Assert.That(() => stressor.Stress(() => setup++, FailedTest, () => teardown++), Throws.InstanceOf<AssertionException>());
+            Assert.That(setup, Is.EqualTo(1));
+            Assert.That(teardown, Is.EqualTo(1));
+
+            mockEventQueue.Verify(q => q.Clear(clientId), Times.Once);
+
+            var output = console.ToString();
+            var lines = output.Split('\r', '\n').Where(s => !string.IsNullOrEmpty(s)).ToArray();
+
+            Assert.That(output, Is.Not.Empty);
+            Assert.That(lines, Is.Not.Empty);
+            Assert.That(lines.Length, Is.EqualTo(7));
+            Assert.That(lines[6], Is.EqualTo($"0 events were logged in total"));
+            Assert.That(clientId, Is.Not.EqualTo(Guid.Empty));
         }
 
         [Test]
@@ -278,9 +372,31 @@ namespace DnDGen.Stress.Events.Tests
             var teardown = 0;
 
             stressor.Stress(() => TestSetup(ref setup), () => FastTest(ref count), () => TestTeardown(ref teardown));
-            Assert.That(count, Is.AtLeast(1000), "Count");
-            Assert.That(setup, Is.AtLeast(1000), "Setup");
-            Assert.That(teardown, Is.AtLeast(1000), "Tear Down");
+            Assert.That(count, Is.AtLeast(100), "Count");
+            Assert.That(setup, Is.AtLeast(100), "Setup");
+            Assert.That(teardown, Is.AtLeast(100), "Tear Down");
+
+            var output = console.ToString();
+            var lines = output.Split('\r', '\n').Where(s => !string.IsNullOrEmpty(s)).ToArray();
+
+            Assert.That(output, Is.Not.Empty);
+            Assert.That(lines, Is.Not.Empty);
+            Assert.That(lines.Length, Is.EqualTo(20));
+            Assert.That(lines[6], Does.EndWith($" events were logged in total"));
+            Assert.That(lines[7], Does.EndWith($" from Unit Test"));
+            Assert.That(lines[8], Does.EndWith($" from Wrong Source"));
+            Assert.That(lines[9], Is.EqualTo($"Last 10 events from Unit Test:"));
+            Assert.That(lines[10], Does.Contain(clientId.ToString()));
+            Assert.That(lines[11], Does.Contain(clientId.ToString()));
+            Assert.That(lines[12], Does.Contain(clientId.ToString()));
+            Assert.That(lines[13], Does.Contain(clientId.ToString()));
+            Assert.That(lines[14], Does.Contain(clientId.ToString()));
+            Assert.That(lines[15], Does.Contain(clientId.ToString()));
+            Assert.That(lines[16], Does.Contain(clientId.ToString()));
+            Assert.That(lines[17], Does.Contain(clientId.ToString()));
+            Assert.That(lines[18], Does.Contain(clientId.ToString()));
+            Assert.That(lines[19], Does.Contain(clientId.ToString()));
+            Assert.That(clientId, Is.Not.EqualTo(Guid.Empty));
         }
 
         private void TestSetup(ref int setup)
@@ -304,6 +420,28 @@ namespace DnDGen.Stress.Events.Tests
             Assert.That(count, Is.EqualTo(42), "Count");
             Assert.That(setup, Is.EqualTo(42), "Setup");
             Assert.That(teardown, Is.EqualTo(42), "Tear Down");
+
+            var output = console.ToString();
+            var lines = output.Split('\r', '\n').Where(s => !string.IsNullOrEmpty(s)).ToArray();
+
+            Assert.That(output, Is.Not.Empty);
+            Assert.That(lines, Is.Not.Empty);
+            Assert.That(lines.Length, Is.EqualTo(20));
+            Assert.That(lines[6], Is.EqualTo($"123 events were logged in total"));
+            Assert.That(lines[7], Is.EqualTo($"\t82 from Unit Test"));
+            Assert.That(lines[8], Is.EqualTo($"\t41 from Wrong Source"));
+            Assert.That(lines[9], Is.EqualTo($"Last 10 events from Unit Test:"));
+            Assert.That(lines[10], Does.EndWith($"] Unit Test: Event 73 for {clientId}"));
+            Assert.That(lines[11], Does.EndWith($"] Unit Test: Event 74 for {clientId}"));
+            Assert.That(lines[12], Does.EndWith($"] Unit Test: Event 75 for {clientId}"));
+            Assert.That(lines[13], Does.EndWith($"] Unit Test: Event 76 for {clientId}"));
+            Assert.That(lines[14], Does.EndWith($"] Unit Test: Event 77 for {clientId}"));
+            Assert.That(lines[15], Does.EndWith($"] Unit Test: Event 78 for {clientId}"));
+            Assert.That(lines[16], Does.EndWith($"] Unit Test: Event 79 for {clientId}"));
+            Assert.That(lines[17], Does.EndWith($"] Unit Test: Event 80 for {clientId}"));
+            Assert.That(lines[18], Does.EndWith($"] Unit Test: Event 81 for {clientId}"));
+            Assert.That(lines[19], Does.EndWith($"] Unit Test: Event 82 for {clientId}"));
+            Assert.That(clientId, Is.Not.EqualTo(Guid.Empty));
         }
 
         [Test]
@@ -356,9 +494,9 @@ namespace DnDGen.Stress.Events.Tests
                 () => FastTest(ref count),
                 () => TestTeardown(ref teardown));
 
-            Assert.That(count, Is.AtLeast(1000), "Count");
-            Assert.That(setup, Is.AtLeast(1000), "Setup");
-            Assert.That(teardown, Is.AtLeast(1000), "Tear Down");
+            Assert.That(count, Is.AtLeast(100), "Count");
+            Assert.That(setup, Is.AtLeast(100), "Setup");
+            Assert.That(teardown, Is.AtLeast(100), "Tear Down");
             Assert.That(clientId, Is.Not.EqualTo(Guid.Empty));
         }
 
@@ -390,17 +528,20 @@ namespace DnDGen.Stress.Events.Tests
 
             Assert.That(output, Is.Not.Empty);
             Assert.That(lines, Is.Not.Empty);
-            Assert.That(lines.Length, Is.EqualTo(16));
-            Assert.That(lines[6], Does.Contain(clientId.ToString()));
-            Assert.That(lines[7], Does.Contain(clientId.ToString()));
-            Assert.That(lines[8], Does.Contain(clientId.ToString()));
-            Assert.That(lines[9], Does.Contain(clientId.ToString()));
+            Assert.That(lines.Length, Is.EqualTo(20));
+            Assert.That(lines[6], Does.EndWith($" events were logged in total"));
+            Assert.That(lines[7], Does.EndWith($" from Unit Test"));
+            Assert.That(lines[8], Does.EndWith($" from Wrong Source"));
+            Assert.That(lines[9], Is.EqualTo($"Last 10 events from Unit Test:"));
             Assert.That(lines[10], Does.Contain(clientId.ToString()));
             Assert.That(lines[11], Does.Contain(clientId.ToString()));
             Assert.That(lines[12], Does.Contain(clientId.ToString()));
-            Assert.That(lines[13], Does.Contain(clientId.ToString()));
             Assert.That(lines[14], Does.Contain(clientId.ToString()));
             Assert.That(lines[15], Does.Contain(clientId.ToString()));
+            Assert.That(lines[16], Does.Contain(clientId.ToString()));
+            Assert.That(lines[17], Does.Contain(clientId.ToString()));
+            Assert.That(lines[18], Does.Contain(clientId.ToString()));
+            Assert.That(lines[19], Does.Contain(clientId.ToString()));
             Assert.That(clientId, Is.Not.EqualTo(Guid.Empty));
         }
 
@@ -428,11 +569,12 @@ namespace DnDGen.Stress.Events.Tests
 
             Assert.That(output, Is.Not.Empty);
             Assert.That(lines, Is.Not.Empty);
-            Assert.That(lines.Length, Is.EqualTo(10));
-            Assert.That(lines[6], Is.EqualTo($"[{events[0].When.ToLongTimeString()}] Unit Test: First Message"));
-            Assert.That(lines[7], Is.EqualTo($"[{events[1].When.ToLongTimeString()}] Unit Test: Last Message"));
-            Assert.That(lines[8], Does.Contain(clientId.ToString()));
-            Assert.That(lines[9], Does.Contain(clientId.ToString()));
+            Assert.That(lines.Length, Is.EqualTo(11));
+            Assert.That(lines[6], Is.EqualTo($"2 events were logged in total"));
+            Assert.That(lines[7], Is.EqualTo($"\t2 from Unit Test"));
+            Assert.That(lines[8], Is.EqualTo($"Last 2 events from Unit Test:"));
+            Assert.That(lines[9], Is.EqualTo($"[{events[0].When.ToLongTimeString()}] Unit Test: First Message"));
+            Assert.That(lines[10], Is.EqualTo($"[{events[1].When.ToLongTimeString()}] Unit Test: Last Message"));
             Assert.That(clientId, Is.Not.EqualTo(Guid.Empty));
         }
 
@@ -465,17 +607,20 @@ namespace DnDGen.Stress.Events.Tests
 
             Assert.That(output, Is.Not.Empty);
             Assert.That(lines, Is.Not.Empty);
-            Assert.That(lines.Length, Is.EqualTo(16));
-            Assert.That(lines[6], Does.Contain(clientId.ToString()));
-            Assert.That(lines[7], Does.Contain(clientId.ToString()));
-            Assert.That(lines[8], Does.Contain(clientId.ToString()));
-            Assert.That(lines[9], Does.Contain(clientId.ToString()));
+            Assert.That(lines.Length, Is.EqualTo(20));
+            Assert.That(lines[6], Does.EndWith($" events were logged in total"));
+            Assert.That(lines[7], Does.EndWith($" from Unit Test"));
+            Assert.That(lines[8], Does.EndWith($" from Wrong Source"));
+            Assert.That(lines[9], Is.EqualTo($"Last 10 events from Unit Test:"));
             Assert.That(lines[10], Does.Contain(clientId.ToString()));
             Assert.That(lines[11], Does.Contain(clientId.ToString()));
             Assert.That(lines[12], Does.Contain(clientId.ToString()));
-            Assert.That(lines[13], Does.Contain(clientId.ToString()));
             Assert.That(lines[14], Does.Contain(clientId.ToString()));
             Assert.That(lines[15], Does.Contain(clientId.ToString()));
+            Assert.That(lines[16], Does.Contain(clientId.ToString()));
+            Assert.That(lines[17], Does.Contain(clientId.ToString()));
+            Assert.That(lines[18], Does.Contain(clientId.ToString()));
+            Assert.That(lines[19], Does.Contain(clientId.ToString()));
             Assert.That(clientId, Is.Not.EqualTo(Guid.Empty));
         }
 
@@ -491,26 +636,29 @@ namespace DnDGen.Stress.Events.Tests
                 () => FastTest(ref count),
                 () => TestTeardown(ref teardown));
 
-            Assert.That(count, Is.AtLeast(1000), "Count");
-            Assert.That(setup, Is.AtLeast(1000), "Setup");
-            Assert.That(teardown, Is.AtLeast(1000), "Tear Down");
+            Assert.That(count, Is.AtLeast(100), "Count");
+            Assert.That(setup, Is.AtLeast(100), "Setup");
+            Assert.That(teardown, Is.AtLeast(100), "Tear Down");
 
             var output = console.ToString();
             var lines = output.Split('\r', '\n').Where(s => !string.IsNullOrEmpty(s)).ToArray();
 
             Assert.That(output, Is.Not.Empty);
             Assert.That(lines, Is.Not.Empty);
-            Assert.That(lines.Length, Is.EqualTo(16));
-            Assert.That(lines[6], Does.Contain(clientId.ToString()));
-            Assert.That(lines[7], Does.Contain(clientId.ToString()));
-            Assert.That(lines[8], Does.Contain(clientId.ToString()));
-            Assert.That(lines[9], Does.Contain(clientId.ToString()));
+            Assert.That(lines.Length, Is.EqualTo(20));
+            Assert.That(lines[6], Does.EndWith($" events were logged in total"));
+            Assert.That(lines[7], Does.EndWith($" from Unit Test"));
+            Assert.That(lines[8], Does.EndWith($" from Wrong Source"));
+            Assert.That(lines[9], Is.EqualTo($"Last 10 events from Unit Test:"));
             Assert.That(lines[10], Does.Contain(clientId.ToString()));
             Assert.That(lines[11], Does.Contain(clientId.ToString()));
             Assert.That(lines[12], Does.Contain(clientId.ToString()));
-            Assert.That(lines[13], Does.Contain(clientId.ToString()));
             Assert.That(lines[14], Does.Contain(clientId.ToString()));
             Assert.That(lines[15], Does.Contain(clientId.ToString()));
+            Assert.That(lines[16], Does.Contain(clientId.ToString()));
+            Assert.That(lines[17], Does.Contain(clientId.ToString()));
+            Assert.That(lines[18], Does.Contain(clientId.ToString()));
+            Assert.That(lines[19], Does.Contain(clientId.ToString()));
             Assert.That(clientId, Is.Not.EqualTo(Guid.Empty));
         }
 
@@ -538,9 +686,12 @@ namespace DnDGen.Stress.Events.Tests
 
             Assert.That(output, Is.Not.Empty);
             Assert.That(lines, Is.Not.Empty);
-            Assert.That(lines.Length, Is.EqualTo(10));
-            Assert.That(lines[6], Is.EqualTo($"[{events[0].When.ToLongTimeString()}] Unit Test: First Message"));
-            Assert.That(lines[7], Is.EqualTo($"[{events[1].When.ToLongTimeString()}] Unit Test: Last Message"));
+            Assert.That(lines.Length, Is.EqualTo(11));
+            Assert.That(lines[6], Is.EqualTo($"2 events were logged in total"));
+            Assert.That(lines[7], Is.EqualTo($"\t2 from Unit Test"));
+            Assert.That(lines[8], Is.EqualTo($"Last 2 events from Unit Test:"));
+            Assert.That(lines[9], Is.EqualTo($"[{events[0].When.ToLongTimeString()}] Unit Test: First Message"));
+            Assert.That(lines[10], Is.EqualTo($"[{events[1].When.ToLongTimeString()}] Unit Test: Last Message"));
             Assert.That(clientId, Is.Not.EqualTo(Guid.Empty));
         }
 
@@ -572,17 +723,20 @@ namespace DnDGen.Stress.Events.Tests
 
             Assert.That(output, Is.Not.Empty);
             Assert.That(lines, Is.Not.Empty);
-            Assert.That(lines.Length, Is.EqualTo(16));
-            Assert.That(lines[6], Does.EndWith($"] Unit Test: First message"));
-            Assert.That(lines[7], Does.EndWith($"] Unit Test: Last message"));
-            Assert.That(lines[8], Does.EndWith($"] Unit Test: First message"));
-            Assert.That(lines[9], Does.EndWith($"] Unit Test: Last message"));
-            Assert.That(lines[10], Does.EndWith($"] Unit Test: First message"));
-            Assert.That(lines[11], Does.EndWith($"] Unit Test: Last message"));
-            Assert.That(lines[12], Does.EndWith($"] Unit Test: First message"));
-            Assert.That(lines[13], Does.EndWith($"] Unit Test: Last message"));
-            Assert.That(lines[14], Does.EndWith($"] Unit Test: First message"));
-            Assert.That(lines[15], Does.EndWith($"] Unit Test: Last message"));
+            Assert.That(lines.Length, Is.EqualTo(19));
+            Assert.That(lines[6], Does.EndWith($" events were logged in total"));
+            Assert.That(lines[7], Does.EndWith($" from Unit Test"));
+            Assert.That(lines[8], Is.EqualTo($"Last 10 events from Unit Test:"));
+            Assert.That(lines[9], Does.EndWith($"] Unit Test: First message"));
+            Assert.That(lines[10], Does.EndWith($"] Unit Test: Last message"));
+            Assert.That(lines[11], Does.EndWith($"] Unit Test: First message"));
+            Assert.That(lines[12], Does.EndWith($"] Unit Test: Last message"));
+            Assert.That(lines[13], Does.EndWith($"] Unit Test: First message"));
+            Assert.That(lines[14], Does.EndWith($"] Unit Test: Last message"));
+            Assert.That(lines[15], Does.EndWith($"] Unit Test: First message"));
+            Assert.That(lines[16], Does.EndWith($"] Unit Test: Last message"));
+            Assert.That(lines[17], Does.EndWith($"] Unit Test: First message"));
+            Assert.That(lines[18], Does.EndWith($"] Unit Test: Last message"));
             Assert.That(clientId, Is.Not.EqualTo(Guid.Empty));
         }
 
@@ -611,13 +765,64 @@ namespace DnDGen.Stress.Events.Tests
 
             Assert.That(output, Is.Not.Empty);
             Assert.That(lines, Is.Not.Empty);
-            Assert.That(lines.Length, Is.EqualTo(16));
+            Assert.That(lines.Length, Is.EqualTo(20));
             Assert.That(lines[1], Is.EqualTo($"Stress test complete"));
             Assert.That(lines[2], Does.StartWith($"\tTime: {time}"));
             Assert.That(lines[2], Does.Contain($"(100"));
             Assert.That(lines[3], Does.StartWith($"\tCompleted Iterations: "));
             Assert.That(lines[4], Does.StartWith($"\tIterations Per Second: "));
             Assert.That(lines[5], Is.EqualTo($"\tLikely Status: PASSED"));
+        }
+
+        [TestCase(0, IgnoreReason = "This method is not currently used in event-based stress tests")]
+        [TestCase(1, IgnoreReason = "This method is not currently used in event-based stress tests")]
+        [TestCase(10, IgnoreReason = "This method is not currently used in event-based stress tests")]
+        [TestCase(100, IgnoreReason = "This method is not currently used in event-based stress tests")]
+        public void IterationsWithEventsCanComplete(int eventCount)
+        {
+            options.IsFullStress = true;
+
+            stressor = new StressorWithEvents(options);
+
+            mockEventQueue.Setup(q => q.DequeueAll(It.Is<Guid>(g => g == clientId))).Returns(() => GetEvents(eventCount));
+
+            var count = 0;
+            var setup = 0;
+            var teardown = 0;
+
+            stressor.Stress(
+                () => TestSetup(ref setup),
+                () => SlowTest(ref count),
+                () => TestTeardown(ref teardown));
+
+            Assert.That(count, Is.AtLeast(1));
+            Assert.That(count, Is.AtLeast(10));
+            Assert.That(count, Is.AtLeast(100));
+            Assert.That(count, Is.AtLeast(1000));
+            Assert.That(count, Is.AtLeast(10000));
+            Assert.That(setup, Is.AtLeast(1));
+            Assert.That(setup, Is.AtLeast(10));
+            Assert.That(setup, Is.AtLeast(100));
+            Assert.That(setup, Is.AtLeast(1000));
+            Assert.That(setup, Is.AtLeast(10000));
+            Assert.That(teardown, Is.AtLeast(1));
+            Assert.That(teardown, Is.AtLeast(10));
+            Assert.That(teardown, Is.AtLeast(100));
+            Assert.That(teardown, Is.AtLeast(1000));
+            Assert.That(teardown, Is.AtLeast(10000));
+        }
+
+        private IEnumerable<GenEvent> GetEvents(int eventCount)
+        {
+            var events = new List<GenEvent>(eventCount);
+
+            while (events.Capacity > events.Count)
+            {
+                var genEvent = new GenEvent("Unit Test", Guid.NewGuid().ToString());
+                events.Add(genEvent);
+            }
+
+            return events;
         }
     }
 }

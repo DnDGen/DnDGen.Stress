@@ -162,6 +162,19 @@ namespace DnDGen.Stress.Events.Tests
         }
 
         [Test]
+        public void GenerateDoesNotClearEvents()
+        {
+            var count = 0;
+
+            var result = stressor.Generate(() => count++, c => c > 9266);
+            Assert.That(result, Is.EqualTo(9267));
+            Assert.That(count, Is.EqualTo(9268));
+
+            mockEventQueue.Verify(q => q.Clear(It.IsAny<Guid>()), Times.Never);
+            mockEventQueue.Verify(q => q.ClearCurrentThread(), Times.Never);
+        }
+
+        [Test]
         public void Generate()
         {
             var count = 0;

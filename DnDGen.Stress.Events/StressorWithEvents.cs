@@ -14,7 +14,8 @@ namespace DnDGen.Stress.Events
         private readonly ClientIDManager clientIdManager;
         private readonly GenEventQueue eventQueue;
         private readonly string source;
-        private readonly List<GenEvent> events;
+        private readonly List<GenEvent> summaryEvents;
+        private readonly Dictionary<string, int> sourceCounts;
 
         private Guid clientId;
 
@@ -25,7 +26,8 @@ namespace DnDGen.Stress.Events
             eventQueue = options.EventQueue;
             source = options.Source;
 
-            events = new List<GenEvent>();
+            summaryEvents = new List<GenEvent>();
+            sourceCounts = new Dictionary<string, int>();
         }
 
         protected override void StressSetup()
@@ -33,7 +35,9 @@ namespace DnDGen.Stress.Events
             clientId = Guid.NewGuid();
             clientIdManager.SetClientID(clientId);
 
-            events.Clear();
+            summaryEvents.Clear();
+            sourceCounts.Clear();
+
             base.StressSetup();
         }
 
@@ -42,13 +46,28 @@ namespace DnDGen.Stress.Events
             base.StressTearDown();
 
             WriteEventSummary();
+            ClearEvents();
+        }
+
+        private void ClearEvents()
+        {
+            eventQueue.Clear(clientId);
         }
 
         private void WriteEventSummary()
         {
-            GetDequeuedEventsAndAddToEvents();
+            var eventTotal = sourceCounts.Values.Sum();
+            Console.WriteLine($"{eventTotal} events were logged in total");
 
-            foreach (var genEvent in events)
+            foreach (var kvp in sourceCounts)
+                Console.WriteLine($"\t{kvp.Value} from {kvp.Key}");
+
+            if (!summaryEvents.Any())
+                return;
+
+            Console.WriteLine($"Last {summaryEvents.Count} events from {source}:");
+
+            foreach (var genEvent in summaryEvents)
                 Console.WriteLine(GetMessage(genEvent));
         }
 
@@ -93,35 +112,73 @@ namespace DnDGen.Stress.Events
 
         private void AssertEventSpacing()
         {
-            var dequeuedEvents = GetDequeuedEventsAndAddToEvents().ToArray();
+            var dequeuedEvents = GetDequeuedEventsAndAddToEvents();
+
+            if (!dequeuedEvents.Any())
+                return;
 
             Assert.That(dequeuedEvents, Is.Ordered.By("When"));
-            Assert.That(events, Is.Ordered.By("When"));
+            Assert.That(summaryEvents, Is.Ordered.By("When"));
 
-            for (var i = 1; i < dequeuedEvents.Length; i++)
+            var times = dequeuedEvents.Select(e => e.When);
+            var checkpointEvent = dequeuedEvents.First();
+            var checkpoint = checkpointEvent.When;
+            var finalEvent = dequeuedEvents.Last();
+            var finalCheckPoint = finalEvent.When;
+
+            while (finalCheckPoint > checkpoint)
             {
-                var failureMessage = $"{GetMessage(dequeuedEvents[i - 1])}\n{GetMessage(dequeuedEvents[i])}";
-                Assert.That(dequeuedEvents[i].When, Is.EqualTo(dequeuedEvents[i - 1].When).Within(1).Seconds, failureMessage);
+                var oneSecondAfterCheckpoint = checkpoint.AddSeconds(1);
+
+                var failedEvent = dequeuedEvents.First(e => e.When > checkpoint);
+                var failureMessage = $"{GetMessage(checkpointEvent)}\n{GetMessage(failedEvent)}";
+                Assert.That(times, Has.Some.InRange(checkpoint.AddTicks(1), oneSecondAfterCheckpoint), failureMessage);
+
+                checkpointEvent = dequeuedEvents.Last(e => e.When <= oneSecondAfterCheckpoint);
+                checkpoint = checkpointEvent.When;
             }
         }
 
         private IEnumerable<GenEvent> GetDequeuedEventsAndAddToEvents()
         {
-            //INFO: Get the 10 most recent events for the source.  We assume the events are ordered chronologically already
-
             var dequeuedEvents = eventQueue.DequeueAll(clientId);
-            var filteredDequeuedEvents = dequeuedEvents.Where(e => e.Source == source);
 
-            events.AddRange(filteredDequeuedEvents);
-            var skipTotal = Math.Max(events.Count - EventSummaryCount, 0);
-
-            //INFO: Execute immediately, so that the items are preserved after we clear the list
-            var summaryEvents = events.Skip(skipTotal).Take(EventSummaryCount).ToArray();
-
-            events.Clear();
-            events.AddRange(summaryEvents);
+            UpdateSummaryEventsWith(dequeuedEvents);
 
             return dequeuedEvents;
+        }
+
+        private void UpdateSummaryEventsWith(IEnumerable<GenEvent> newEvents)
+        {
+            var eventGroups = newEvents.GroupBy(e => e.Source);
+
+            foreach (var group in eventGroups)
+            {
+                var source = group.Key;
+                var count = group.Count();
+
+                if (!sourceCounts.ContainsKey(source))
+                    sourceCounts[source] = 0;
+
+                sourceCounts[source] += count;
+            }
+
+            var filteredEvents = newEvents.Where(e => e.Source == source);
+            var newSummaryEvents = GetMostRecentEvents(filteredEvents);
+
+            var tempSummary = summaryEvents.Union(newSummaryEvents);
+            newSummaryEvents = GetMostRecentEvents(tempSummary).ToArray();
+
+            summaryEvents.Clear();
+            summaryEvents.AddRange(newSummaryEvents);
+        }
+
+        private IEnumerable<GenEvent> GetMostRecentEvents(IEnumerable<GenEvent> source)
+        {
+            var skipTotal = Math.Max(source.Count() - EventSummaryCount, 0);
+            var mostRecentEvents = source.Skip(skipTotal).Take(EventSummaryCount);
+
+            return mostRecentEvents;
         }
     }
 }
