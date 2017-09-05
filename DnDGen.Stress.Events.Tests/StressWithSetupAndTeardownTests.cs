@@ -824,5 +824,25 @@ namespace DnDGen.Stress.Events.Tests
 
             return events;
         }
+
+        [Test]
+        public void PreserveStackTrace()
+        {
+            var count = 0;
+            var setup = 0;
+            var teardown = 0;
+
+            var exception = Assert.Throws<ArgumentException>(() => stressor.Stress(() => TestSetup(ref setup), () => FailStress(count++), () => TestTeardown(ref teardown)));
+            Assert.That(count, Is.EqualTo(12));
+            Assert.That(setup, Is.EqualTo(12));
+            Assert.That(teardown, Is.EqualTo(12));
+            Assert.That(exception.StackTrace.Trim(), Does.Not.StartsWith("at DnDGen.Stress.Stressor.RunAction(Action setup, Action action, Action teardown)"));
+        }
+
+        public void FailStress(int count)
+        {
+            if (count > 10)
+                throw new ArgumentException();
+        }
     }
 }

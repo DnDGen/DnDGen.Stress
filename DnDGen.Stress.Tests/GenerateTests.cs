@@ -154,5 +154,23 @@ namespace DnDGen.Stress.Tests
             Assert.That(result, Is.EqualTo(90210));
             Assert.That(count, Is.EqualTo(90211));
         }
+
+        [Test]
+        public void PreserveStackTrace()
+        {
+            var count = 0;
+
+            var exception = Assert.Throws<ArgumentException>(() => stressor.Generate(() => FailGeneration(count++), c => c > 9266));
+            Assert.That(count, Is.EqualTo(12));
+            Assert.That(exception.StackTrace, Contains.Substring("FailGeneration"));
+        }
+
+        public int FailGeneration(int count)
+        {
+            if (count > 10)
+                throw new ArgumentException();
+
+            return count;
+        }
     }
 }

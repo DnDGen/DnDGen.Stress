@@ -237,5 +237,23 @@ namespace DnDGen.Stress.Tests
             Assert.That(stopwatch.Elapsed, Is.EqualTo(stressor.TimeLimit).Within(.01).Seconds);
             Assert.That(count, Is.AtLeast(9266));
         }
+
+        [Test]
+        public void PreserveStackTrace()
+        {
+            var count = 0;
+
+            var exception = Assert.Throws<ArgumentException>(() => stressor.GenerateOrFail(() => FailGeneration(count++), c => c > 9266));
+            Assert.That(count, Is.EqualTo(12));
+            Assert.That(exception.StackTrace, Contains.Substring("FailGeneration"));
+        }
+
+        public int FailGeneration(int count)
+        {
+            if (count > 10)
+                throw new ArgumentException();
+
+            return count;
+        }
     }
 }

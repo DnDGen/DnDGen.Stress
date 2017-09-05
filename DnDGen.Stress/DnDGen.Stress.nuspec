@@ -27,6 +27,6 @@
     <tags> dungeons dragons d20 dnd 3.5 generator dndgen stress test nunit load loadtest performance </tags>
   </metadata>
   <files>
-    <file src="bin/Release/DnDGen.Stress.dll" target="lib" />
+    <file src="bin/Debug/DnDGen.Stress.dll" target="lib" />
   </files>
 </package>

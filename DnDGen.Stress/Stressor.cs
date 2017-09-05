@@ -3,6 +3,7 @@ using System;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.ExceptionServices;
 
 namespace DnDGen.Stress
 {
@@ -158,7 +159,8 @@ namespace DnDGen.Stress
             }
             catch (Exception e)
             {
-                throw e;
+                ExceptionDispatchInfo.Capture(e).Throw();
+                return;
             }
             finally
             {
@@ -176,7 +178,8 @@ namespace DnDGen.Stress
             }
             catch (Exception e)
             {
-                throw e;
+                ExceptionDispatchInfo.Capture(e).Throw();
+                return default(T);
             }
             finally
             {

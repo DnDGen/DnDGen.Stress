@@ -8,7 +8,7 @@ namespace DnDGen.Stress.Tests
     [TestFixture]
     public class StressorTests
     {
-        private const int TestCount = 52;
+        private const int TestCount = 56;
         private const int TestCaseCount = 47;
 
         private Stressor stressor;
