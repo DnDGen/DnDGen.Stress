@@ -85,7 +85,7 @@ namespace DnDGen.Stress.Tests
             var count = 0;
 
             stopwatch.Start();
-            Assert.That(() => stressor.GenerateOrFail(() => SlowGenerate(ref count), c => c < 0), Throws.InstanceOf<AssertionException>().With.Message.EqualTo("Generation timed out"));
+            Assert.That(() => stressor.GenerateOrFail(() => SlowGenerate(ref count), c => false), Throws.InstanceOf<AssertionException>().With.Message.EqualTo("Generation timed out"));
             stopwatch.Stop();
 
             Assert.That(stopwatch.Elapsed, Is.EqualTo(stressor.TimeLimit).Within(.01).Seconds);
@@ -105,7 +105,7 @@ namespace DnDGen.Stress.Tests
             var count = 0;
 
             stopwatch.Start();
-            Assert.That(() => stressor.GenerateOrFail(() => count++, c => c < 0), Throws.InstanceOf<AssertionException>().With.Message.EqualTo("Generation timed out"));
+            Assert.That(() => stressor.GenerateOrFail(() => count++, c => false), Throws.InstanceOf<AssertionException>().With.Message.EqualTo("Generation timed out"));
             stopwatch.Stop();
 
             Assert.That(stopwatch.Elapsed, Is.LessThan(stressor.TimeLimit));
@@ -173,7 +173,7 @@ namespace DnDGen.Stress.Tests
         public void WritesFailedStressSummaryToConsole()
         {
             var count = 0;
-            Assert.That(() => stressor.GenerateOrFail(() => count++, c => c < 0), Throws.InstanceOf<AssertionException>());
+            Assert.That(() => stressor.GenerateOrFail(() => count++, c => false), Throws.InstanceOf<AssertionException>());
 
             var lines = GetLinesFromOutput();
             Assert.That(lines, Is.Not.Empty);
@@ -216,7 +216,7 @@ namespace DnDGen.Stress.Tests
         public void GenerateAndFail()
         {
             var count = 0;
-            Assert.That(() => stressor.GenerateOrFail(() => count++, c => c < 0), Throws.InstanceOf<AssertionException>().With.Message.EqualTo("Generation timed out"));
+            Assert.That(() => stressor.GenerateOrFail(() => count++, c => false), Throws.InstanceOf<AssertionException>().With.Message.EqualTo("Generation timed out"));
         }
 
         [Test]
