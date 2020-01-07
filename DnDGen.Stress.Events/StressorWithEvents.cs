@@ -30,6 +30,17 @@ namespace DnDGen.Stress.Events
             sourceCounts = new Dictionary<string, int>();
         }
 
+        public StressorWithEvents(StressorWithEventsOptions options, ILogger logger)
+            : base(options, logger)
+        {
+            clientIdManager = options.ClientIdManager;
+            eventQueue = options.EventQueue;
+            source = options.Source;
+
+            summaryEvents = new List<GenEvent>();
+            sourceCounts = new Dictionary<string, int>();
+        }
+
         protected override void StressSetup()
         {
             clientId = Guid.NewGuid();
@@ -57,18 +68,18 @@ namespace DnDGen.Stress.Events
         private void WriteEventSummary()
         {
             var eventTotal = sourceCounts.Values.Sum();
-            Console.WriteLine($"{eventTotal} events were logged in total");
+            logger.Log($"{eventTotal} events were logged in total");
 
             foreach (var kvp in sourceCounts)
-                Console.WriteLine($"\t{kvp.Value} from {kvp.Key}");
+                logger.Log($"\t{kvp.Value} from {kvp.Key}");
 
             if (!summaryEvents.Any())
                 return;
 
-            Console.WriteLine($"Last {summaryEvents.Count} events from {source}:");
+            logger.Log($"Last {summaryEvents.Count} events from {source}:");
 
             foreach (var genEvent in summaryEvents)
-                Console.WriteLine(GetMessage(genEvent));
+                logger.Log(GetMessage(genEvent));
         }
 
         private string GetMessage(GenEvent genEvent)
@@ -175,8 +186,10 @@ namespace DnDGen.Stress.Events
 
         private IEnumerable<GenEvent> GetMostRecentEvents(IEnumerable<GenEvent> source)
         {
-            var skipTotal = Math.Max(source.Count() - EventSummaryCount, 0);
-            var mostRecentEvents = source.Skip(skipTotal).Take(EventSummaryCount);
+            var mostRecentEvents = source
+                .OrderByDescending(e => e.When)
+                .Take(EventSummaryCount)
+                .OrderBy(e => e.When);
 
             return mostRecentEvents;
         }

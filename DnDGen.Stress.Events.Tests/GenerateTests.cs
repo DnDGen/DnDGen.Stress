@@ -4,10 +4,8 @@ using NUnit.Framework;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Text;
 
 namespace DnDGen.Stress.Events.Tests
 {
@@ -15,49 +13,13 @@ namespace DnDGen.Stress.Events.Tests
     public class GenerateTests
     {
         private StressorWithEvents stressor;
-        private StringBuilder console;
+        private Mock<ILogger> mockLogger;
+        private List<string> output;
         private Mock<ClientIDManager> mockClientIdManager;
         private Mock<GenEventQueue> mockEventQueue;
         private Guid clientId;
         private Stopwatch stopwatch;
         private StressorWithEventsOptions options;
-        private int runTestCount;
-        private int runTestTotal;
-
-        [OneTimeSetUp]
-        public void OneTimeSetup()
-        {
-            runTestCount = 0;
-            runTestTotal = CountTotalTests();
-        }
-
-        private int CountTotalTests()
-        {
-            var type = GetType();
-            var methods = type.GetMethods();
-            var activeStressTests = methods.Where(m => IsActiveTest(m));
-            var testsCount = activeStressTests.Sum(m => m.GetCustomAttributes<TestAttribute>(true).Count());
-            var testCasesCount = activeStressTests.Sum(m => m.GetCustomAttributes<TestCaseAttribute>().Count(tc => TestCaseIsActive(tc)));
-            var testsTotal = testsCount + testCasesCount;
-
-            return testsTotal;
-        }
-
-        private bool IsActiveTest(MethodInfo method)
-        {
-            if (method.GetCustomAttributes<IgnoreAttribute>(true).Any())
-                return false;
-
-            if (method.GetCustomAttributes<TestAttribute>(true).Any())
-                return true;
-
-            return method.GetCustomAttributes<TestCaseAttribute>(true).Any(tc => TestCaseIsActive(tc));
-        }
-
-        private bool TestCaseIsActive(TestCaseAttribute testCase)
-        {
-            return string.IsNullOrEmpty(testCase.Ignore) && string.IsNullOrEmpty(testCase.IgnoreReason);
-        }
 
         [SetUp]
         public void Setup()
@@ -71,12 +33,13 @@ namespace DnDGen.Stress.Events.Tests
             options.EventQueue = mockEventQueue.Object;
             options.Source = "Unit Test";
 
-            stressor = new StressorWithEvents(options);
+            output = new List<string>();
+            mockLogger = new Mock<ILogger>();
+            mockLogger
+                .Setup(l => l.Log(It.IsAny<string>()))
+                .Callback((string m) => output.Add(m));
 
-            console = new StringBuilder();
-            var writer = new StringWriter(console);
-
-            Console.SetOut(writer);
+            stressor = new StressorWithEvents(options, mockLogger.Object);
 
             stopwatch = new Stopwatch();
             clientId = Guid.Empty;
@@ -89,17 +52,6 @@ namespace DnDGen.Stress.Events.Tests
                 new GenEvent(options.Source, $"Event {count++} for {g}"),
                 new GenEvent("Wrong Source", $"Wrong event for {g}"),
             });
-        }
-
-        [TearDown]
-        public void Teardown()
-        {
-            var standardOutput = new StreamWriter(Console.OpenStandardOutput());
-            standardOutput.AutoFlush = true;
-            Console.SetOut(standardOutput);
-
-            runTestCount++;
-            Console.WriteLine($"Test {runTestCount} of {runTestTotal} for Generate() method for StressorWithEvents completed");
         }
 
         [Test]
@@ -157,7 +109,6 @@ namespace DnDGen.Stress.Events.Tests
             Assert.That(result, Is.EqualTo(9267));
             Assert.That(count, Is.EqualTo(9268));
 
-            var output = console.ToString();
             Assert.That(output, Is.Empty);
         }
 
@@ -217,7 +168,6 @@ namespace DnDGen.Stress.Events.Tests
             var result = stressor.Generate(() => 1, i => i > 0);
             Assert.That(result, Is.EqualTo(1));
 
-            var output = console.ToString();
             Assert.That(output, Is.Empty);
             Assert.That(clientId, Is.EqualTo(Guid.Empty));
         }
@@ -234,7 +184,6 @@ namespace DnDGen.Stress.Events.Tests
 
             Assert.That(() => stressor.Generate(() => 1, i => i > 0), Throws.InstanceOf<AssertionException>());
 
-            var output = console.ToString();
             Assert.That(output, Is.Empty);
             Assert.That(clientId, Is.EqualTo(Guid.Empty));
         }
@@ -253,7 +202,6 @@ namespace DnDGen.Stress.Events.Tests
             var result = stressor.Generate(() => 1, i => i > 0);
             Assert.That(result, Is.EqualTo(1));
 
-            var output = console.ToString();
             Assert.That(output, Is.Empty);
             Assert.That(clientId, Is.EqualTo(Guid.Empty));
         }
@@ -271,7 +219,6 @@ namespace DnDGen.Stress.Events.Tests
             var result = stressor.Generate(() => 1, i => i > 0);
             Assert.That(result, Is.EqualTo(1));
 
-            var output = console.ToString();
             Assert.That(output, Is.Empty);
             Assert.That(clientId, Is.EqualTo(Guid.Empty));
         }
@@ -288,7 +235,6 @@ namespace DnDGen.Stress.Events.Tests
 
             Assert.That(() => stressor.Generate(() => 1, i => i > 0), Throws.InstanceOf<AssertionException>());
 
-            var output = console.ToString();
             Assert.That(output, Is.Empty);
             Assert.That(clientId, Is.EqualTo(Guid.Empty));
         }
@@ -312,7 +258,6 @@ namespace DnDGen.Stress.Events.Tests
             var result = stressor.Generate(() => count++, i => i == 1);
             Assert.That(result, Is.EqualTo(1));
 
-            var output = console.ToString();
             Assert.That(output, Is.Empty);
             Assert.That(clientId, Is.EqualTo(Guid.Empty));
         }
