@@ -4,7 +4,7 @@ install:
   - nuget restore DnDGen.Stress.sln
   - nuget install NUnit.Runners -OutputDirectory testrunner
 script:
-  - xbuild DnDGen.Stress.sln /p:TargetFrameworkVersion="v4.5" /p:Configuration=Release
+  - xbuild DnDGen.Stress.sln /p:Configuration=Release
   - set -e
   - mono ./testrunner/NUnit.ConsoleRunner.*/tools/nunit3-console.exe ./DnDGen.Stress.Tests/bin/Debug/DnDGen.Stress.Tests.dll
   - set -e
