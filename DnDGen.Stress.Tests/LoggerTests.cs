@@ -28,7 +28,7 @@ namespace DnDGen.Stress.Tests
             logger.Log("Hello world!");
 
             var output = console.ToString();
-            Assert.That(output, Is.EqualTo("Hello world!\r\n"));
+            Assert.That(output, Is.EqualTo($"Hello world!{Environment.NewLine}"));
         }
 
         [Test]
@@ -38,7 +38,7 @@ namespace DnDGen.Stress.Tests
             logger.Log("Goodbye world!");
 
             var output = console.ToString();
-            Assert.That(output, Is.EqualTo("Hello world!\r\nGoodbye world!\r\n"));
+            Assert.That(output, Is.EqualTo($"Hello world!{Environment.NewLine}Goodbye world!{Environment.NewLine}"));
         }
     }
 }
