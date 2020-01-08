@@ -55,6 +55,13 @@ namespace DnDGen.Stress.Events.Tests
             });
         }
 
+        [TearDown]
+        public void TearDown()
+        {
+            //HACK: Need to do this since tests take longer than 10 minutes to run, and Travis cuts the build aftewr that long without activity
+            Console.WriteLine("A test has completed");
+        }
+
         [Test]
         public void StopsWhenTimeLimitHit()
         {
@@ -531,7 +538,8 @@ namespace DnDGen.Stress.Events.Tests
             lateEvents.Add(new GenEvent("Unit Test", "First late message") { When = DateTime.Now.AddMilliseconds(999) });
             lateEvents.Add(new GenEvent("Unit Test", "Last late message") { When = DateTime.Now.AddMilliseconds(1000) });
 
-            mockEventQueue.SetupSequence(q => q.DequeueAll(It.Is<Guid>(g => g == clientId)))
+            mockEventQueue
+                .SetupSequence(q => q.DequeueAll(It.Is<Guid>(g => g == clientId)))
                 .Returns(earlyEvents)
                 .Returns(lateEvents);
 
@@ -572,9 +580,6 @@ namespace DnDGen.Stress.Events.Tests
             var count = 0;
             Assert.That(() => stressor.GenerateOrFail(() => count++, c => c < 0), Throws.InstanceOf<AssertionException>().With.Message.EqualTo("Generation timed out"));
 
-            Assert.That(count, Is.AtLeast(1));
-            Assert.That(count, Is.AtLeast(10));
-            Assert.That(count, Is.AtLeast(100));
             Assert.That(count, Is.AtLeast(1000));
 
             if (eventCount < 1000)
