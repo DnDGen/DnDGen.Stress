@@ -186,10 +186,15 @@ namespace DnDGen.Stress.Events
 
         private IEnumerable<GenEvent> GetMostRecentEvents(IEnumerable<GenEvent> source)
         {
-            var mostRecentEvents = source
-                .OrderByDescending(e => e.When)
-                .Take(EventSummaryCount)
-                .Reverse();
+            var orderedEvents = source.OrderBy(e => e.When);
+            var skipCount = source.Count() - EventSummaryCount;
+
+            if (skipCount < 0)
+                return orderedEvents;
+
+            var mostRecentEvents = orderedEvents
+                .Skip(skipCount)
+                .Take(EventSummaryCount);
 
             return mostRecentEvents;
         }

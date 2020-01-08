@@ -28,4 +28,9 @@
     <PackageReference Include="NUnit" Version="3.12.0" />
   </ItemGroup>
 
+  <!--Needed for Framework compatibility when building in Travis-->
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" PrivateAssets="All" Version="1.0.0-preview.2" />
+  </ItemGroup>
+
 </Project>

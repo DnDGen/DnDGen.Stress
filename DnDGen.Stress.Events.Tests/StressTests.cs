@@ -58,8 +58,8 @@ namespace DnDGen.Stress.Events.Tests
         [TearDown]
         public void TearDown()
         {
-            //HACK: Need to do this since tests take longer than 10 minutes to run, and Travis cuts the build aftewr that long without activity
-            Console.WriteLine("A test has completed");
+            //HACK: Need to do this since tests take longer than 10 minutes to run, and Travis cuts the build after that long without activity
+            Console.WriteLine($"Test completed at {DateTime.Now}");
         }
 
         [Test]
@@ -72,7 +72,7 @@ namespace DnDGen.Stress.Events.Tests
             stopwatch.Stop();
 
             Assert.That(stopwatch.Elapsed, Is.EqualTo(stressor.TimeLimit).Within(.1).Seconds);
-            Assert.That(count, Is.LessThan(Stressor.ConfidentIterations));
+            Assert.That(count, Is.LessThan(StressorWithEvents.ConfidentIterations));
         }
 
         [Test]
@@ -95,7 +95,7 @@ namespace DnDGen.Stress.Events.Tests
             stopwatch.Stop();
 
             Assert.That(stopwatch.Elapsed, Is.LessThan(stressor.TimeLimit));
-            Assert.That(count, Is.EqualTo(Stressor.ConfidentIterations));
+            Assert.That(count, Is.EqualTo(StressorWithEvents.ConfidentIterations));
         }
 
         private void SlowTest(ref int count)
@@ -290,7 +290,7 @@ namespace DnDGen.Stress.Events.Tests
             stopwatch.Stop();
 
             Assert.That(stopwatch.Elapsed, Is.EqualTo(stressor.TimeLimit).Within(.01).Seconds);
-            Assert.That(count, Is.LessThan(Stressor.ConfidentIterations));
+            Assert.That(count, Is.LessThan(StressorWithEvents.ConfidentIterations));
 
             Assert.That(output, Is.Not.Empty.And.Count.EqualTo(20));
             Assert.That(output[0], Is.EqualTo($"Stress timeout is {stressor.TimeLimit}"));
@@ -334,37 +334,38 @@ namespace DnDGen.Stress.Events.Tests
         [Test]
         public void EventSpacingForStressIsWithin1SecondOfEachOther()
         {
+            var count = 0;
+
             mockEventQueue
                 .Setup(q => q.DequeueAll(It.Is<Guid>(g => g == clientId)))
                 .Returns(() => new[]
                 {
-                    new GenEvent("Unit Test", "First Message") { When = DateTime.Now.AddMilliseconds(-500) },
-                    new GenEvent("Unit Test", "Last Message") { When = DateTime.Now },
+                    new GenEvent("Unit Test", $"First Message {count}"),
+                    new GenEvent("Unit Test", $"Last Message {count}"),
                 });
 
-            var count = 0;
             stressor.Stress(() => FastTest(ref count));
             Assert.That(count, Is.AtLeast(100));
 
             Assert.That(output[0], Is.EqualTo($"Stress timeout is {stressor.TimeLimit}"));
             Assert.That(output[1], Is.EqualTo($"Stress test complete"));
             Assert.That(output[2], Does.StartWith($"\tTime: 00:00:01.0"));
-            Assert.That(output[3], Does.StartWith($"\tCompleted Iterations: "));
+            Assert.That(output[3], Does.StartWith($"\tCompleted Iterations: {count}"));
             Assert.That(output[4], Does.StartWith($"\tIterations Per Second: "));
             Assert.That(output[5], Is.EqualTo($"\tLikely Status: PASSED"));
             Assert.That(output[6], Does.EndWith($" events were logged in total"));
             Assert.That(output[7], Does.EndWith($" from Unit Test"));
             Assert.That(output[8], Is.EqualTo($"Last 10 events from Unit Test:"));
-            Assert.That(output[9], Does.Contain("Last Message"));
-            Assert.That(output[10], Does.Contain("Last Message"));
-            Assert.That(output[11], Does.Contain("Last Message"));
-            Assert.That(output[12], Does.Contain("Last Message"));
-            Assert.That(output[13], Does.Contain("Last Message"));
-            Assert.That(output[14], Does.Contain("Last Message"));
-            Assert.That(output[15], Does.Contain("Last Message"));
-            Assert.That(output[16], Does.Contain("Last Message"));
-            Assert.That(output[17], Does.Contain("Last Message"));
-            Assert.That(output[18], Does.Contain("Last Message"));
+            Assert.That(output[9], Does.Contain($"Unit Test: First Message {count - 4}"));
+            Assert.That(output[10], Does.Contain($"Unit Test: Last Message {count - 4}"));
+            Assert.That(output[11], Does.Contain($"Unit Test: First Message {count - 3}"));
+            Assert.That(output[12], Does.Contain($"Unit Test: Last Message {count - 3}"));
+            Assert.That(output[13], Does.Contain($"Unit Test: First Message {count - 2}"));
+            Assert.That(output[14], Does.Contain($"Unit Test: Last Message {count - 2}"));
+            Assert.That(output[15], Does.Contain($"Unit Test: First Message {count - 1}"));
+            Assert.That(output[16], Does.Contain($"Unit Test: Last Message {count - 1}"));
+            Assert.That(output[17], Does.Contain($"Unit Test: First Message {count}"));
+            Assert.That(output[18], Does.Contain($"Unit Test: Last Message {count}"));
             Assert.That(output, Is.Not.Empty.And.Count.EqualTo(19));
             Assert.That(clientId, Is.Not.EqualTo(Guid.Empty));
         }

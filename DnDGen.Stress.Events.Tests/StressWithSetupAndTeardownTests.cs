@@ -58,8 +58,8 @@ namespace DnDGen.Stress.Events.Tests
         [TearDown]
         public void TearDown()
         {
-            //HACK: Need to do this since tests take longer than 10 minutes to run, and Travis cuts the build aftewr that long without activity
-            Console.WriteLine("A test has completed");
+            //HACK: Need to do this since tests take longer than 10 minutes to run, and Travis cuts the build after that long without activity
+            Console.WriteLine($"Test completed at {DateTime.Now}");
         }
 
         [Test]
@@ -456,8 +456,8 @@ namespace DnDGen.Stress.Events.Tests
                 .Setup(q => q.DequeueAll(It.Is<Guid>(g => g == clientId)))
                 .Returns(() => new[]
                 {
-                    new GenEvent("Unit Test", $"First Message for {clientId}"),
-                    new GenEvent("Unit Test", $"Last Message for {clientId}"),
+                    new GenEvent("Unit Test", $"First Message {count}"),
+                    new GenEvent("Unit Test", $"Last Message {count}"),
                 });
 
             stressor.Stress(
@@ -478,16 +478,16 @@ namespace DnDGen.Stress.Events.Tests
             Assert.That(output[6], Does.EndWith($" events were logged in total"));
             Assert.That(output[7], Does.EndWith($" from Unit Test"));
             Assert.That(output[8], Is.EqualTo($"Last 10 events from Unit Test:"));
-            Assert.That(output[9], Does.Contain($"First Message for {clientId}"));
-            Assert.That(output[10], Does.Contain($"Last Message for {clientId}"));
-            Assert.That(output[11], Does.Contain($"First Message for {clientId}"));
-            Assert.That(output[12], Does.Contain($"Last Message for {clientId}"));
-            Assert.That(output[13], Does.Contain($"First Message for {clientId}"));
-            Assert.That(output[14], Does.Contain($"Last Message for {clientId}"));
-            Assert.That(output[15], Does.Contain($"First Message for {clientId}"));
-            Assert.That(output[16], Does.Contain($"Last Message for {clientId}"));
-            Assert.That(output[17], Does.Contain($"First Message for {clientId}"));
-            Assert.That(output[18], Does.Contain($"Last Message for {clientId}"));
+            Assert.That(output[9], Does.Contain($"Unit Test: First Message {count - 4}"));
+            Assert.That(output[10], Does.Contain($"Unit Test: Last Message {count - 4}"));
+            Assert.That(output[11], Does.Contain($"Unit Test: First Message {count - 3}"));
+            Assert.That(output[12], Does.Contain($"Unit Test: Last Message {count - 3}"));
+            Assert.That(output[13], Does.Contain($"Unit Test: First Message {count - 2}"));
+            Assert.That(output[14], Does.Contain($"Unit Test: Last Message {count - 2}"));
+            Assert.That(output[15], Does.Contain($"Unit Test: First Message {count - 1}"));
+            Assert.That(output[16], Does.Contain($"Unit Test: Last Message {count - 1}"));
+            Assert.That(output[17], Does.Contain($"Unit Test: First Message {count}"));
+            Assert.That(output[18], Does.Contain($"Unit Test: Last Message {count}"));
             Assert.That(output, Is.Not.Empty.And.Count.EqualTo(19));
             Assert.That(clientId, Is.Not.EqualTo(Guid.Empty));
         }
