@@ -8,16 +8,11 @@ install:
   - nuget install NUnit.Runners -OutputDirectory testrunner
 script:
   - dotnet build ./DnDGen.Stress/DnDGen.Stress.csproj -c Release
-  - set -e
+    && dotnet build ./DnDGen.Stress.Tests/DnDGen.Stress.Tests.csproj
+    && dotnet test ./DnDGen.Stress.Tests/DnDGen.Stress.Tests.csproj
   - msbuild ./DnDGen.Stress.Events/DnDGen.Stress.Events.csproj /p:Configuration=Release
-  - set -e
-  - dotnet build ./DnDGen.Stress.Tests/DnDGen.Stress.Tests.csproj
-  - set -e
-  - msbuild ./DnDGen.Stress.Events.Tests/DnDGen.Stress.Events.Tests.csproj
-  - set -e
-  - dotnet test ./DnDGen.Stress.Tests/DnDGen.Stress.Tests.csproj
-  - set -e
-  - mono ./testrunner/NUnit.ConsoleRunner.*/tools/nunit3-console.exe ./DnDGen.Stress.Events.Tests/bin/Debug/DnDGen.Stress.Events.Tests.dll
+    && msbuild ./DnDGen.Stress.Events.Tests/DnDGen.Stress.Events.Tests.csproj
+    && mono ./testrunner/NUnit.ConsoleRunner.*/tools/nunit3-console.exe ./DnDGen.Stress.Events.Tests/bin/Debug/DnDGen.Stress.Events.Tests.dll
 deploy:
   skip_cleanup: true
   provider: script
