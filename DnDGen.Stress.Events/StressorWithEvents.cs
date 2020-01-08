@@ -138,20 +138,39 @@ namespace DnDGen.Stress.Events
 
             var times = dequeuedEvents.Select(e => e.When);
             var checkpointEvent = dequeuedEvents.First();
-            var checkpoint = checkpointEvent.When;
             var finalEvent = dequeuedEvents.Last();
-            var finalCheckPoint = finalEvent.When;
 
-            while (finalCheckPoint > checkpoint)
+            while (finalEvent.When > checkpointEvent.When)
             {
-                var oneSecondAfterCheckpoint = checkpoint.AddSeconds(1);
+                var oneSecondAfterCheckpoint = checkpointEvent.When.AddSeconds(1);
 
-                var failedEvent = dequeuedEvents.First(e => e.When > checkpoint);
+                var failedEvent = dequeuedEvents.First(e => e.When > checkpointEvent.When);
                 var failureMessage = $"{GetEventMessage(checkpointEvent)}\n{GetEventMessage(failedEvent)}";
-                Assert.That(times, Has.Some.InRange(checkpoint.AddTicks(1), oneSecondAfterCheckpoint), failureMessage);
+
+                if (failedEvent.When - checkpointEvent.When > TimeSpan.FromSeconds(1))
+                {
+                    summaryEvents.Clear();
+
+                    if (dequeuedEvents.Count() <= EventSummaryCount)
+                    {
+                        summaryEvents.AddRange(dequeuedEvents);
+                    }
+                    else
+                    {
+                        var eventArray = dequeuedEvents.ToArray();
+                        var buffer = (EventSummaryCount - 2) / 2;
+
+                        var checkpointIndex = Array.IndexOf(eventArray, checkpointEvent);
+                        var skipCount = Math.Max(checkpointIndex - buffer, 0);
+
+                        var failureSubset = dequeuedEvents.Skip(skipCount).Take(EventSummaryCount);
+                        summaryEvents.AddRange(failureSubset);
+                    }
+                }
+
+                Assert.That(times, Has.Some.InRange(checkpointEvent.When.AddTicks(1), oneSecondAfterCheckpoint), failureMessage);
 
                 checkpointEvent = dequeuedEvents.Last(e => e.When <= oneSecondAfterCheckpoint);
-                checkpoint = checkpointEvent.When;
             }
         }
 

@@ -526,6 +526,115 @@ namespace DnDGen.Stress.Events.Tests
             Assert.That(clientId, Is.Not.EqualTo(Guid.Empty));
         }
 
+        [TestCase(0, 0)]
+        [TestCase(0, 1)]
+        [TestCase(0, 2)]
+        [TestCase(0, 3)]
+        [TestCase(0, 4)]
+        [TestCase(0, 5)]
+        [TestCase(0, 10)]
+        [TestCase(1, 0)]
+        [TestCase(1, 1)]
+        [TestCase(1, 2)]
+        [TestCase(1, 3)]
+        [TestCase(1, 4)]
+        [TestCase(1, 5)]
+        [TestCase(1, 10)]
+        [TestCase(2, 0)]
+        [TestCase(2, 1)]
+        [TestCase(2, 2)]
+        [TestCase(2, 3)]
+        [TestCase(2, 4)]
+        [TestCase(2, 5)]
+        [TestCase(2, 10)]
+        [TestCase(3, 0)]
+        [TestCase(3, 1)]
+        [TestCase(3, 2)]
+        [TestCase(3, 3)]
+        [TestCase(3, 4)]
+        [TestCase(3, 5)]
+        [TestCase(3, 10)]
+        [TestCase(4, 0)]
+        [TestCase(4, 1)]
+        [TestCase(4, 2)]
+        [TestCase(4, 3)]
+        [TestCase(4, 4)]
+        [TestCase(4, 5)]
+        [TestCase(4, 10)]
+        [TestCase(5, 0)]
+        [TestCase(5, 1)]
+        [TestCase(5, 2)]
+        [TestCase(5, 3)]
+        [TestCase(5, 4)]
+        [TestCase(5, 5)]
+        [TestCase(5, 10)]
+        [TestCase(10, 0)]
+        [TestCase(10, 1)]
+        [TestCase(10, 2)]
+        [TestCase(10, 3)]
+        [TestCase(10, 4)]
+        [TestCase(10, 5)]
+        [TestCase(10, 10)]
+        public void EventSpacingIsNotWithin1SecondOfEachOther_FocusesOnErrorEvents(int precedingEvents, int followingEvents)
+        {
+            var events = new List<GenEvent>();
+            var totalEvents = precedingEvents + 2 + followingEvents;
+
+            while (events.Count < precedingEvents)
+            {
+                events.Add(new GenEvent("Unit Test", $"Preceding Message {events.Count + 1}") { When = DateTime.Now.AddMilliseconds(-1002 - events.Count) });
+            }
+
+            events.Add(new GenEvent("Unit Test", "Checkpoint Message") { When = DateTime.Now.AddMilliseconds(-1001) });
+            events.Add(new GenEvent("Unit Test", "Failure Message") { When = DateTime.Now });
+
+            while (events.Count < totalEvents)
+            {
+                events.Add(new GenEvent("Unit Test", $"Following Message {events.Count - precedingEvents - 1}"));
+            }
+
+            mockEventQueue.SetupSequence(q => q.DequeueAll(It.Is<Guid>(g => g == clientId)))
+                .Returns(events);
+
+            var count = 0;
+            var setup = 0;
+            var teardown = 0;
+
+            Assert.That(() => stressor.Stress(
+                () => TestSetup(ref setup),
+                () => FastTest(ref count),
+                () => TestTeardown(ref teardown)), Throws.InstanceOf<AssertionException>());
+
+            Assert.That(output, Is.Not.Empty.And.Count.EqualTo(11));
+            Assert.That(output[0], Is.EqualTo($"Stress timeout is {stressor.TimeLimit}"));
+            Assert.That(output[1], Is.EqualTo($"Stress test complete"));
+            Assert.That(output[2], Does.StartWith($"\tTime: 00:00:00."));
+            Assert.That(output[3], Is.EqualTo($"\tCompleted Iterations: 0 (0%)"));
+            Assert.That(output[4], Does.StartWith($"\tIterations Per Second: 0"));
+            Assert.That(output[5], Is.EqualTo($"\tLikely Status: FAILED"));
+            Assert.That(output[6], Is.EqualTo($"Events: {totalEvents} (~{totalEvents} per iteration)"));
+            Assert.That(output[7], Is.EqualTo($"\tUnit Test: {totalEvents} (~{totalEvents} per iteration)"));
+
+            var summaryCount = Math.Min(totalEvents, 10);
+            Assert.That(output[8], Is.EqualTo($"Last {summaryCount} events from Unit Test:"));
+
+            var index = 9;
+            for (var i = 0; i < precedingEvents; i++)
+            {
+                Assert.That(output[index++], Is.EqualTo($"[{events[i].When.ToLongTimeString()}] Unit Test: Preceding Message {i + 1}"));
+            }
+
+            Assert.That(output[index++], Is.EqualTo($"[{events[precedingEvents].When.ToLongTimeString()}] Unit Test: Checkpoint Message"));
+            Assert.That(output[index++], Is.EqualTo($"[{events[precedingEvents + 1].When.ToLongTimeString()}] Unit Test: Failure Message"));
+
+            for (var i = 0; i < followingEvents; i++)
+            {
+                Assert.That(output[index++], Is.EqualTo($"[{events[precedingEvents + 2 + i].When.ToLongTimeString()}] Unit Test: Following Message {i + 1}"));
+            }
+
+            Assert.That(clientId, Is.Not.EqualTo(Guid.Empty));
+        }
+
         [Test]
         public void EventSpacingIsWithin1SecondOfEachOtherWithNonSourceEvents()
         {
