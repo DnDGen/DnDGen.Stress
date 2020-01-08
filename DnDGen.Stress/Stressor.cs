@@ -30,14 +30,23 @@ namespace DnDGen.Stress
         private readonly double timeLimitInSeconds;
         private readonly Stopwatch stressStopwatch;
 
-        private int iterations;
+        protected int iterations;
         private bool generatedSuccessfully;
         private bool generationFailed;
 
+        protected readonly ILogger logger;
+
         public Stressor(StressorOptions options)
+            : this(options, new Logger())
+        {
+        }
+
+        public Stressor(StressorOptions options, ILogger logger)
         {
             if (!options.AreValid)
                 throw new ArgumentException("Stressor Options are not valid");
+
+            this.logger = logger;
 
             IsFullStress = options.IsFullStress;
             stressStopwatch = new Stopwatch();
@@ -99,7 +108,7 @@ namespace DnDGen.Stress
             generatedSuccessfully = false;
             generationFailed = false;
 
-            Console.WriteLine($"Stress timeout is {TimeLimit}");
+            logger.Log($"Stress timeout is {TimeLimit}");
 
             stressStopwatch.Start();
         }
@@ -120,11 +129,11 @@ namespace DnDGen.Stress
             var iterationPercentage = Math.Round((double)iterations / ConfidentIterations * 100, 2);
             var status = IsLikelySuccess(timePercentage, iterationPercentage) ? "PASSED" : "FAILED";
 
-            Console.WriteLine($"Stress test complete");
-            Console.WriteLine($"\tTime: {stressStopwatch.Elapsed} ({timePercentage}%)");
-            Console.WriteLine($"\tCompleted Iterations: {iterations} ({iterationPercentage}%)");
-            Console.WriteLine($"\tIterations Per Second: {iterationsPerSecond}");
-            Console.WriteLine($"\tLikely Status: {status}");
+            logger.Log($"Stress test complete");
+            logger.Log($"\tTime: {stressStopwatch.Elapsed} ({timePercentage}%)");
+            logger.Log($"\tCompleted Iterations: {iterations} ({iterationPercentage}%)");
+            logger.Log($"\tIterations Per Second: {iterationsPerSecond}");
+            logger.Log($"\tLikely Status: {status}");
         }
 
         private bool IsLikelySuccess(double timePercentage, double iterationPercentage)

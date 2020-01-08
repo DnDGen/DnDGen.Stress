@@ -1,10 +1,9 @@
-﻿using NUnit.Framework;
+﻿using Moq;
+using NUnit.Framework;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
-using System.Linq;
 using System.Reflection;
-using System.Text;
 using System.Threading;
 
 namespace DnDGen.Stress.Tests
@@ -13,46 +12,10 @@ namespace DnDGen.Stress.Tests
     public class GenerateOrFailTests
     {
         private Stressor stressor;
+        private Mock<ILogger> mockLogger;
+        private List<string> output;
         private StressorOptions options;
         private Stopwatch stopwatch;
-        private StringBuilder console;
-        private int runTestCount;
-        private int runTestTotal;
-
-        [OneTimeSetUp]
-        public void OneTimeSetup()
-        {
-            runTestCount = 0;
-            runTestTotal = CountTotalTests();
-        }
-
-        private int CountTotalTests()
-        {
-            var type = GetType();
-            var methods = type.GetMethods();
-            var activeStressTests = methods.Where(m => IsActiveTest(m));
-            var testsCount = activeStressTests.Sum(m => m.GetCustomAttributes<TestAttribute>(true).Count());
-            var testCasesCount = activeStressTests.Sum(m => m.GetCustomAttributes<TestCaseAttribute>().Count(tc => TestCaseIsActive(tc)));
-            var testsTotal = testsCount + testCasesCount;
-
-            return testsTotal;
-        }
-
-        private bool IsActiveTest(MethodInfo method)
-        {
-            if (method.GetCustomAttributes<IgnoreAttribute>(true).Any())
-                return false;
-
-            if (method.GetCustomAttributes<TestAttribute>(true).Any())
-                return true;
-
-            return method.GetCustomAttributes<TestCaseAttribute>(true).Any(tc => TestCaseIsActive(tc));
-        }
-
-        private bool TestCaseIsActive(TestCaseAttribute testCase)
-        {
-            return string.IsNullOrEmpty(testCase.Ignore) && string.IsNullOrEmpty(testCase.IgnoreReason);
-        }
 
         [SetUp]
         public void Setup()
@@ -60,23 +23,14 @@ namespace DnDGen.Stress.Tests
             options = new StressorOptions();
             options.RunningAssembly = Assembly.GetExecutingAssembly();
 
-            stressor = new Stressor(options);
+            output = new List<string>();
+            mockLogger = new Mock<ILogger>();
+            mockLogger
+                .Setup(l => l.Log(It.IsAny<string>()))
+                .Callback((string m) => output.Add(m));
+
+            stressor = new Stressor(options, mockLogger.Object);
             stopwatch = new Stopwatch();
-            console = new StringBuilder();
-            var writer = new StringWriter(console);
-
-            Console.SetOut(writer);
-        }
-
-        [TearDown]
-        public void Teardown()
-        {
-            var standardOutput = new StreamWriter(Console.OpenStandardOutput());
-            standardOutput.AutoFlush = true;
-            Console.SetOut(standardOutput);
-
-            runTestCount++;
-            Console.WriteLine($"Test {runTestCount} of {runTestTotal} for GenerateOrFail() method for Stressor completed");
         }
 
         [Test]
@@ -135,19 +89,8 @@ namespace DnDGen.Stress.Tests
             Assert.That(result, Is.EqualTo(9267));
             Assert.That(count, Is.EqualTo(9268));
 
-            var lines = GetLinesFromOutput();
-            Assert.That(lines, Is.Not.Empty);
-            Assert.That(lines[0], Is.EqualTo($"Stress timeout is {stressor.TimeLimit}"));
-        }
-
-        private string[] GetLinesFromOutput()
-        {
-            var output = console.ToString();
             Assert.That(output, Is.Not.Empty);
-
-            var lines = output.Split('\r', '\n').Where(s => !string.IsNullOrEmpty(s)).ToArray();
-
-            return lines;
+            Assert.That(output[0], Is.EqualTo($"Stress timeout is {stressor.TimeLimit}"));
         }
 
         [Test]
@@ -159,14 +102,13 @@ namespace DnDGen.Stress.Tests
             Assert.That(result, Is.EqualTo(9266));
             Assert.That(count, Is.EqualTo(9267));
 
-            var lines = GetLinesFromOutput();
-            Assert.That(lines, Is.Not.Empty);
-            Assert.That(lines.Length, Is.EqualTo(6));
-            Assert.That(lines[1], Is.EqualTo($"Stress test complete"));
-            Assert.That(lines[2], Does.StartWith($"\tTime: 00:00:00."));
-            Assert.That(lines[3], Is.EqualTo($"\tCompleted Iterations: 9267 (0.93%)"));
-            Assert.That(lines[4], Does.StartWith($"\tIterations Per Second: "));
-            Assert.That(lines[5], Is.EqualTo($"\tLikely Status: PASSED"));
+            Assert.That(output, Is.Not.Empty.And.Count.EqualTo(6));
+            Assert.That(output[0], Is.EqualTo($"Stress timeout is {stressor.TimeLimit}"));
+            Assert.That(output[1], Is.EqualTo($"Stress test complete"));
+            Assert.That(output[2], Does.StartWith($"\tTime: 00:00:00."));
+            Assert.That(output[3], Is.EqualTo($"\tCompleted Iterations: 9267 (0.93%)"));
+            Assert.That(output[4], Does.StartWith($"\tIterations Per Second: "));
+            Assert.That(output[5], Is.EqualTo($"\tLikely Status: PASSED"));
         }
 
         [Test]
@@ -175,14 +117,13 @@ namespace DnDGen.Stress.Tests
             var count = 0;
             Assert.That(() => stressor.GenerateOrFail(() => count++, c => false), Throws.InstanceOf<AssertionException>());
 
-            var lines = GetLinesFromOutput();
-            Assert.That(lines, Is.Not.Empty);
-            Assert.That(lines.Length, Is.EqualTo(6));
-            Assert.That(lines[1], Is.EqualTo($"Stress test complete"));
-            Assert.That(lines[2], Does.StartWith($"\tTime: 00:00:00."));
-            Assert.That(lines[3], Does.StartWith($"\tCompleted Iterations: "));
-            Assert.That(lines[4], Does.StartWith($"\tIterations Per Second: "));
-            Assert.That(lines[5], Is.EqualTo($"\tLikely Status: FAILED"));
+            Assert.That(output, Is.Not.Empty.And.Count.EqualTo(6));
+            Assert.That(output[0], Is.EqualTo($"Stress timeout is {stressor.TimeLimit}"));
+            Assert.That(output[1], Is.EqualTo($"Stress test complete"));
+            Assert.That(output[2], Does.StartWith($"\tTime: 00:00:00."));
+            Assert.That(output[3], Does.StartWith($"\tCompleted Iterations: "));
+            Assert.That(output[4], Does.StartWith($"\tIterations Per Second: "));
+            Assert.That(output[5], Is.EqualTo($"\tLikely Status: FAILED"));
         }
 
         [Test]
@@ -194,14 +135,13 @@ namespace DnDGen.Stress.Tests
             Assert.That(result, Is.EqualTo(3));
             Assert.That(count, Is.EqualTo(4));
 
-            var lines = GetLinesFromOutput();
-            Assert.That(lines, Is.Not.Empty);
-            Assert.That(lines.Length, Is.EqualTo(6));
-            Assert.That(lines[1], Is.EqualTo($"Stress test complete"));
-            Assert.That(lines[2], Does.StartWith($"\tTime: 00:00:00.0"));
-            Assert.That(lines[3], Does.StartWith($"\tCompleted Iterations: "));
-            Assert.That(lines[4], Does.StartWith($"\tIterations Per Second: "));
-            Assert.That(lines[5], Is.EqualTo($"\tLikely Status: PASSED"));
+            Assert.That(output, Is.Not.Empty.And.Count.EqualTo(6));
+            Assert.That(output[0], Is.EqualTo($"Stress timeout is {stressor.TimeLimit}"));
+            Assert.That(output[1], Is.EqualTo($"Stress test complete"));
+            Assert.That(output[2], Does.StartWith($"\tTime: 00:00:00.0"));
+            Assert.That(output[3], Does.StartWith($"\tCompleted Iterations: "));
+            Assert.That(output[4], Does.StartWith($"\tIterations Per Second: "));
+            Assert.That(output[5], Is.EqualTo($"\tLikely Status: PASSED"));
         }
 
         [Test]
