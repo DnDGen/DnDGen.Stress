@@ -240,7 +240,8 @@ namespace DnDGen.Stress.Events.Tests
             mockEventQueue.SetupSequence(q => q.DequeueAll(It.Is<Guid>(g => g == clientId)))
                 .Returns(events);
 
-            Assert.That(() => stressor.Generate(() => 1, i => i > 0), Throws.InstanceOf<AssertionException>());
+            var result = stressor.Generate(() => 1, i => i > 0);
+            Assert.That(result, Is.EqualTo(1));
 
             Assert.That(output, Is.Empty);
             Assert.That(clientId, Is.EqualTo(Guid.Empty));

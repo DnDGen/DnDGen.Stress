@@ -348,7 +348,6 @@ namespace DnDGen.Stress.Events.Tests
         {
             var innerIteration = 0;
             var iteration = 0;
-            var eventsPerIteration = 42 * 3 + 1;
 
             stopwatch.Start();
             Assert.That(() => stressor.GenerateOrFail(() =>
@@ -373,9 +372,9 @@ namespace DnDGen.Stress.Events.Tests
             Assert.That(output[3], Does.StartWith($"\tCompleted Iterations: "));
             Assert.That(output[4], Does.StartWith($"\tIterations Per Second: "));
             Assert.That(output[5], Is.EqualTo($"\tLikely Status: FAILED"));
-            Assert.That(output[6], Does.StartWith($"Events: {totalIterations * 3} (~{eventsPerIteration} per iteration)"));
-            Assert.That(output[7], Does.StartWith($"\tUnit Test: {totalIterations * 2} (~{eventsPerIteration * 2 / 3 + 1} per iteration)"));
-            Assert.That(output[8], Does.StartWith($"\tWrong Source: {totalIterations} (~{eventsPerIteration / 3} per iteration)"));
+            Assert.That(output[6], Does.StartWith($"Events: {totalIterations * 3} (~{totalIterations * 3 / iteration} per iteration)"));
+            Assert.That(output[7], Does.StartWith($"\tUnit Test: {totalIterations * 2} (~{totalIterations / iteration * 2 + 1} per iteration)"));
+            Assert.That(output[8], Does.StartWith($"\tWrong Source: {totalIterations} (~{totalIterations / iteration} per iteration)"));
             Assert.That(output[9], Is.EqualTo($"Last 10 events from Unit Test:"));
             Assert.That(output[10], Does.Contain($"] Unit Test: Event {totalIterations * 3 - 14} for {clientId}"));
             Assert.That(output[11], Does.Contain($"] Unit Test: Event {totalIterations * 3 - 13} for {clientId}"));
