@@ -67,11 +67,13 @@ namespace DnDGen.Stress.Events
 
         private void WriteEventSummary()
         {
+            var divisor = Math.Max(iterations, 1);
             var eventTotal = sourceCounts.Values.Sum();
-            logger.Log($"{eventTotal} events were logged in total");
+
+            logger.Log($"Events: {eventTotal} (~{eventTotal / divisor} per iteration)");
 
             foreach (var kvp in sourceCounts)
-                logger.Log($"\t{kvp.Value} from {kvp.Key}");
+                logger.Log($"\t{kvp.Key}: {kvp.Value} (~{kvp.Value / divisor} per iteration)");
 
             if (!summaryEvents.Any())
                 return;
@@ -79,10 +81,13 @@ namespace DnDGen.Stress.Events
             logger.Log($"Last {summaryEvents.Count} events from {source}:");
 
             foreach (var genEvent in summaryEvents)
-                logger.Log(GetMessage(genEvent));
+            {
+                var message = GetEventMessage(genEvent);
+                logger.Log(message);
+            }
         }
 
-        private string GetMessage(GenEvent genEvent)
+        private string GetEventMessage(GenEvent genEvent)
         {
             return $"[{genEvent.When.ToLongTimeString()}] {genEvent.Source}: {genEvent.Message}";
         }
@@ -142,7 +147,7 @@ namespace DnDGen.Stress.Events
                 var oneSecondAfterCheckpoint = checkpoint.AddSeconds(1);
 
                 var failedEvent = dequeuedEvents.First(e => e.When > checkpoint);
-                var failureMessage = $"{GetMessage(checkpointEvent)}\n{GetMessage(failedEvent)}";
+                var failureMessage = $"{GetEventMessage(checkpointEvent)}\n{GetEventMessage(failedEvent)}";
                 Assert.That(times, Has.Some.InRange(checkpoint.AddTicks(1), oneSecondAfterCheckpoint), failureMessage);
 
                 checkpointEvent = dequeuedEvents.Last(e => e.When <= oneSecondAfterCheckpoint);
@@ -153,6 +158,7 @@ namespace DnDGen.Stress.Events
         private IEnumerable<GenEvent> GetDequeuedEventsAndAddToEvents()
         {
             var dequeuedEvents = eventQueue.DequeueAll(clientId);
+            dequeuedEvents = dequeuedEvents.OrderBy(e => e.When);
 
             UpdateSummaryEventsWith(dequeuedEvents);
 
