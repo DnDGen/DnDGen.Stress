@@ -7,7 +7,13 @@ install:
   - nuget restore DnDGen.Stress.sln
   - nuget install NUnit.Runners -OutputDirectory testrunner
 script:
-  - xbuild DnDGen.Stress.sln /p:Configuration=Release
+  - dotnet build ./DnDGen.Stress/DnDGen.Stress.csproj -c Release
+  - set -e
+  - msbuild ./DnDGen.Stress.Events/DnDGen.Stress.Events.csproj /p:Configuration=Release
+  - set -e
+  - dotnet build ./DnDGen.Stress.Tests/DnDGen.Stress.Tests.csproj
+  - set -e
+  - msbuild ./DnDGen.Stress.Events.Tests/DnDGen.Stress.Events.Tests.csproj
   - set -e
   - dotnet test ./DnDGen.Stress.Tests/DnDGen.Stress.Tests.csproj
   - set -e
