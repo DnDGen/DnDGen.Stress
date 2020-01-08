@@ -189,7 +189,7 @@ namespace DnDGen.Stress.Events
             var mostRecentEvents = source
                 .OrderByDescending(e => e.When)
                 .Take(EventSummaryCount)
-                .OrderBy(e => e.When);
+                .Reverse();
 
             return mostRecentEvents;
         }
