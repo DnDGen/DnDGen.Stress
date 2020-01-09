@@ -524,7 +524,10 @@ namespace DnDGen.Stress.Events.Tests
 
             Assert.That(() => stressor.GenerateOrFail(() => 1, i => i > 0), Throws.InstanceOf<AssertionException>());
 
-            Assert.That(output, Is.Not.Empty.And.Count.EqualTo(11));
+            var summaryPreceding = Math.Min(precedingEvents, 4);
+            var summaryFollowing = 10 - 2 - summaryPreceding;
+
+            Assert.That(output, Is.Not.Empty.And.Count.EqualTo(9 + summaryPreceding + 2 + summaryFollowing));
             Assert.That(output[0], Is.EqualTo($"Stress timeout is {stressor.TimeLimit}"));
             Assert.That(output[1], Is.EqualTo($"Stress test complete"));
             Assert.That(output[2], Does.StartWith($"\tTime: 00:00:00."));
@@ -538,17 +541,21 @@ namespace DnDGen.Stress.Events.Tests
             Assert.That(output[8], Is.EqualTo($"Last {summaryCount} events from Unit Test:"));
 
             var index = 9;
-            for (var i = 0; i < precedingEvents; i++)
+            for (var i = 0; i < summaryPreceding; i++)
             {
-                Assert.That(output[index++], Is.EqualTo($"[{events[i].When.ToLongTimeString()}] Unit Test: Preceding Message {i + 1}"));
+                var eventIndex = i + precedingEvents - summaryPreceding;
+                var time = events[eventIndex].When.ToLongTimeString();
+                Assert.That(output[index++], Is.EqualTo($"[{time}] Unit Test: Preceding Message {eventIndex + 1}"));
             }
 
             Assert.That(output[index++], Is.EqualTo($"[{events[precedingEvents].When.ToLongTimeString()}] Unit Test: Checkpoint Message"));
             Assert.That(output[index++], Is.EqualTo($"[{events[precedingEvents + 1].When.ToLongTimeString()}] Unit Test: Failure Message"));
 
-            for (var i = 0; i < followingEvents; i++)
+            for (var i = 0; i < summaryFollowing; i++)
             {
-                Assert.That(output[index++], Is.EqualTo($"[{events[precedingEvents + 2 + i].When.ToLongTimeString()}] Unit Test: Following Message {i + 1}"));
+                var eventIndex = precedingEvents + 2 + i;
+                var time = events[eventIndex].When.ToLongTimeString();
+                Assert.That(output[index++], Is.EqualTo($"[{time}] Unit Test: Following Message {i + 1}"));
             }
 
             Assert.That(clientId, Is.Not.EqualTo(Guid.Empty));
