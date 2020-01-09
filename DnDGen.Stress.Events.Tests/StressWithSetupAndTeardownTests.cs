@@ -607,8 +607,9 @@ namespace DnDGen.Stress.Events.Tests
 
             var summaryPreceding = Math.Min(precedingEvents, 4);
             var summaryFollowing = Math.Min(followingEvents, Math.Min(totalEvents, 10) - 2 - summaryPreceding);
+            var summaryCount = summaryPreceding + 2 + summaryFollowing;
 
-            Assert.That(output, Is.Not.Empty.And.Count.EqualTo(9 + summaryPreceding + 2 + summaryFollowing));
+            Assert.That(output, Is.Not.Empty.And.Count.EqualTo(9 + summaryCount));
             Assert.That(output[0], Is.EqualTo($"Stress timeout is {stressor.TimeLimit}"));
             Assert.That(output[1], Is.EqualTo($"Stress test complete"));
             Assert.That(output[2], Does.StartWith($"\tTime: 00:00:00."));
@@ -617,8 +618,6 @@ namespace DnDGen.Stress.Events.Tests
             Assert.That(output[5], Is.EqualTo($"\tLikely Status: FAILED"));
             Assert.That(output[6], Is.EqualTo($"Events: {totalEvents} (~{totalEvents} per iteration)"));
             Assert.That(output[7], Is.EqualTo($"\tUnit Test: {totalEvents} (~{totalEvents} per iteration)"));
-
-            var summaryCount = Math.Min(totalEvents, 10);
             Assert.That(output[8], Is.EqualTo($"Last {summaryCount} events from Unit Test:"));
 
             var index = 9;
