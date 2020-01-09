@@ -15,7 +15,7 @@
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageIcon>18531-twenty-sided-dice-vector-thumb.png</PackageIcon>
     <PackageIconUrl />
-    <PackageReleaseNotes>Feature #8, #9, #10</PackageReleaseNotes>
+    <PackageReleaseNotes>Feature #5, #6, #7</PackageReleaseNotes>
   </PropertyGroup>
 
   <ItemGroup>
