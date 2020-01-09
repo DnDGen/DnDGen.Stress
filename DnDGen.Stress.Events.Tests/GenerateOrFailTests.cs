@@ -757,6 +757,7 @@ namespace DnDGen.Stress.Events.Tests
 
         [TestCase(0)]
         [TestCase(1)]
+        [TestCase(2)]
         [TestCase(10)]
         [TestCase(100)]
         [TestCase(1000)]
@@ -771,10 +772,7 @@ namespace DnDGen.Stress.Events.Tests
             var count = 0;
             Assert.That(() => stressor.GenerateOrFail(() => count++, c => c < 0), Throws.InstanceOf<AssertionException>().With.Message.EqualTo("Generation timed out"));
 
-            Assert.That(count, Is.AtLeast(1000));
-
-            if (eventCount < 1000)
-                Assert.That(count, Is.AtLeast(10000));
+            Assert.That(count, Is.AtLeast(100));
         }
 
         private IEnumerable<GenEvent> GetEvents(int eventCount)

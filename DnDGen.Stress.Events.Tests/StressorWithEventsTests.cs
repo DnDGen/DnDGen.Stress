@@ -11,7 +11,7 @@ namespace DnDGen.Stress.Events.Tests
     public class StressorWithEventsTests
     {
         private const int TestCount = 97;
-        private const int TestCaseCount = 257;
+        private const int TestCaseCount = 475;
 
         private StressorWithEvents stressor;
         private StressorWithEventsOptions options;

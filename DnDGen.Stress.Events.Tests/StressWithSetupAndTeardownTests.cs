@@ -923,6 +923,7 @@ namespace DnDGen.Stress.Events.Tests
 
         [TestCase(0, IgnoreReason = "This method is not currently used in event-based stress tests")]
         [TestCase(1, IgnoreReason = "This method is not currently used in event-based stress tests")]
+        [TestCase(2, IgnoreReason = "This method is not currently used in event-based stress tests")]
         [TestCase(10, IgnoreReason = "This method is not currently used in event-based stress tests")]
         [TestCase(100, IgnoreReason = "This method is not currently used in event-based stress tests")]
         public void IterationsWithEventsCanComplete(int eventCount)

@@ -753,6 +753,7 @@ namespace DnDGen.Stress.Events.Tests
 
         [TestCase(0)]
         [TestCase(1)]
+        [TestCase(2)]
         [TestCase(10)]
         [TestCase(100)]
         [TestCase(1000)]
@@ -767,20 +768,14 @@ namespace DnDGen.Stress.Events.Tests
             var count = 0;
             stressor.Stress(() => FastTest(ref count));
 
-            Assert.That(count, Is.AtLeast(1));
-            Assert.That(count, Is.AtLeast(10));
             Assert.That(count, Is.AtLeast(100));
-            Assert.That(count, Is.AtLeast(1000));
-
-            if (eventCount < 1000)
-                Assert.That(count, Is.AtLeast(10000));
         }
 
         private IEnumerable<GenEvent> GetEvents(int eventCount)
         {
             var events = new List<GenEvent>(eventCount);
 
-            while (events.Capacity > events.Count)
+            while (eventCount > events.Count)
             {
                 var genEvent = new GenEvent("Unit Test", Guid.NewGuid().ToString());
                 events.Add(genEvent);
