@@ -606,7 +606,8 @@ namespace DnDGen.Stress.Events.Tests
                 () => TestTeardown(ref teardown)), Throws.InstanceOf<AssertionException>());
 
             var summaryPreceding = Math.Min(precedingEvents, 4);
-            var summaryFollowing = Math.Min(followingEvents, Math.Min(totalEvents, 10) - 2 - summaryPreceding);
+            var followingCap = Math.Min(totalEvents, 10) - 2 - summaryPreceding;
+            var summaryFollowing = Math.Min(followingEvents, followingCap);
             var summaryCount = summaryPreceding + 2 + summaryFollowing;
 
             Assert.That(output, Is.Not.Empty.And.Count.EqualTo(9 + summaryCount));
@@ -614,7 +615,7 @@ namespace DnDGen.Stress.Events.Tests
             Assert.That(output[1], Is.EqualTo($"Stress test complete"));
             Assert.That(output[2], Does.StartWith($"\tTime: 00:00:00."));
             Assert.That(output[3], Is.EqualTo($"\tCompleted Iterations: 0 (0%)"));
-            Assert.That(output[4], Does.StartWith($"\tIterations Per Second: 0"));
+            Assert.That(output[4], Is.EqualTo($"\tIterations Per Second: 0"));
             Assert.That(output[5], Is.EqualTo($"\tLikely Status: FAILED"));
             Assert.That(output[6], Is.EqualTo($"Events: {totalEvents} (~{totalEvents} per iteration)"));
             Assert.That(output[7], Is.EqualTo($"\tUnit Test: {totalEvents} (~{totalEvents} per iteration)"));

@@ -151,21 +151,17 @@ namespace DnDGen.Stress.Events
                 {
                     summaryEvents.Clear();
 
-                    if (dequeuedEvents.Count() <= EventSummaryCount)
-                    {
-                        summaryEvents.AddRange(dequeuedEvents);
-                    }
-                    else
-                    {
-                        var eventArray = dequeuedEvents.ToArray();
-                        var buffer = (EventSummaryCount - 2) / 2;
+                    var eventArray = dequeuedEvents.ToArray();
+                    var buffer = (EventSummaryCount - 2) / 2;
 
-                        var checkpointIndex = Array.IndexOf(eventArray, checkpointEvent);
-                        var skipCount = Math.Max(checkpointIndex - buffer, 0);
+                    var checkpointIndex = Array.IndexOf(eventArray, checkpointEvent);
+                    var skipCount = Math.Max(checkpointIndex - buffer, 0);
+                    var precedingCount = checkpointIndex - skipCount;
+                    var followingCount = Math.Min(eventArray.Length - checkpointIndex - 2, buffer);
+                    var takeCount = Math.Min(EventSummaryCount, precedingCount + 2 + followingCount);
 
-                        var failureSubset = dequeuedEvents.Skip(skipCount).Take(EventSummaryCount);
-                        summaryEvents.AddRange(failureSubset);
-                    }
+                    var failureSubset = dequeuedEvents.Skip(skipCount).Take(takeCount);
+                    summaryEvents.AddRange(failureSubset);
                 }
 
                 Assert.That(times, Has.Some.InRange(checkpointEvent.When.AddTicks(1), oneSecondAfterCheckpoint), failureMessage);
