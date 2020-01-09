@@ -472,7 +472,7 @@ namespace DnDGen.Stress.Events.Tests
             Assert.That(() => stressor.Stress(() => FastTest(ref count)), Throws.InstanceOf<AssertionException>());
 
             var summaryPreceding = Math.Min(precedingEvents, 4);
-            var summaryFollowing = Math.Min(totalEvents, 10) - 2 - summaryPreceding;
+            var summaryFollowing = Math.Min(followingEvents, Math.Min(totalEvents, 10) - 2 - summaryPreceding);
 
             Assert.That(output, Is.Not.Empty.And.Count.EqualTo(9 + summaryPreceding + 2 + summaryFollowing));
             Assert.That(output[0], Is.EqualTo($"Stress timeout is {stressor.TimeLimit}"));
@@ -492,7 +492,7 @@ namespace DnDGen.Stress.Events.Tests
             {
                 var eventIndex = i + precedingEvents - summaryPreceding;
                 var time = events[eventIndex].When.ToLongTimeString();
-                Assert.That(output[index++], Is.EqualTo($"[{time}] Unit Test: Preceding Message {eventIndex + 1}"));
+                Assert.That(output[index++], Is.EqualTo($"[{time}] Unit Test: Preceding Message {eventIndex + 1}"), $"Index {index}, Event Index {eventIndex}");
             }
 
             Assert.That(output[index++], Is.EqualTo($"[{events[precedingEvents].When.ToLongTimeString()}] Unit Test: Checkpoint Message"));
@@ -502,7 +502,7 @@ namespace DnDGen.Stress.Events.Tests
             {
                 var eventIndex = precedingEvents + 2 + i;
                 var time = events[eventIndex].When.ToLongTimeString();
-                Assert.That(output[index++], Is.EqualTo($"[{time}] Unit Test: Following Message {i + 1}"));
+                Assert.That(output[index++], Is.EqualTo($"[{time}] Unit Test: Following Message {i + 1}"), $"Index {index}, Event Index {eventIndex}");
             }
 
             Assert.That(clientId, Is.Not.EqualTo(Guid.Empty));
