@@ -398,55 +398,55 @@ namespace DnDGen.Stress.Events.Tests
             Assert.That(clientId, Is.Not.EqualTo(Guid.Empty));
         }
 
-        //[TestCase(0, 0)]
-        //[TestCase(0, 1)]
-        //[TestCase(0, 2)]
-        //[TestCase(0, 3)]
-        //[TestCase(0, 4)]
-        //[TestCase(0, 5)]
-        //[TestCase(0, 10)]
-        //[TestCase(1, 0)]
-        //[TestCase(1, 1)]
-        //[TestCase(1, 2)]
-        //[TestCase(1, 3)]
-        //[TestCase(1, 4)]
-        //[TestCase(1, 5)]
-        //[TestCase(1, 10)]
-        //[TestCase(2, 0)]
-        //[TestCase(2, 1)]
-        //[TestCase(2, 2)]
-        //[TestCase(2, 3)]
-        //[TestCase(2, 4)]
-        //[TestCase(2, 5)]
-        //[TestCase(2, 10)]
-        //[TestCase(3, 0)]
-        //[TestCase(3, 1)]
-        //[TestCase(3, 2)]
-        //[TestCase(3, 3)]
-        //[TestCase(3, 4)]
-        //[TestCase(3, 5)]
-        //[TestCase(3, 10)]
-        //[TestCase(4, 0)]
-        //[TestCase(4, 1)]
-        //[TestCase(4, 2)]
-        //[TestCase(4, 3)]
-        //[TestCase(4, 4)]
-        //[TestCase(4, 5)]
-        //[TestCase(4, 10)]
-        //[TestCase(5, 0)]
-        //[TestCase(5, 1)]
-        //[TestCase(5, 2)]
-        //[TestCase(5, 3)]
-        //[TestCase(5, 4)]
-        //[TestCase(5, 5)]
-        //[TestCase(5, 10)]
-        //[TestCase(10, 0)]
-        //[TestCase(10, 1)]
-        //[TestCase(10, 2)]
-        //[TestCase(10, 3)]
-        //[TestCase(10, 4)]
-        //[TestCase(10, 5)]
-        //[TestCase(10, 10)]
+        [TestCase(0, 0)]
+        [TestCase(0, 1)]
+        [TestCase(0, 2)]
+        [TestCase(0, 3)]
+        [TestCase(0, 4)]
+        [TestCase(0, 5)]
+        [TestCase(0, 10)]
+        [TestCase(1, 0)]
+        [TestCase(1, 1)]
+        [TestCase(1, 2)]
+        [TestCase(1, 3)]
+        [TestCase(1, 4)]
+        [TestCase(1, 5)]
+        [TestCase(1, 10)]
+        [TestCase(2, 0)]
+        [TestCase(2, 1)]
+        [TestCase(2, 2)]
+        [TestCase(2, 3)]
+        [TestCase(2, 4)]
+        [TestCase(2, 5)]
+        [TestCase(2, 10)]
+        [TestCase(3, 0)]
+        [TestCase(3, 1)]
+        [TestCase(3, 2)]
+        [TestCase(3, 3)]
+        [TestCase(3, 4)]
+        [TestCase(3, 5)]
+        [TestCase(3, 10)]
+        [TestCase(4, 0)]
+        [TestCase(4, 1)]
+        [TestCase(4, 2)]
+        [TestCase(4, 3)]
+        [TestCase(4, 4)]
+        [TestCase(4, 5)]
+        [TestCase(4, 10)]
+        [TestCase(5, 0)]
+        [TestCase(5, 1)]
+        [TestCase(5, 2)]
+        [TestCase(5, 3)]
+        [TestCase(5, 4)]
+        [TestCase(5, 5)]
+        [TestCase(5, 10)]
+        [TestCase(10, 0)]
+        [TestCase(10, 1)]
+        [TestCase(10, 2)]
+        [TestCase(10, 3)]
+        [TestCase(10, 4)]
+        [TestCase(10, 5)]
+        [TestCase(10, 10)]
         public void EventSpacingIsNotWithin1SecondOfEachOther_FocusesOnErrorEvents(int precedingEvents, int followingEvents)
         {
             var events = new List<GenEvent>();
@@ -454,7 +454,7 @@ namespace DnDGen.Stress.Events.Tests
 
             while (events.Count < precedingEvents)
             {
-                events.Add(new GenEvent("Unit Test", $"Preceding Message {events.Count + 1}") { When = DateTime.Now.AddMilliseconds(-1002 - events.Count) });
+                events.Add(new GenEvent("Unit Test", $"Preceding Message {events.Count + 1}") { When = DateTime.Now.AddMilliseconds(-1500 + events.Count) });
             }
 
             events.Add(new GenEvent("Unit Test", "Checkpoint Message") { When = DateTime.Now.AddMilliseconds(-1001) });
@@ -485,17 +485,21 @@ namespace DnDGen.Stress.Events.Tests
             Assert.That(output[8], Is.EqualTo($"Last {summaryCount} events from Unit Test:"));
 
             var index = 9;
-            for (var i = 0; i < precedingEvents; i++)
+            for (var i = 0; i < summaryPreceding; i++)
             {
-                Assert.That(output[index++], Is.EqualTo($"[{events[i].When.ToLongTimeString()}] Unit Test: Preceding Message {i + 1}"));
+                var eventIndex = i + precedingEvents - summaryPreceding;
+                var time = events[eventIndex].When.ToLongTimeString();
+                Assert.That(output[index++], Is.EqualTo($"[{time}] Unit Test: Preceding Message {eventIndex + 1}"));
             }
 
             Assert.That(output[index++], Is.EqualTo($"[{events[precedingEvents].When.ToLongTimeString()}] Unit Test: Checkpoint Message"));
             Assert.That(output[index++], Is.EqualTo($"[{events[precedingEvents + 1].When.ToLongTimeString()}] Unit Test: Failure Message"));
 
-            for (var i = 0; i < followingEvents; i++)
+            for (var i = 0; i < summaryFollowing; i++)
             {
-                Assert.That(output[index++], Is.EqualTo($"[{events[precedingEvents + 2 + i].When.ToLongTimeString()}] Unit Test: Following Message {i + 1}"));
+                var eventIndex = precedingEvents + 2 + i;
+                var time = events[eventIndex].When.ToLongTimeString();
+                Assert.That(output[index++], Is.EqualTo($"[{time}] Unit Test: Following Message {i + 1}"));
             }
 
             Assert.That(clientId, Is.Not.EqualTo(Guid.Empty));

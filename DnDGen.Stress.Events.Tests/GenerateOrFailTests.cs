@@ -508,7 +508,7 @@ namespace DnDGen.Stress.Events.Tests
 
             while (events.Count < precedingEvents)
             {
-                events.Add(new GenEvent("Unit Test", $"Preceding Message {events.Count + 1}") { When = DateTime.Now.AddMilliseconds(-1002 - events.Count) });
+                events.Add(new GenEvent("Unit Test", $"Preceding Message {events.Count + 1}") { When = DateTime.Now.AddMilliseconds(-1500 + events.Count) });
             }
 
             events.Add(new GenEvent("Unit Test", "Checkpoint Message") { When = DateTime.Now.AddMilliseconds(-1001) });
