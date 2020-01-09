@@ -471,7 +471,10 @@ namespace DnDGen.Stress.Events.Tests
             var count = 0;
             Assert.That(() => stressor.Stress(() => FastTest(ref count)), Throws.InstanceOf<AssertionException>());
 
-            Assert.That(output, Is.Not.Empty.And.Count.EqualTo(11));
+            var summaryPreceding = Math.Min(precedingEvents, 4);
+            var summaryFollowing = 10 - 2 - summaryPreceding;
+
+            Assert.That(output, Is.Not.Empty.And.Count.EqualTo(9 + summaryPreceding + 2 + summaryFollowing));
             Assert.That(output[0], Is.EqualTo($"Stress timeout is {stressor.TimeLimit}"));
             Assert.That(output[1], Is.EqualTo($"Stress test complete"));
             Assert.That(output[2], Does.StartWith($"\tTime: 00:00:00."));
