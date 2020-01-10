@@ -11,10 +11,11 @@ namespace DnDGen.Stress.Events.Tests
     public class StressorWithEventsTests
     {
         private const int TestCount = 97;
-        private const int TestCaseCount = 61;
+        private const int TestCaseCount = 475;
 
         private StressorWithEvents stressor;
         private StressorWithEventsOptions options;
+        private Mock<ILogger> mockLogger;
         private Mock<ClientIDManager> mockClientIdManager;
         private Mock<GenEventQueue> mockEventQueue;
         private Guid clientId;
@@ -31,7 +32,9 @@ namespace DnDGen.Stress.Events.Tests
             options.EventQueue = mockEventQueue.Object;
             options.Source = "Unit Test";
 
-            stressor = new StressorWithEvents(options);
+            mockLogger = new Mock<ILogger>();
+
+            stressor = new StressorWithEvents(options, mockLogger.Object);
 
             clientId = Guid.Empty;
             var count = 1;
@@ -102,14 +105,14 @@ namespace DnDGen.Stress.Events.Tests
         public void ThrowExceptionIfOptionsAreNotValid()
         {
             options.ClientIdManager = null;
-            Assert.That(() => new Stressor(options), Throws.ArgumentException.With.Message.EqualTo("Stressor Options are not valid"));
+            Assert.That(() => new StressorWithEvents(options, mockLogger.Object), Throws.ArgumentException.With.Message.EqualTo("Stressor Options are not valid"));
         }
 
         [Test]
         public void SetPercentageViaOptions()
         {
             options.TimeLimitPercentage = .9266;
-            stressor = new StressorWithEvents(options);
+            stressor = new StressorWithEvents(options, mockLogger.Object);
             Assert.That(stressor.TimeLimitPercentage, Is.EqualTo(.9266));
         }
 
@@ -117,7 +120,7 @@ namespace DnDGen.Stress.Events.Tests
         public void WhenFullStress_DurationIsLong()
         {
             options.IsFullStress = true;
-            stressor = new StressorWithEvents(options);
+            stressor = new StressorWithEvents(options, mockLogger.Object);
             var oneSecondTimeLimit = new TimeSpan(0, 0, 1);
 
             Assert.That(stressor.IsFullStress, Is.True);
@@ -142,9 +145,9 @@ namespace DnDGen.Stress.Events.Tests
             options.RunningAssembly = null;
             options.TimeLimitPercentage = percentage;
 
-            stressor = new StressorWithEvents(options);
+            stressor = new StressorWithEvents(options, mockLogger.Object);
 
-            var seconds = Stressor.TravisJobBuildTimeLimit * stressor.TimeLimitPercentage / 100;
+            var seconds = StressorWithEvents.TravisJobBuildTimeLimit * stressor.TimeLimitPercentage / 100;
             var ticks = seconds * TimeSpan.TicksPerSecond;
             var expectedTimeLimit = new TimeSpan((long)ticks);
 
@@ -159,9 +162,9 @@ namespace DnDGen.Stress.Events.Tests
             options.IsFullStress = true;
             options.TimeLimitPercentage = percentage;
 
-            stressor = new StressorWithEvents(options);
+            stressor = new StressorWithEvents(options, mockLogger.Object);
 
-            var seconds = Stressor.TravisJobBuildTimeLimit * stressor.TimeLimitPercentage / (TestCount + TestCaseCount);
+            var seconds = StressorWithEvents.TravisJobBuildTimeLimit * stressor.TimeLimitPercentage / (TestCount + TestCaseCount);
             var ticks = seconds * TimeSpan.TicksPerSecond;
             var expectedTimeLimit = new TimeSpan((long)ticks);
 
@@ -218,9 +221,9 @@ namespace DnDGen.Stress.Events.Tests
             options.IsFullStress = true;
             options.TimeLimitPercentage = percentage;
 
-            stressor = new StressorWithEvents(options);
+            stressor = new StressorWithEvents(options, mockLogger.Object);
 
-            var seconds = Stressor.TravisJobBuildTimeLimit * stressor.TimeLimitPercentage / (TestCount + TestCaseCount);
+            var seconds = StressorWithEvents.TravisJobBuildTimeLimit * stressor.TimeLimitPercentage / (TestCount + TestCaseCount);
             var ticks = seconds * TimeSpan.TicksPerSecond;
             var expectedTimeLimit = new TimeSpan((long)ticks);
 
@@ -237,7 +240,7 @@ namespace DnDGen.Stress.Events.Tests
             options.RunningAssembly = null;
             options.TestCount = 5;
 
-            stressor = new StressorWithEvents(options);
+            stressor = new StressorWithEvents(options, mockLogger.Object);
             var seconds = Convert.ToInt32(Stressor.TravisJobOutputTimeLimit * percentage);
             var expectedTimeLimit = new TimeSpan(0, 0, seconds);
 
@@ -251,7 +254,7 @@ namespace DnDGen.Stress.Events.Tests
             options.RunningAssembly = Assembly.GetAssembly(typeof(int));
             options.IsFullStress = true;
 
-            Assert.That(() => stressor = new StressorWithEvents(options), Throws.ArgumentException.With.Message.EqualTo("No tests were detected in the running assembly"));
+            Assert.That(() => stressor = new StressorWithEvents(options, mockLogger.Object), Throws.ArgumentException.With.Message.EqualTo("No tests were detected in the running assembly"));
         }
 
         [Test]
@@ -260,13 +263,13 @@ namespace DnDGen.Stress.Events.Tests
             options.RunningAssembly = Assembly.GetAssembly(typeof(int));
             options.IsFullStress = false;
 
-            Assert.That(() => stressor = new StressorWithEvents(options), Throws.ArgumentException.With.Message.EqualTo("No tests were detected in the running assembly"));
+            Assert.That(() => stressor = new StressorWithEvents(options, mockLogger.Object), Throws.ArgumentException.With.Message.EqualTo("No tests were detected in the running assembly"));
         }
 
         [Test]
         public void GetActiveTestCount()
         {
-            var count = Stressor.CountStressTestsIn(options.RunningAssembly);
+            var count = StressorWithEvents.CountStressTestsIn(options.RunningAssembly);
             Assert.That(count, Is.EqualTo(TestCount + TestCaseCount));
         }
     }

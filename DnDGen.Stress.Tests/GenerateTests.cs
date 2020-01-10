@@ -1,10 +1,9 @@
-﻿using NUnit.Framework;
+﻿using Moq;
+using NUnit.Framework;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
-using System.Linq;
 using System.Reflection;
-using System.Text;
 
 namespace DnDGen.Stress.Tests
 {
@@ -12,46 +11,10 @@ namespace DnDGen.Stress.Tests
     public class GenerateTests
     {
         private Stressor stressor;
+        private Mock<ILogger> mockLogger;
+        private List<string> output;
         private StressorOptions options;
         private Stopwatch stopwatch;
-        private StringBuilder console;
-        private int runTestCount;
-        private int runTestTotal;
-
-        [OneTimeSetUp]
-        public void OneTimeSetup()
-        {
-            runTestCount = 0;
-            runTestTotal = CountTotalTests();
-        }
-
-        private int CountTotalTests()
-        {
-            var type = GetType();
-            var methods = type.GetMethods();
-            var activeStressTests = methods.Where(m => IsActiveTest(m));
-            var testsCount = activeStressTests.Sum(m => m.GetCustomAttributes<TestAttribute>(true).Count());
-            var testCasesCount = activeStressTests.Sum(m => m.GetCustomAttributes<TestCaseAttribute>().Count(tc => TestCaseIsActive(tc)));
-            var testsTotal = testsCount + testCasesCount;
-
-            return testsTotal;
-        }
-
-        private bool IsActiveTest(MethodInfo method)
-        {
-            if (method.GetCustomAttributes<IgnoreAttribute>(true).Any())
-                return false;
-
-            if (method.GetCustomAttributes<TestAttribute>(true).Any())
-                return true;
-
-            return method.GetCustomAttributes<TestCaseAttribute>(true).Any(tc => TestCaseIsActive(tc));
-        }
-
-        private bool TestCaseIsActive(TestCaseAttribute testCase)
-        {
-            return string.IsNullOrEmpty(testCase.Ignore) && string.IsNullOrEmpty(testCase.IgnoreReason);
-        }
 
         [SetUp]
         public void Setup()
@@ -59,23 +22,14 @@ namespace DnDGen.Stress.Tests
             options = new StressorOptions();
             options.RunningAssembly = Assembly.GetExecutingAssembly();
 
-            stressor = new Stressor(options);
+            output = new List<string>();
+            mockLogger = new Mock<ILogger>();
+            mockLogger
+                .Setup(l => l.Log(It.IsAny<string>()))
+                .Callback((string m) => output.Add(m));
+
+            stressor = new Stressor(options, mockLogger.Object);
             stopwatch = new Stopwatch();
-            console = new StringBuilder();
-            var writer = new StringWriter(console);
-
-            Console.SetOut(writer);
-        }
-
-        [TearDown]
-        public void Teardown()
-        {
-            var standardOutput = new StreamWriter(Console.OpenStandardOutput());
-            standardOutput.AutoFlush = true;
-            Console.SetOut(standardOutput);
-
-            runTestCount++;
-            Console.WriteLine($"Test {runTestCount} of {runTestTotal} for Generate() method for Stressor completed");
         }
 
         [Test]
@@ -129,7 +83,6 @@ namespace DnDGen.Stress.Tests
             Assert.That(result, Is.EqualTo(9267));
             Assert.That(count, Is.EqualTo(9268));
 
-            var output = console.ToString();
             Assert.That(output, Is.Empty);
         }
 
