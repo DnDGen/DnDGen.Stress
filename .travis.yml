@@ -5,9 +5,9 @@ dotnet: 3.1
 
 script:
   - dotnet build ./DnDGen.Stress/DnDGen.Stress.csproj -c Release
-    && dotnet test ./DnDGen.Stress.Tests/DnDGen.Stress.Tests.csproj
+    && dotnet test ./DnDGen.Stress.Tests/DnDGen.Stress.Tests.csproj -v normal
   - dotnet build ./DnDGen.Stress.Events/DnDGen.Stress.Events.csproj -c Release
-    && dotnet test ./DnDGen.Stress.Events.Tests/DnDGen.Stress.Events.Tests.csproj
+    && dotnet test ./DnDGen.Stress.Events.Tests/DnDGen.Stress.Events.Tests.csproj -v normal
 deploy:
   skip_cleanup: true
   provider: script

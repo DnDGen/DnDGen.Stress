@@ -55,13 +55,6 @@ namespace DnDGen.Stress.Events.Tests
             });
         }
 
-        [TearDown]
-        public void TearDown()
-        {
-            //HACK: Need to do this since tests take longer than 10 minutes to run, and Travis cuts the build after that long without activity
-            Console.WriteLine($"Test completed at {DateTime.Now}");
-        }
-
         [Test]
         public void StopsWhenTimeLimitHit()
         {
