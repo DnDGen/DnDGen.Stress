@@ -1,4 +1,4 @@
-﻿using EventGen;
+﻿using DnDGen.EventGen;
 using Moq;
 using NUnit.Framework;
 using System;
@@ -53,13 +53,6 @@ namespace DnDGen.Stress.Events.Tests
                 new GenEvent(options.Source, $"Event {eventCount++} for {g}"),
                 new GenEvent("Wrong Source", $"Wrong event {eventCount++} for {g}"),
             });
-        }
-
-        [TearDown]
-        public void TearDown()
-        {
-            //HACK: Need to do this since tests take longer than 10 minutes to run, and Travis cuts the build after that long without activity
-            Console.WriteLine($"Test completed at {DateTime.Now}");
         }
 
         [Test]

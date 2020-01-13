@@ -1,4 +1,4 @@
-﻿using EventGen;
+﻿using DnDGen.EventGen;
 using NUnit.Framework;
 using System;
 using System.Collections.Generic;
