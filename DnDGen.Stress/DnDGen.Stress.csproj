@@ -6,7 +6,7 @@
     <Version>3.0.0</Version>
     <Authors>Karl M. Speer</Authors>
     <Company>DnDGen</Company>
-    <Product>DnDGen.Stress</Product>
+    <Product>Stress</Product>
     <Description>A framework for running stress tests against random generators</Description>
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/DnDGen/DnDGen.Stress</PackageProjectUrl>
