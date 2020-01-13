@@ -1,4 +1,4 @@
-﻿using EventGen;
+﻿using DnDGen.EventGen;
 
 namespace DnDGen.Stress.Events
 {

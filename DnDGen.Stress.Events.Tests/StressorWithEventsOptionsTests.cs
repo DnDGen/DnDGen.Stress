@@ -1,4 +1,4 @@
-﻿using EventGen;
+﻿using DnDGen.EventGen;
 using Moq;
 using NUnit.Framework;
 using System.Reflection;
