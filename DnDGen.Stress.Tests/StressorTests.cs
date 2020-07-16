@@ -9,8 +9,8 @@ namespace DnDGen.Stress.Tests
     [TestFixture]
     public class StressorTests
     {
-        private const int TestCount = 58;
-        private const int TestCaseCount = 47;
+        private const int TestCount = 78;
+        private const int TestCaseCount = 83;
 
         private Stressor stressor;
         private StressorOptions options;
@@ -89,6 +89,14 @@ namespace DnDGen.Stress.Tests
         }
 
         [Test]
+        public void SetMaxAsyncBatchViaOptions()
+        {
+            options.MaxAsyncBatch = 42;
+            stressor = new Stressor(options);
+            Assert.That(stressor.MaxAsyncBatch, Is.EqualTo(42));
+        }
+
+        [Test]
         public void WhenFullStress_DurationIsLong()
         {
             options.IsFullStress = true;
@@ -102,10 +110,10 @@ namespace DnDGen.Stress.Tests
         [Test]
         public void WhenNotFullStress_DurationIs1Second()
         {
-            var expectedTimeLimit = new TimeSpan(0, 0, 1);
+            var oneSecondTimeLimit = new TimeSpan(0, 0, 1);
 
             Assert.That(stressor.IsFullStress, Is.False);
-            Assert.That(stressor.TimeLimit, Is.EqualTo(expectedTimeLimit));
+            Assert.That(stressor.TimeLimit, Is.EqualTo(oneSecondTimeLimit));
         }
 
         [TestCase(1)]

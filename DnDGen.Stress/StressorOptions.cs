@@ -8,6 +8,7 @@ namespace DnDGen.Stress
         public int TestCount { get; set; }
         public Assembly RunningAssembly { get; set; }
         public double TimeLimitPercentage { get; set; }
+        public int MaxAsyncBatch { get; set; }
 
         public virtual bool AreValid
         {
@@ -23,6 +24,7 @@ namespace DnDGen.Stress
         public StressorOptions()
         {
             TimeLimitPercentage = 1;
+            MaxAsyncBatch = 8;
         }
     }
 }
