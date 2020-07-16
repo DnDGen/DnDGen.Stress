@@ -49,7 +49,7 @@ namespace DnDGen.Stress.Tests
 
             stopwatch.Stop();
 
-            Assert.That(stopwatch.Elapsed, Is.EqualTo(stressor.TimeLimit).Within(.01).Seconds);
+            Assert.That(stopwatch.Elapsed, Is.EqualTo(stressor.TimeLimit).Within(.1).Seconds);
             Assert.That(count, Is.LessThan(Stressor.ConfidentIterations));
             Assert.That(setup, Is.LessThan(Stressor.ConfidentIterations));
             Assert.That(teardown, Is.LessThan(Stressor.ConfidentIterations));
@@ -66,8 +66,7 @@ namespace DnDGen.Stress.Tests
         private void FastTest(ref int count, int failLimit = int.MaxValue)
         {
             count++;
-            Assert.That(count, Is.Positive);
-            Assert.That(count, Is.LessThan(failLimit));
+            Assert.That(count, Is.Positive.And.LessThan(failLimit));
         }
 
         [Test]
@@ -232,7 +231,7 @@ namespace DnDGen.Stress.Tests
 
             stopwatch.Stop();
 
-            Assert.That(stopwatch.Elapsed, Is.EqualTo(stressor.TimeLimit).Within(.01).Seconds);
+            Assert.That(stopwatch.Elapsed, Is.EqualTo(stressor.TimeLimit).Within(.1).Seconds);
             Assert.That(count, Is.LessThan(Stressor.ConfidentIterations), "Count");
             Assert.That(setup, Is.LessThan(Stressor.ConfidentIterations), "Setup");
             Assert.That(teardown, Is.LessThan(Stressor.ConfidentIterations), "Tear Down");
@@ -293,7 +292,7 @@ namespace DnDGen.Stress.Tests
             Assert.That(count, Is.EqualTo(12));
             Assert.That(setup, Is.EqualTo(12));
             Assert.That(teardown, Is.EqualTo(12));
-            Assert.That(exception.StackTrace.Trim(), Does.Not.StartsWith("at DnDGen.Stress.Stressor.RunAction(Action setup, Action action, Action teardown)"));
+            Assert.That(exception.StackTrace.Trim(), Does.Not.StartsWith("at DnDGen.Stress.Stressor.RunAction"));
         }
 
         public void FailStress(int count)

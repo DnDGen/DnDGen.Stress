@@ -1,9 +1,11 @@
 ﻿using NUnit.Framework;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.ExceptionServices;
+using System.Threading.Tasks;
 
 namespace DnDGen.Stress
 {
@@ -13,6 +15,7 @@ namespace DnDGen.Stress
         public readonly bool IsFullStress;
         public readonly int StressTestCount;
         public readonly double TimeLimitPercentage;
+        public readonly int MaxAsyncBatch;
 
         public TimeSpan TimeLimit
         {
@@ -58,6 +61,8 @@ namespace DnDGen.Stress
 
             TimeLimitPercentage = options.TimeLimitPercentage;
             timeLimitInSeconds = GetTimeLimitInSeconds();
+
+            MaxAsyncBatch = options.MaxAsyncBatch;
         }
 
         private double GetTimeLimitInSeconds()
@@ -149,6 +154,14 @@ namespace DnDGen.Stress
                 StressTearDown);
         }
 
+        public virtual async Task StressAsync(Action setup, Func<Task> test, Action teardown)
+        {
+            await RunActionAsync(
+                StressSetup,
+                async () => await RunInLoopAsync(setup, test, teardown),
+                StressTearDown);
+        }
+
         private void RunInLoop(Action setup, Action test, Action teardown)
         {
             do
@@ -158,6 +171,23 @@ namespace DnDGen.Stress
             while (TestShouldKeepRunning());
         }
 
+        private async Task RunInLoopAsync(Action setup, Func<Task> test, Action teardown)
+        {
+            do
+            {
+                var tasks = new List<Task>(MaxAsyncBatch);
+
+                while (tasks.Count < MaxAsyncBatch)
+                {
+                    var task = RunActionAsync(setup, test, teardown);
+                    tasks.Add(task);
+                }
+
+                await Task.WhenAll(tasks);
+            }
+            while (TestShouldKeepRunning(MaxAsyncBatch));
+        }
+
         private void RunAction(Action setup, Action action, Action teardown)
         {
             setup();
@@ -165,6 +195,25 @@ namespace DnDGen.Stress
             try
             {
                 action();
+            }
+            catch (Exception e)
+            {
+                ExceptionDispatchInfo.Capture(e).Throw();
+                return;
+            }
+            finally
+            {
+                teardown();
+            }
+        }
+
+        private async Task RunActionAsync(Action setup, Func<Task> action, Action teardown)
+        {
+            setup();
+
+            try
+            {
+                await action();
             }
             catch (Exception e)
             {
@@ -196,15 +245,23 @@ namespace DnDGen.Stress
             }
         }
 
-        private bool TestShouldKeepRunning()
+        private bool TestShouldKeepRunning(int iterationCount = 1)
         {
-            iterations++;
+            iterations += iterationCount;
             return stressStopwatch.Elapsed < TimeLimit && iterations < ConfidentIterations;
         }
 
         public virtual void Stress(Action test)
         {
             RunAction(StressSetup, () => RunInLoop(test), StressTearDown);
+        }
+
+        public virtual async Task StressAsync(Func<Task> test)
+        {
+            await RunActionAsync(
+                StressSetup,
+                async () => await RunInLoopAsync(test),
+                StressTearDown);
         }
 
         private void RunInLoop(Action test)
@@ -214,6 +271,23 @@ namespace DnDGen.Stress
                 test();
             }
             while (TestShouldKeepRunning());
+        }
+
+        private async Task RunInLoopAsync(Func<Task> test)
+        {
+            do
+            {
+                var tasks = new List<Task>(MaxAsyncBatch);
+
+                while (tasks.Count < MaxAsyncBatch)
+                {
+                    var task = test();
+                    tasks.Add(task);
+                }
+
+                await Task.WhenAll(tasks);
+            }
+            while (TestShouldKeepRunning(MaxAsyncBatch));
         }
 
         //INFO: We are explicitly not doing the setup or teardown here, as Generate is often used within a Stress or GenerateOrFail call, which will handle the setup
