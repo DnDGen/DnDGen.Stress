@@ -42,7 +42,7 @@ namespace DnDGen.Stress.Tests
             stressor.Stress(() => SlowTest(ref count));
             stopwatch.Stop();
 
-            Assert.That(stopwatch.Elapsed, Is.EqualTo(stressor.TimeLimit).Within(.01).Seconds);
+            Assert.That(stopwatch.Elapsed, Is.EqualTo(stressor.TimeLimit).Within(.1).Seconds);
             Assert.That(count, Is.LessThan(Stressor.ConfidentIterations));
         }
 
@@ -196,7 +196,7 @@ namespace DnDGen.Stress.Tests
 
             var exception = Assert.Throws<ArgumentException>(() => stressor.Stress(() => FailStress(count++)));
             Assert.That(count, Is.EqualTo(12));
-            Assert.That(exception.StackTrace.Trim(), Does.Not.StartsWith("at DnDGen.Stress.Stressor.RunAction(Action setup, Action action, Action teardown)"));
+            Assert.That(exception.StackTrace.Trim(), Does.Not.StartsWith("at DnDGen.Stress.Stressor.RunAction"));
         }
 
         public void FailStress(int count)

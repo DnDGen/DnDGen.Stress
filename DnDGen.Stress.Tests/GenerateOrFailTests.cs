@@ -42,7 +42,7 @@ namespace DnDGen.Stress.Tests
             Assert.That(() => stressor.GenerateOrFail(() => SlowGenerate(ref count), c => false), Throws.InstanceOf<AssertionException>().With.Message.EqualTo("Generation timed out"));
             stopwatch.Stop();
 
-            Assert.That(stopwatch.Elapsed, Is.EqualTo(stressor.TimeLimit).Within(.01).Seconds);
+            Assert.That(stopwatch.Elapsed, Is.EqualTo(stressor.TimeLimit).Within(.1).Seconds);
             Assert.That(count, Is.LessThan(Stressor.ConfidentIterations));
         }
 
@@ -174,7 +174,7 @@ namespace DnDGen.Stress.Tests
                 Throws.InstanceOf<AssertionException>());
             stopwatch.Stop();
 
-            Assert.That(stopwatch.Elapsed, Is.EqualTo(stressor.TimeLimit).Within(.01).Seconds);
+            Assert.That(stopwatch.Elapsed, Is.EqualTo(stressor.TimeLimit).Within(.1).Seconds);
             Assert.That(count, Is.AtLeast(9266));
         }
 

@@ -40,26 +40,23 @@ namespace DnDGen.Stress.Tests
             var counts = new BlockingCollection<bool>();
 
             stopwatch.Start();
-            await stressor.StressAsync(async () =>
-            {
-                await SlowTestAsync();
-                counts.Add(true);
-            });
+            await stressor.StressAsync(async () => await SlowTestAsync(counts));
             stopwatch.Stop();
 
-            Assert.That(stopwatch.Elapsed, Is.EqualTo(stressor.TimeLimit).Within(.02).Seconds);
+            Assert.That(stopwatch.Elapsed, Is.EqualTo(stressor.TimeLimit).Within(.1).Seconds);
             Assert.That(counts, Has.Count.LessThan(Stressor.ConfidentIterations));
         }
 
-        private async Task SlowTestAsync()
+        private async Task SlowTestAsync(BlockingCollection<bool> collection)
         {
-            await FastTestAsync();
+            await FastTestAsync(collection);
             await Task.Delay(1);
         }
 
-        private async Task FastTestAsync()
+        private async Task FastTestAsync(BlockingCollection<bool> collection)
         {
-            Assert.That(1, Is.Positive);
+            collection.Add(true);
+            Assert.That(collection, Has.Count.Positive);
         }
 
         [Test]
@@ -74,11 +71,7 @@ namespace DnDGen.Stress.Tests
             var counts = new BlockingCollection<bool>();
 
             stopwatch.Start();
-            await stressor.StressAsync(async () =>
-            {
-                await FastTestAsync();
-                counts.Add(true);
-            });
+            await stressor.StressAsync(async () => await FastTestAsync(counts));
             stopwatch.Stop();
 
             Assert.That(stopwatch.Elapsed, Is.LessThan(stressor.TimeLimit));
@@ -88,7 +81,8 @@ namespace DnDGen.Stress.Tests
         [Test]
         public async Task WritesStressDurationToConsole()
         {
-            await stressor.StressAsync(FastTestAsync);
+            var counts = new BlockingCollection<bool>();
+            await stressor.StressAsync(async () => await FastTestAsync(counts));
 
             Assert.That(output, Is.Not.Empty);
             Assert.That(output[0], Is.EqualTo($"Stress timeout is {stressor.TimeLimit}"));
@@ -97,7 +91,8 @@ namespace DnDGen.Stress.Tests
         [Test]
         public async Task WritesStressSummaryToConsole()
         {
-            await stressor.StressAsync(FastTestAsync);
+            var counts = new BlockingCollection<bool>();
+            await stressor.StressAsync(async () => await FastTestAsync(counts));
 
             Assert.That(output, Is.Not.Empty.And.Count.EqualTo(6));
             Assert.That(output[0], Is.EqualTo($"Stress timeout is {stressor.TimeLimit}"));
@@ -111,7 +106,7 @@ namespace DnDGen.Stress.Tests
         [Test]
         public async Task WritesFailedStressSummaryToConsole()
         {
-            Assert.That(async () => await stressor.StressAsync(FailedTest), Throws.InstanceOf<AssertionException>());
+            Assert.That(async () => await stressor.StressAsync(FailedTestAsync), Throws.InstanceOf<AssertionException>());
 
             Assert.That(output, Is.Not.Empty.And.Count.EqualTo(6));
             Assert.That(output[0], Is.EqualTo($"Stress timeout is {stressor.TimeLimit}"));
@@ -122,7 +117,7 @@ namespace DnDGen.Stress.Tests
             Assert.That(output[5], Is.EqualTo($"\tLikely Status: FAILED"));
         }
 
-        private async Task FailedTest()
+        private async Task FailedTestAsync()
         {
             Assert.Fail("This test should fail");
         }
@@ -130,7 +125,8 @@ namespace DnDGen.Stress.Tests
         [Test]
         public async Task WritesStressSlowSummaryToConsole()
         {
-            await stressor.StressAsync(SlowTestAsync);
+            var counts = new BlockingCollection<bool>();
+            await stressor.StressAsync(async () => await SlowTestAsync(counts));
 
             Assert.That(output, Is.Not.Empty.And.Count.EqualTo(6));
             Assert.That(output[0], Is.EqualTo($"Stress timeout is {stressor.TimeLimit}"));
@@ -145,11 +141,7 @@ namespace DnDGen.Stress.Tests
         public async Task StressATest()
         {
             var counts = new BlockingCollection<bool>();
-            await stressor.StressAsync(async () =>
-            {
-                await FastTestAsync();
-                counts.Add(true);
-            });
+            await stressor.StressAsync(async () => await FastTestAsync(counts));
 
             Assert.That(counts, Has.Count.AtLeast(100_000));
         }
@@ -160,22 +152,21 @@ namespace DnDGen.Stress.Tests
             var counts = new BlockingCollection<bool>();
 
             stopwatch.Start();
-            await stressor.StressAsync(async () =>
-            {
-                await TestWithGenerate();
-                counts.Add(true);
-            });
+            await stressor.StressAsync(async () => await TestWithGenerateAsync(counts));
             stopwatch.Stop();
 
             Assert.That(stopwatch.Elapsed, Is.LessThan(stressor.TimeLimit).Or.EqualTo(stressor.TimeLimit).Within(.1).Seconds);
             Assert.That(counts, Has.Count.LessThan(Stressor.ConfidentIterations));
         }
 
-        private async Task TestWithGenerate()
+        private async Task TestWithGenerateAsync(BlockingCollection<bool> collection)
         {
             var innerCount = 0;
             var count = stressor.Generate(() => innerCount++, c => c > 1);
             Assert.That(count, Is.AtLeast(2));
+
+            collection.Add(true);
+            Assert.That(collection, Has.Count.Positive);
         }
 
         [TestCase(65)]
@@ -188,7 +179,8 @@ namespace DnDGen.Stress.Tests
 
             stressor = new Stressor(options, mockLogger.Object);
 
-            await stressor.StressAsync(SlowTestAsync);
+            var counts = new BlockingCollection<bool>();
+            await stressor.StressAsync(async () => await SlowTestAsync(counts));
 
             var time = stressor.TimeLimit.ToString().Substring(0, 10);
 
@@ -209,19 +201,53 @@ namespace DnDGen.Stress.Tests
 
             var exception = Assert.ThrowsAsync<ArgumentException>(async () =>
                 await stressor.StressAsync(async () =>
-                {
-                    await FailStress(counts.Count);
-                    counts.Add(true);
-                }));
+                    await FailStressAsync(counts)));
 
-            Assert.That(counts, Has.Count.EqualTo(11));
-            Assert.That(exception.StackTrace.Trim(), Does.Not.StartsWith("at DnDGen.Stress.Stressor.RunAction(Action setup, Action action, Action teardown)"));
+            Assert.That(counts, Has.Count.EqualTo(16));
+            Assert.That(exception.StackTrace.Trim(), Does.Not.StartsWith("at DnDGen.Stress.Stressor.RunActionAsync"));
         }
 
-        public async Task FailStress(int count)
+        public async Task FailStressAsync(BlockingCollection<bool> collection)
         {
-            if (count > 10)
+            collection.Add(true);
+            if (collection.Count > 10)
                 throw new ArgumentException();
+        }
+
+        [TestCase(1)]
+        [TestCase(2)]
+        [TestCase(3)]
+        [TestCase(4)]
+        [TestCase(5)]
+        [TestCase(6)]
+        [TestCase(7)]
+        [TestCase(8)]
+        [TestCase(9)]
+        [TestCase(10)]
+        [TestCase(11)]
+        [TestCase(12)]
+        [TestCase(13)]
+        [TestCase(14)]
+        [TestCase(15)]
+        [TestCase(16)]
+        public async Task HonorMaxAsyncBatch(int parallel)
+        {
+            options.IsFullStress = true;
+            options.MaxAsyncBatch = parallel;
+
+            stressor = new Stressor(options, mockLogger.Object);
+
+            var counts = new BlockingCollection<bool>();
+
+            await stressor.StressAsync(async () => await FastTestAsync(counts));
+
+            var expectedCount = Stressor.ConfidentIterations;
+            if (Stressor.ConfidentIterations % parallel != 0)
+            {
+                expectedCount += parallel - Stressor.ConfidentIterations % parallel;
+            }
+
+            Assert.That(counts, Has.Count.EqualTo(expectedCount));
         }
     }
 }
