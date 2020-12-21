@@ -21,6 +21,9 @@ namespace DnDGen.Stress.Tests
         {
             options = new StressorOptions();
             options.RunningAssembly = Assembly.GetExecutingAssembly();
+            options.ConfidenceIterations = 1_000;
+            options.BuildTimeLimitInSeconds = 10;
+            options.OutputTimeLimitInSeconds = 1;
 
             output = new List<string>();
             mockLogger = new Mock<ILogger>();
@@ -52,12 +55,12 @@ namespace DnDGen.Stress.Tests
             var count = 0;
 
             stopwatch.Start();
-            var result = stressor.Generate(() => count++, c => c == Stressor.ConfidentIterations + 1);
+            var result = stressor.Generate(() => count++, c => c == options.ConfidenceIterations + 1);
             stopwatch.Stop();
 
             Assert.That(stopwatch.Elapsed, Is.LessThan(stressor.TimeLimit));
-            Assert.That(result, Is.EqualTo(Stressor.ConfidentIterations + 1));
-            Assert.That(count, Is.EqualTo(Stressor.ConfidentIterations + 2));
+            Assert.That(result, Is.EqualTo(options.ConfidenceIterations + 1));
+            Assert.That(count, Is.EqualTo(options.ConfidenceIterations + 2));
         }
 
         [Test]

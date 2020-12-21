@@ -1,4 +1,5 @@
 ﻿using NUnit.Framework;
+using System;
 using System.Reflection;
 
 namespace DnDGen.Stress.Tests
@@ -16,6 +17,14 @@ namespace DnDGen.Stress.Tests
             options.RunningAssembly = Assembly.GetExecutingAssembly();
         }
 
+        [TestCase(StressorOptions.DefaultBuildTimeLimitInSeconds, 60 * 60)]
+        [TestCase(StressorOptions.DefaultOutputTimeLimitInSeconds, 10 * 60)]
+        [TestCase(StressorOptions.DefaultConfidenceIterations, 1_000_000)]
+        public void DefaultConstants(int constant, int value)
+        {
+            Assert.That(constant, Is.EqualTo(value));
+        }
+
         [Test]
         public void StressorOptionsAreInitialized()
         {
@@ -23,8 +32,12 @@ namespace DnDGen.Stress.Tests
 
             Assert.That(options.IsFullStress, Is.False);
             Assert.That(options.RunningAssembly, Is.Null);
-            Assert.That(options.TestCount, Is.EqualTo(0));
+            Assert.That(options.TestCount, Is.Zero);
             Assert.That(options.TimeLimitPercentage, Is.EqualTo(1));
+            Assert.That(options.OutputTimeLimitInSeconds, Is.EqualTo(StressorOptions.DefaultOutputTimeLimitInSeconds));
+            Assert.That(options.BuildTimeLimitInSeconds, Is.EqualTo(StressorOptions.DefaultBuildTimeLimitInSeconds));
+            Assert.That(options.ConfidenceIterations, Is.EqualTo(StressorOptions.DefaultConfidenceIterations));
+            Assert.That(options.MaxAsyncBatch, Is.EqualTo(Environment.ProcessorCount));
         }
 
         [Test]

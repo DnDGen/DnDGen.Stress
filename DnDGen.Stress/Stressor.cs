@@ -12,25 +12,21 @@ namespace DnDGen.Stress
     [TestFixture]
     public class Stressor
     {
-        public readonly bool IsFullStress;
+        public readonly StressorOptions Options;
         public readonly int StressTestCount;
-        public readonly double TimeLimitPercentage;
-        public readonly int MaxAsyncBatch;
 
         public TimeSpan TimeLimit
         {
             get
             {
-                var timeLimitInTicks = timeLimitInSeconds * TimeSpan.TicksPerSecond;
-                return new TimeSpan((long)timeLimitInTicks);
+                var timeLimitInSeconds = GetTimeLimitInSeconds();
+                return TimeSpan.FromSeconds(timeLimitInSeconds);
             }
         }
 
-        public const int ConfidentIterations = 1000000;
-        public const int TravisJobOutputTimeLimit = 10 * 60;
-        public const int TravisJobBuildTimeLimit = 50 * 60;
+        public TimeSpan TestDuration => stressStopwatch.Elapsed;
+        public int TestIterations => iterations;
 
-        private readonly double timeLimitInSeconds;
         private readonly Stopwatch stressStopwatch;
 
         protected int iterations;
@@ -50,8 +46,8 @@ namespace DnDGen.Stress
                 throw new ArgumentException("Stressor Options are not valid");
 
             this.logger = logger;
+            Options = options;
 
-            IsFullStress = options.IsFullStress;
             stressStopwatch = new Stopwatch();
 
             if (options.RunningAssembly != null)
@@ -59,24 +55,19 @@ namespace DnDGen.Stress
             else if (options.TestCount > 0)
                 StressTestCount = options.TestCount;
 
-            TimeLimitPercentage = options.TimeLimitPercentage;
-            timeLimitInSeconds = GetTimeLimitInSeconds();
-
-            MaxAsyncBatch = options.MaxAsyncBatch;
+            if (StressTestCount == 0)
+                throw new ArgumentException("No tests were detected in the running assembly");
         }
 
         private double GetTimeLimitInSeconds()
         {
-            if (StressTestCount == 0)
-                throw new ArgumentException("No tests were detected in the running assembly");
-
-            if (!IsFullStress)
+            if (!Options.IsFullStress)
             {
                 return 1;
             }
 
-            var timeLimitPerTest = TravisJobBuildTimeLimit * TimeLimitPercentage / StressTestCount;
-            return Math.Min(timeLimitPerTest, TravisJobOutputTimeLimit * TimeLimitPercentage);
+            var timeLimitPerTest = Options.BuildTimeLimitInSeconds * Options.TimeLimitPercentage / StressTestCount;
+            return Math.Min(timeLimitPerTest, Options.OutputTimeLimitInSeconds * Options.TimeLimitPercentage);
         }
 
         public static int CountStressTestsIn(Assembly runningAssembly)
@@ -115,6 +106,7 @@ namespace DnDGen.Stress
 
             logger.Log($"Stress timeout is {TimeLimit}");
 
+            stressStopwatch.Reset();
             stressStopwatch.Start();
         }
 
@@ -123,27 +115,25 @@ namespace DnDGen.Stress
             stressStopwatch.Stop();
 
             WriteStressSummary();
-
-            stressStopwatch.Reset();
         }
 
         private void WriteStressSummary()
         {
-            var iterationsPerSecond = Math.Round(iterations / stressStopwatch.Elapsed.TotalSeconds, 2);
-            var timePercentage = Math.Round(stressStopwatch.Elapsed.TotalSeconds / TimeLimit.TotalSeconds * 100, 2);
-            var iterationPercentage = Math.Round((double)iterations / ConfidentIterations * 100, 2);
+            var iterationsPerSecond = Math.Round(iterations / TestDuration.TotalSeconds, 2);
+            var timePercentage = TestDuration.TotalSeconds / TimeLimit.TotalSeconds;
+            var iterationPercentage = (double)iterations / Options.ConfidenceIterations;
             var status = IsLikelySuccess(timePercentage, iterationPercentage) ? "PASSED" : "FAILED";
 
             logger.Log($"Stress test complete");
-            logger.Log($"\tTime: {stressStopwatch.Elapsed} ({timePercentage}%)");
-            logger.Log($"\tCompleted Iterations: {iterations} ({iterationPercentage}%)");
-            logger.Log($"\tIterations Per Second: {iterationsPerSecond}");
+            logger.Log($"\tTime: {TestDuration} ({timePercentage:P})");
+            logger.Log($"\tCompleted Iterations: {iterations} ({iterationPercentage:P})");
+            logger.Log($"\tIterations Per Second: {iterationsPerSecond:N2}");
             logger.Log($"\tLikely Status: {status}");
         }
 
         private bool IsLikelySuccess(double timePercentage, double iterationPercentage)
         {
-            return (timePercentage >= 100 || iterationPercentage >= 100 || generatedSuccessfully) && !generationFailed;
+            return (timePercentage >= 1 || iterationPercentage >= 1 || generatedSuccessfully) && !generationFailed;
         }
 
         public virtual void Stress(Action setup, Action test, Action teardown)
@@ -175,9 +165,9 @@ namespace DnDGen.Stress
         {
             do
             {
-                var tasks = new List<Task>(MaxAsyncBatch);
+                var tasks = new List<Task>(Options.MaxAsyncBatch);
 
-                while (tasks.Count < MaxAsyncBatch)
+                while (tasks.Count < Options.MaxAsyncBatch)
                 {
                     var task = RunActionAsync(setup, test, teardown);
                     tasks.Add(task);
@@ -185,7 +175,7 @@ namespace DnDGen.Stress
 
                 await Task.WhenAll(tasks);
             }
-            while (TestShouldKeepRunning(MaxAsyncBatch));
+            while (TestShouldKeepRunning(Options.MaxAsyncBatch));
         }
 
         private void RunAction(Action setup, Action action, Action teardown)
@@ -248,7 +238,7 @@ namespace DnDGen.Stress
         private bool TestShouldKeepRunning(int iterationCount = 1)
         {
             iterations += iterationCount;
-            return stressStopwatch.Elapsed < TimeLimit && iterations < ConfidentIterations;
+            return TestDuration < TimeLimit && iterations < Options.ConfidenceIterations;
         }
 
         public virtual void Stress(Action test)
@@ -277,9 +267,9 @@ namespace DnDGen.Stress
         {
             do
             {
-                var tasks = new List<Task>(MaxAsyncBatch);
+                var tasks = new List<Task>(Options.MaxAsyncBatch);
 
-                while (tasks.Count < MaxAsyncBatch)
+                while (tasks.Count < Options.MaxAsyncBatch)
                 {
                     var task = test();
                     tasks.Add(task);
@@ -287,7 +277,7 @@ namespace DnDGen.Stress
 
                 await Task.WhenAll(tasks);
             }
-            while (TestShouldKeepRunning(MaxAsyncBatch));
+            while (TestShouldKeepRunning(Options.MaxAsyncBatch));
         }
 
         //INFO: We are explicitly not doing the setup or teardown here, as Generate is often used within a Stress or GenerateOrFail call, which will handle the setup

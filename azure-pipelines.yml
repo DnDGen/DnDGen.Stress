@@ -1,0 +1,31 @@
+# ASP.NET Core (.NET Framework)
+# Build and test ASP.NET Core projects targeting the full .NET Framework.
+# Add steps that publish symbols, save build artifacts, and more:
+# https://docs.microsoft.com/azure/devops/pipelines/languages/dotnet-core
+
+trigger:
+- main
+
+pool:
+  vmImage: 'windows-latest'
+
+variables:
+  solution: 'DnDGen.Stress.sln'
+  buildPlatform: 'Any CPU'
+  buildConfiguration: 'Release'
+
+steps:
+- task: DotNetCoreCLI@2
+  displayName: Build
+  inputs:
+    command: build
+    projects: './DnDGen.Stress/DnDGen.Stress.csproj'
+    arguments: '--configuration $(buildConfiguration)'
+- task: DotNetCoreCLI@2
+  displayName: Unit Tests
+  inputs:
+    command: test
+    projects: './DnDGen.Stress.Tests/DnDGen.Stress.Tests.csproj'
+    arguments: '-v normal'
+
+# Need to add nuget push from master
