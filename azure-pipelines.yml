@@ -4,7 +4,10 @@
 # https://docs.microsoft.com/azure/devops/pipelines/languages/dotnet-core
 
 trigger:
-- main
+- master
+- develop
+- feat/*
+- bug/*
 
 pool:
   vmImage: 'windows-latest'
