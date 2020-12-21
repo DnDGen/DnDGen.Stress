@@ -59,8 +59,7 @@ namespace DnDGen.Stress.Tests
             Assert.That(setup, Is.LessThan(options.ConfidenceIterations));
             Assert.That(teardown, Is.LessThan(options.ConfidenceIterations));
             Assert.That(count, Is.EqualTo(setup)
-                .And.EqualTo(teardown)
-                .And.EqualTo(options.ConfidenceIterations));
+                .And.EqualTo(teardown));
         }
 
         private void SlowTest(ref int count)
