@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFrameworks>netcoreapp3.1;net45</TargetFrameworks>
     <PackageId>DnDGen.Stress</PackageId>
-    <Version>3.1.0</Version>
+    <Version>3.2.0</Version>
     <Authors>Karl M. Speer</Authors>
     <Company>DnDGen</Company>
     <Product>Stress</Product>
@@ -15,7 +15,7 @@
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageIcon>18531-twenty-sided-dice-vector-thumb.png</PackageIcon>
     <PackageIconUrl />
-    <PackageReleaseNotes>Added Async testing methods</PackageReleaseNotes>
+    <PackageReleaseNotes>Configurable Confiedence Iterations, Build Timeout, and Output Timeout</PackageReleaseNotes>
   </PropertyGroup>
 
   <ItemGroup>
