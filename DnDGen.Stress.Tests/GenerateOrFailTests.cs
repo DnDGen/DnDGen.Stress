@@ -198,8 +198,8 @@ namespace DnDGen.Stress.Tests
 
             Assert.That(stressor.TestDuration, Is.EqualTo(stressor.TimeLimit).Within(.1).Seconds);
             Assert.That(stopwatch.Elapsed, Is.EqualTo(stressor.TimeLimit).Within(.1).Seconds);
-            Assert.That(stressor.TestIterations, Is.AtLeast(8000));
-            Assert.That(count, Is.AtLeast(8000));
+            Assert.That(stressor.TestIterations, Is.AtLeast(1000));
+            Assert.That(count, Is.AtLeast(9266 * (stressor.TestIterations - 1)));
         }
 
         [Test]
