@@ -155,8 +155,8 @@ namespace DnDGen.Stress.Tests
                     FailedTestAsync,
                     () => teardowns.Add(true)),
                 Throws.InstanceOf<AssertionException>());
-            Assert.That(setups, Has.Count.EqualTo(8));
-            Assert.That(teardowns, Has.Count.EqualTo(8));
+            Assert.That(setups, Has.Count.EqualTo(Environment.ProcessorCount));
+            Assert.That(teardowns, Has.Count.EqualTo(Environment.ProcessorCount));
 
             Assert.That(output, Is.Not.Empty.And.Count.EqualTo(6));
             Assert.That(output[0], Is.EqualTo($"Stress timeout is {stressor.TimeLimit}"));
@@ -308,6 +308,11 @@ namespace DnDGen.Stress.Tests
 
             Assert.That(stressor.TestDuration, Is.LessThan(stressor.TimeLimit));
             Assert.That(stressor.TestIterations, Is.EqualTo(9264));
+
+            var expectedCount = (9266 / Environment.ProcessorCount + 1) * Environment.ProcessorCount;
+            Assert.That(counts, Has.Count.EqualTo(expectedCount), "Count");
+            Assert.That(setups, Has.Count.EqualTo(expectedCount), "Setup");
+            Assert.That(teardowns, Has.Count.EqualTo(expectedCount), "Tear Down");
             Assert.That(counts, Has.Count.EqualTo(9272), "Count");
             Assert.That(setups, Has.Count.EqualTo(9272), "Setup");
             Assert.That(teardowns, Has.Count.EqualTo(9272), "Tear Down");
@@ -396,9 +401,10 @@ namespace DnDGen.Stress.Tests
                     async () => await FailStressAsync(counts),
                     () => TestTeardown(teardowns)));
 
-            Assert.That(counts, Has.Count.EqualTo(16));
-            Assert.That(setups, Has.Count.EqualTo(16));
-            Assert.That(teardowns, Has.Count.EqualTo(16));
+            var expectedCount = (10 / Environment.ProcessorCount + 1) * Environment.ProcessorCount;
+            Assert.That(counts, Has.Count.EqualTo(expectedCount));
+            Assert.That(setups, Has.Count.EqualTo(expectedCount));
+            Assert.That(teardowns, Has.Count.EqualTo(expectedCount));
             Assert.That(exception.StackTrace.Trim(), Does.Not.StartsWith("at DnDGen.Stress.Stressor.RunActionAsync"));
         }
 

@@ -270,7 +270,8 @@ namespace DnDGen.Stress.Tests
                 await stressor.StressAsync(async () =>
                     await FailStressAsync(counts)));
 
-            Assert.That(counts, Has.Count.EqualTo(16));
+            var expectedCount = (10 / Environment.ProcessorCount + 1) * Environment.ProcessorCount;
+            Assert.That(counts, Has.Count.EqualTo(expectedCount));
             Assert.That(exception.StackTrace.Trim(), Does.Not.StartsWith("at DnDGen.Stress.Stressor.RunActionAsync"));
         }
 
