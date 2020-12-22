@@ -270,9 +270,22 @@ namespace DnDGen.Stress.Tests
                 await stressor.StressAsync(async () =>
                     await FailStressAsync(counts)));
 
-            var expectedCount = (10 / Environment.ProcessorCount + 1) * Environment.ProcessorCount;
+            var expectedCount = GetExpectedAsyncCount(10);
             Assert.That(counts, Has.Count.EqualTo(expectedCount));
             Assert.That(exception.StackTrace.Trim(), Does.Not.StartsWith("at DnDGen.Stress.Stressor.RunActionAsync"));
+        }
+
+        private int GetExpectedAsyncCount(int cutoff) => GetExpectedAsyncCount(cutoff, Environment.ProcessorCount);
+
+        private int GetExpectedAsyncCount(int cutoff, int parallel)
+        {
+            var expectedCount = cutoff;
+            if (cutoff % parallel != 0)
+            {
+                expectedCount += parallel - cutoff % parallel;
+            }
+
+            return expectedCount;
         }
 
         public async Task FailStressAsync(BlockingCollection<bool> collection)
@@ -309,12 +322,7 @@ namespace DnDGen.Stress.Tests
 
             await stressor.StressAsync(async () => await FastTestAsync(counts));
 
-            var expectedCount = options.ConfidenceIterations;
-            if (options.ConfidenceIterations % parallel != 0)
-            {
-                expectedCount += parallel - options.ConfidenceIterations % parallel;
-            }
-
+            var expectedCount = GetExpectedAsyncCount(options.ConfidenceIterations, parallel);
             Assert.That(stressor.TestIterations, Is.EqualTo(expectedCount));
             Assert.That(counts, Has.Count.EqualTo(expectedCount));
         }

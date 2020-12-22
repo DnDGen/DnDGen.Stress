@@ -309,13 +309,23 @@ namespace DnDGen.Stress.Tests
             Assert.That(stressor.TestDuration, Is.LessThan(stressor.TimeLimit));
             Assert.That(stressor.TestIterations, Is.EqualTo(9264));
 
-            var expectedCount = (9266 / Environment.ProcessorCount + 1) * Environment.ProcessorCount;
+            var expectedCount = GetExpectedAsyncCount(9266);
             Assert.That(counts, Has.Count.EqualTo(expectedCount), "Count");
             Assert.That(setups, Has.Count.EqualTo(expectedCount), "Setup");
             Assert.That(teardowns, Has.Count.EqualTo(expectedCount), "Tear Down");
-            Assert.That(counts, Has.Count.EqualTo(9272), "Count");
-            Assert.That(setups, Has.Count.EqualTo(9272), "Setup");
-            Assert.That(teardowns, Has.Count.EqualTo(9272), "Tear Down");
+        }
+
+        private int GetExpectedAsyncCount(int cutoff) => GetExpectedAsyncCount(cutoff, Environment.ProcessorCount);
+
+        private int GetExpectedAsyncCount(int cutoff, int parallel)
+        {
+            var expectedCount = cutoff;
+            if (cutoff % parallel != 0)
+            {
+                expectedCount += parallel - cutoff % parallel;
+            }
+
+            return expectedCount;
         }
 
         [Test]
@@ -401,7 +411,7 @@ namespace DnDGen.Stress.Tests
                     async () => await FailStressAsync(counts),
                     () => TestTeardown(teardowns)));
 
-            var expectedCount = (10 / Environment.ProcessorCount + 1) * Environment.ProcessorCount;
+            var expectedCount = GetExpectedAsyncCount(10);
             Assert.That(counts, Has.Count.EqualTo(expectedCount));
             Assert.That(setups, Has.Count.EqualTo(expectedCount));
             Assert.That(teardowns, Has.Count.EqualTo(expectedCount));
@@ -447,12 +457,7 @@ namespace DnDGen.Stress.Tests
                 async () => await FastTestAsync(counts),
                 () => TestTeardown(teardowns));
 
-            var expectedCount = options.ConfidenceIterations;
-            if (options.ConfidenceIterations % parallel != 0)
-            {
-                expectedCount += parallel - options.ConfidenceIterations % parallel;
-            }
-
+            var expectedCount = GetExpectedAsyncCount(options.ConfidenceIterations, parallel);
             Assert.That(counts, Has.Count.EqualTo(expectedCount));
             Assert.That(setups, Has.Count.EqualTo(expectedCount));
             Assert.That(teardowns, Has.Count.EqualTo(expectedCount));
