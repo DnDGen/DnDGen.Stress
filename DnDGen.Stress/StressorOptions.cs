@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using System;
+using System.Reflection;
 
 namespace DnDGen.Stress
 {
@@ -9,6 +10,13 @@ namespace DnDGen.Stress
         public Assembly RunningAssembly { get; set; }
         public double TimeLimitPercentage { get; set; }
         public int MaxAsyncBatch { get; set; }
+        public int OutputTimeLimitInSeconds { get; set; }
+        public int BuildTimeLimitInSeconds { get; set; }
+        public int ConfidenceIterations { get; set; }
+
+        public const int DefaultOutputTimeLimitInSeconds = 10 * 60;
+        public const int DefaultBuildTimeLimitInSeconds = 60 * 60;
+        public const int DefaultConfidenceIterations = 1000000;
 
         public virtual bool AreValid
         {
@@ -24,7 +32,10 @@ namespace DnDGen.Stress
         public StressorOptions()
         {
             TimeLimitPercentage = 1;
-            MaxAsyncBatch = 8;
+            MaxAsyncBatch = Environment.ProcessorCount;
+            OutputTimeLimitInSeconds = DefaultOutputTimeLimitInSeconds;
+            BuildTimeLimitInSeconds = DefaultBuildTimeLimitInSeconds;
+            ConfidenceIterations = DefaultConfidenceIterations;
         }
     }
 }

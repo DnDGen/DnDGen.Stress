@@ -22,6 +22,9 @@ namespace DnDGen.Stress.Tests
         {
             options = new StressorOptions();
             options.RunningAssembly = Assembly.GetExecutingAssembly();
+            options.ConfidenceIterations = 1_000;
+            options.BuildTimeLimitInSeconds = 10;
+            options.OutputTimeLimitInSeconds = 1;
 
             output = new List<string>();
             mockLogger = new Mock<ILogger>();
@@ -42,8 +45,10 @@ namespace DnDGen.Stress.Tests
             Assert.That(() => stressor.GenerateOrFail(() => SlowGenerate(ref count), c => false), Throws.InstanceOf<AssertionException>().With.Message.EqualTo("Generation timed out"));
             stopwatch.Stop();
 
+            Assert.That(stopwatch.Elapsed, Is.EqualTo(stressor.TestDuration).Within(.1).Seconds);
             Assert.That(stopwatch.Elapsed, Is.EqualTo(stressor.TimeLimit).Within(.1).Seconds);
-            Assert.That(count, Is.LessThan(Stressor.ConfidentIterations));
+            Assert.That(stressor.TestIterations, Is.LessThan(options.ConfidenceIterations));
+            Assert.That(count, Is.LessThan(options.ConfidenceIterations));
         }
 
         private int SlowGenerate(ref int count)
@@ -62,27 +67,35 @@ namespace DnDGen.Stress.Tests
             Assert.That(() => stressor.GenerateOrFail(() => count++, c => false), Throws.InstanceOf<AssertionException>().With.Message.EqualTo("Generation timed out"));
             stopwatch.Stop();
 
+            Assert.That(stopwatch.Elapsed, Is.EqualTo(stressor.TestDuration).Within(.1).Seconds);
             Assert.That(stopwatch.Elapsed, Is.LessThan(stressor.TimeLimit));
-            Assert.That(count, Is.EqualTo(Stressor.ConfidentIterations));
+            Assert.That(count, Is.EqualTo(options.ConfidenceIterations));
+            Assert.That(stressor.TestIterations, Is.EqualTo(options.ConfidenceIterations));
         }
 
         [Test]
         public void StopsWhenGenerated()
         {
+            options.ConfidenceIterations = 10_000;
+
             var count = 0;
 
             stopwatch.Start();
             var result = stressor.GenerateOrFail(() => count++, c => c > 9266);
             stopwatch.Stop();
 
+            Assert.That(stopwatch.Elapsed, Is.EqualTo(stressor.TestDuration).Within(.1).Seconds);
             Assert.That(stopwatch.Elapsed, Is.LessThan(stressor.TimeLimit));
             Assert.That(result, Is.EqualTo(9267));
             Assert.That(count, Is.EqualTo(9268));
+            Assert.That(stressor.TestIterations, Is.EqualTo(9268));
         }
 
         [Test]
         public void WritesStressDurationToConsole()
         {
+            options.ConfidenceIterations = 10_000;
+
             var count = 0;
 
             var result = stressor.GenerateOrFail(() => count++, c => c > 9266);
@@ -96,6 +109,8 @@ namespace DnDGen.Stress.Tests
         [Test]
         public void WritesStressSummaryToConsole()
         {
+            options.ConfidenceIterations = 10_000;
+
             var count = 0;
 
             var result = stressor.GenerateOrFail(() => count++, c => c == 9266);
@@ -105,9 +120,9 @@ namespace DnDGen.Stress.Tests
             Assert.That(output, Is.Not.Empty.And.Count.EqualTo(6));
             Assert.That(output[0], Is.EqualTo($"Stress timeout is {stressor.TimeLimit}"));
             Assert.That(output[1], Is.EqualTo($"Stress test complete"));
-            Assert.That(output[2], Does.StartWith($"\tTime: 00:00:00."));
-            Assert.That(output[3], Is.EqualTo($"\tCompleted Iterations: 9267 (0.93%)"));
-            Assert.That(output[4], Does.StartWith($"\tIterations Per Second: "));
+            Assert.That(output[2], Is.EqualTo($"\tTime: {stressor.TestDuration} ({stressor.TestDuration.TotalSeconds / stressor.TimeLimit.TotalSeconds:P})"));
+            Assert.That(output[3], Is.EqualTo($"\tCompleted Iterations: 9267 (92.67%)"));
+            Assert.That(output[4], Is.EqualTo($"\tIterations Per Second: {stressor.TestIterations / stressor.TestDuration.TotalSeconds:N2}"));
             Assert.That(output[5], Is.EqualTo($"\tLikely Status: PASSED"));
         }
 
@@ -120,9 +135,9 @@ namespace DnDGen.Stress.Tests
             Assert.That(output, Is.Not.Empty.And.Count.EqualTo(6));
             Assert.That(output[0], Is.EqualTo($"Stress timeout is {stressor.TimeLimit}"));
             Assert.That(output[1], Is.EqualTo($"Stress test complete"));
-            Assert.That(output[2], Does.StartWith($"\tTime: 00:00:00."));
-            Assert.That(output[3], Does.StartWith($"\tCompleted Iterations: "));
-            Assert.That(output[4], Does.StartWith($"\tIterations Per Second: "));
+            Assert.That(output[2], Is.EqualTo($"\tTime: {stressor.TestDuration} ({stressor.TestDuration.TotalSeconds / stressor.TimeLimit.TotalSeconds:P})"));
+            Assert.That(output[3], Is.EqualTo($"\tCompleted Iterations: {stressor.TestIterations} ({(double)stressor.TestIterations / options.ConfidenceIterations:P})"));
+            Assert.That(output[4], Is.EqualTo($"\tIterations Per Second: {stressor.TestIterations / stressor.TestDuration.TotalSeconds:N2}"));
             Assert.That(output[5], Is.EqualTo($"\tLikely Status: FAILED"));
         }
 
@@ -138,18 +153,23 @@ namespace DnDGen.Stress.Tests
             Assert.That(output, Is.Not.Empty.And.Count.EqualTo(6));
             Assert.That(output[0], Is.EqualTo($"Stress timeout is {stressor.TimeLimit}"));
             Assert.That(output[1], Is.EqualTo($"Stress test complete"));
-            Assert.That(output[2], Does.StartWith($"\tTime: 00:00:00.0"));
-            Assert.That(output[3], Does.StartWith($"\tCompleted Iterations: "));
-            Assert.That(output[4], Does.StartWith($"\tIterations Per Second: "));
+            Assert.That(output[2], Is.EqualTo($"\tTime: {stressor.TestDuration} ({stressor.TestDuration.TotalSeconds / stressor.TimeLimit.TotalSeconds:P})"));
+            Assert.That(output[3], Is.EqualTo($"\tCompleted Iterations: {stressor.TestIterations} ({(double)stressor.TestIterations / options.ConfidenceIterations:P})"));
+            Assert.That(output[4], Is.EqualTo($"\tIterations Per Second: {stressor.TestIterations / stressor.TestDuration.TotalSeconds:N2}"));
             Assert.That(output[5], Is.EqualTo($"\tLikely Status: PASSED"));
         }
 
         [Test]
         public void GenerateAndSucceed()
         {
-            var count = 0;
-            var result = stressor.GenerateOrFail(() => count++, c => c == 9266);
-            Assert.That(result, Is.EqualTo(9266));
+            options.ConfidenceIterations = 10_000;
+
+            var count = 1;
+            var result = stressor.GenerateOrFail(() => count += count, c => c >= 9266);
+
+            Assert.That(stressor.TestDuration, Is.LessThan(stressor.TimeLimit));
+            Assert.That(stressor.TestIterations, Is.EqualTo(14));
+            Assert.That(result, Is.EqualTo(16384));
         }
 
         [Test]
@@ -162,6 +182,8 @@ namespace DnDGen.Stress.Tests
         [Test]
         public void GenerateWithinGenerateOrFailHonorsTimeLimit()
         {
+            options.ConfidenceIterations = 10_000_000;
+
             var count = 0;
 
             stopwatch.Start();
@@ -174,8 +196,10 @@ namespace DnDGen.Stress.Tests
                 Throws.InstanceOf<AssertionException>());
             stopwatch.Stop();
 
+            Assert.That(stressor.TestDuration, Is.EqualTo(stressor.TimeLimit).Within(.1).Seconds);
             Assert.That(stopwatch.Elapsed, Is.EqualTo(stressor.TimeLimit).Within(.1).Seconds);
-            Assert.That(count, Is.AtLeast(9266));
+            Assert.That(stressor.TestIterations, Is.AtLeast(1000));
+            Assert.That(count, Is.AtLeast(9266 * (stressor.TestIterations - 1)));
         }
 
         [Test]

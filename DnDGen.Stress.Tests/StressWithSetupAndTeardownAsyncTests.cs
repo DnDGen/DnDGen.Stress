@@ -23,6 +23,9 @@ namespace DnDGen.Stress.Tests
         {
             options = new StressorOptions();
             options.RunningAssembly = Assembly.GetExecutingAssembly();
+            options.ConfidenceIterations = 1_000;
+            options.BuildTimeLimitInSeconds = 10;
+            options.OutputTimeLimitInSeconds = 1;
 
             output = new List<string>();
             mockLogger = new Mock<ILogger>();
@@ -51,11 +54,13 @@ namespace DnDGen.Stress.Tests
             stopwatch.Stop();
 
             Assert.That(stopwatch.Elapsed, Is.EqualTo(stressor.TimeLimit).Within(.1).Seconds);
-            Assert.That(counts, Has.Count.LessThan(Stressor.ConfidentIterations));
-            Assert.That(setups, Has.Count.LessThan(Stressor.ConfidentIterations));
-            Assert.That(teardowns, Has.Count.LessThan(Stressor.ConfidentIterations));
-            Assert.That(counts, Has.Count.EqualTo(setups.Count));
-            Assert.That(counts, Has.Count.EqualTo(teardowns.Count));
+            Assert.That(stressor.TestDuration, Is.EqualTo(stressor.TimeLimit).Within(.1).Seconds);
+            Assert.That(stressor.TestIterations, Is.LessThan(options.ConfidenceIterations));
+            Assert.That(counts, Has.Count.LessThan(options.ConfidenceIterations));
+            Assert.That(setups, Has.Count.LessThan(options.ConfidenceIterations));
+            Assert.That(teardowns, Has.Count.LessThan(options.ConfidenceIterations));
+            Assert.That(counts, Has.Count.EqualTo(setups.Count)
+                .And.Count.EqualTo(teardowns.Count));
         }
 
         private async Task SlowTestAsync(BlockingCollection<bool> collection)
@@ -93,10 +98,12 @@ namespace DnDGen.Stress.Tests
 
             stopwatch.Stop();
 
-            Assert.That(stopwatch.Elapsed, Is.LessThan(stressor.TimeLimit));
-            Assert.That(counts, Has.Count.EqualTo(Stressor.ConfidentIterations));
-            Assert.That(setups, Has.Count.EqualTo(Stressor.ConfidentIterations));
-            Assert.That(teardowns, Has.Count.EqualTo(Stressor.ConfidentIterations));
+            Assert.That(stressor.TestDuration, Is.EqualTo(stopwatch.Elapsed).Within(.1).Seconds
+                .And.LessThan(stressor.TimeLimit));
+            Assert.That(stressor.TestIterations, Is.Positive.And.EqualTo(options.ConfidenceIterations));
+            Assert.That(counts, Has.Count.EqualTo(options.ConfidenceIterations));
+            Assert.That(setups, Has.Count.EqualTo(options.ConfidenceIterations));
+            Assert.That(teardowns, Has.Count.EqualTo(options.ConfidenceIterations));
         }
 
         [Test]
@@ -130,9 +137,9 @@ namespace DnDGen.Stress.Tests
             Assert.That(output, Is.Not.Empty.And.Count.EqualTo(6));
             Assert.That(output[0], Is.EqualTo($"Stress timeout is {stressor.TimeLimit}"));
             Assert.That(output[1], Is.EqualTo($"Stress test complete"));
-            Assert.That(output[2], Does.StartWith($"\tTime: 00:00:0"));
-            Assert.That(output[3], Does.StartWith($"\tCompleted Iterations: "));
-            Assert.That(output[4], Does.StartWith($"\tIterations Per Second: "));
+            Assert.That(output[2], Is.EqualTo($"\tTime: {stressor.TestDuration} ({stressor.TestDuration.TotalSeconds / stressor.TimeLimit.TotalSeconds:P})"));
+            Assert.That(output[3], Is.EqualTo($"\tCompleted Iterations: {stressor.TestIterations} ({(double)stressor.TestIterations / options.ConfidenceIterations:P})"));
+            Assert.That(output[4], Is.EqualTo($"\tIterations Per Second: {stressor.TestIterations / stressor.TestDuration.TotalSeconds:N2}"));
             Assert.That(output[5], Is.EqualTo($"\tLikely Status: PASSED"));
         }
 
@@ -148,15 +155,15 @@ namespace DnDGen.Stress.Tests
                     FailedTestAsync,
                     () => teardowns.Add(true)),
                 Throws.InstanceOf<AssertionException>());
-            Assert.That(setups, Has.Count.EqualTo(8));
-            Assert.That(teardowns, Has.Count.EqualTo(8));
+            Assert.That(setups, Has.Count.EqualTo(Environment.ProcessorCount));
+            Assert.That(teardowns, Has.Count.EqualTo(Environment.ProcessorCount));
 
             Assert.That(output, Is.Not.Empty.And.Count.EqualTo(6));
             Assert.That(output[0], Is.EqualTo($"Stress timeout is {stressor.TimeLimit}"));
             Assert.That(output[1], Is.EqualTo($"Stress test complete"));
-            Assert.That(output[2], Does.StartWith($"\tTime: 00:00:00.0"));
-            Assert.That(output[3], Is.EqualTo($"\tCompleted Iterations: 0 (0%)"));
-            Assert.That(output[4], Is.EqualTo($"\tIterations Per Second: 0"));
+            Assert.That(output[2], Is.EqualTo($"\tTime: {stressor.TestDuration} ({stressor.TestDuration.TotalSeconds / stressor.TimeLimit.TotalSeconds:P})"));
+            Assert.That(output[3], Is.EqualTo($"\tCompleted Iterations: 0 (0.00%)"));
+            Assert.That(output[4], Is.EqualTo($"\tIterations Per Second: 0.00"));
             Assert.That(output[5], Is.EqualTo($"\tLikely Status: FAILED"));
         }
 
@@ -180,15 +187,20 @@ namespace DnDGen.Stress.Tests
             Assert.That(output, Is.Not.Empty.And.Count.EqualTo(6));
             Assert.That(output[0], Is.EqualTo($"Stress timeout is {stressor.TimeLimit}"));
             Assert.That(output[1], Is.EqualTo($"Stress test complete"));
-            Assert.That(output[2], Does.StartWith($"\tTime: 00:00:01.0"));
-            Assert.That(output[3], Does.StartWith($"\tCompleted Iterations: "));
-            Assert.That(output[4], Does.StartWith($"\tIterations Per Second: "));
+            Assert.That(output[2], Is.EqualTo($"\tTime: {stressor.TestDuration} ({stressor.TestDuration.TotalSeconds / stressor.TimeLimit.TotalSeconds:P})"));
+            Assert.That(output[3], Is.EqualTo($"\tCompleted Iterations: {stressor.TestIterations} ({(double)stressor.TestIterations / options.ConfidenceIterations:P})"));
+            Assert.That(output[4], Is.EqualTo($"\tIterations Per Second: {stressor.TestIterations / stressor.TestDuration.TotalSeconds:N2}"));
             Assert.That(output[5], Is.EqualTo($"\tLikely Status: PASSED"));
         }
 
         [Test]
-        public async Task StressATestWithSetupAndTeardown()
+        public async Task StressATestWithSetupAndTeardown_HitIterations()
         {
+            options.IsFullStress = true;
+            options.ConfidenceIterations = 1_000;
+            options.BuildTimeLimitInSeconds = 1_000;
+            options.OutputTimeLimitInSeconds = 1_000;
+
             var counts = new BlockingCollection<bool>();
             var setups = new BlockingCollection<bool>();
             var teardowns = new BlockingCollection<bool>();
@@ -198,9 +210,74 @@ namespace DnDGen.Stress.Tests
                 async () => await FastTestAsync(counts),
                 () => TestTeardown(teardowns));
 
-            Assert.That(counts, Has.Count.AtLeast(10000), "Count");
-            Assert.That(setups, Has.Count.AtLeast(10000), "Setup");
-            Assert.That(teardowns, Has.Count.AtLeast(10000), "Tear Down");
+            Assert.That(stressor.TestDuration, Is.LessThan(stressor.TimeLimit));
+            Assert.That(stressor.TestIterations, Is.AtLeast(options.ConfidenceIterations));
+            Assert.That(counts, Has.Count.AtLeast(options.ConfidenceIterations), "Count");
+            Assert.That(setups, Has.Count.AtLeast(options.ConfidenceIterations), "Setup");
+            Assert.That(teardowns, Has.Count.AtLeast(options.ConfidenceIterations), "Tear Down");
+            Assert.That(counts, Has.Count.EqualTo(stressor.TestIterations)
+                .And.Count.EqualTo(setups.Count)
+                .And.Count.EqualTo(teardowns.Count));
+        }
+
+        [Test]
+        public async Task StressATestWithSetupAndTeardown_HitTimeLimit_Output()
+        {
+            options.IsFullStress = true;
+            options.ConfidenceIterations = 10_000_000;
+            options.BuildTimeLimitInSeconds = 1_000;
+            options.OutputTimeLimitInSeconds = 1;
+
+            stressor = new Stressor(options, mockLogger.Object);
+
+            var counts = new BlockingCollection<bool>();
+            var setups = new BlockingCollection<bool>();
+            var teardowns = new BlockingCollection<bool>();
+
+            await stressor.StressAsync(
+                () => TestSetup(setups),
+                async () => await FastTestAsync(counts),
+                () => TestTeardown(teardowns));
+
+            Assert.That(stressor.TimeLimit, Is.EqualTo(TimeSpan.FromSeconds(1)));
+            Assert.That(stressor.TestDuration, Is.AtLeast(stressor.TimeLimit));
+            Assert.That(stressor.TestIterations, Is.LessThan(options.ConfidenceIterations));
+            Assert.That(counts, Has.Count.LessThan(options.ConfidenceIterations), "Count");
+            Assert.That(setups, Has.Count.LessThan(options.ConfidenceIterations), "Setup");
+            Assert.That(teardowns, Has.Count.LessThan(options.ConfidenceIterations), "Tear Down");
+            Assert.That(counts, Has.Count.EqualTo(stressor.TestIterations)
+                .And.Count.EqualTo(setups.Count)
+                .And.Count.EqualTo(teardowns.Count));
+        }
+
+        [Test]
+        public async Task StressATestWithSetupAndTeardown_HitTimeLimit_Build()
+        {
+            options.IsFullStress = true;
+            options.ConfidenceIterations = 10_000_000;
+            options.BuildTimeLimitInSeconds = 3 * (StressorTests.TestCaseCount + StressorTests.TestCount);
+            options.OutputTimeLimitInSeconds = 10;
+
+            stressor = new Stressor(options, mockLogger.Object);
+
+            var counts = new BlockingCollection<bool>();
+            var setups = new BlockingCollection<bool>();
+            var teardowns = new BlockingCollection<bool>();
+
+            await stressor.StressAsync(
+                () => TestSetup(setups),
+                async () => await FastTestAsync(counts),
+                () => TestTeardown(teardowns));
+
+            Assert.That(stressor.TimeLimit, Is.EqualTo(TimeSpan.FromSeconds(3)));
+            Assert.That(stressor.TestDuration, Is.AtLeast(stressor.TimeLimit));
+            Assert.That(stressor.TestIterations, Is.LessThan(options.ConfidenceIterations));
+            Assert.That(counts, Has.Count.LessThan(options.ConfidenceIterations), "Count");
+            Assert.That(setups, Has.Count.LessThan(options.ConfidenceIterations), "Setup");
+            Assert.That(teardowns, Has.Count.LessThan(options.ConfidenceIterations), "Tear Down");
+            Assert.That(counts, Has.Count.EqualTo(stressor.TestIterations)
+                .And.Count.EqualTo(setups.Count)
+                .And.Count.EqualTo(teardowns.Count));
         }
 
         private void TestSetup(BlockingCollection<bool> collection)
@@ -216,6 +293,8 @@ namespace DnDGen.Stress.Tests
         [Test]
         public async Task StressAFailedTestWithSetupAndTeardown()
         {
+            options.ConfidenceIterations = 10_000;
+
             var counts = new BlockingCollection<bool>();
             var setups = new BlockingCollection<bool>();
             var teardowns = new BlockingCollection<bool>();
@@ -227,34 +306,49 @@ namespace DnDGen.Stress.Tests
                     () => TestTeardown(teardowns)),
                 Throws.InstanceOf<AssertionException>());
 
-            Assert.That(counts, Has.Count.EqualTo(9272), "Count");
-            Assert.That(setups, Has.Count.EqualTo(9272), "Setup");
-            Assert.That(teardowns, Has.Count.EqualTo(9272), "Tear Down");
+            Assert.That(stressor.TestDuration, Is.LessThan(stressor.TimeLimit));
+            Assert.That(stressor.TestIterations, Is.EqualTo(9264));
+
+            var expectedCount = GetExpectedAsyncCount(9266);
+            Assert.That(counts, Has.Count.EqualTo(expectedCount), "Count");
+            Assert.That(setups, Has.Count.EqualTo(expectedCount), "Setup");
+            Assert.That(teardowns, Has.Count.EqualTo(expectedCount), "Tear Down");
+        }
+
+        private int GetExpectedAsyncCount(int cutoff) => GetExpectedAsyncCount(cutoff, Environment.ProcessorCount);
+
+        private int GetExpectedAsyncCount(int cutoff, int parallel)
+        {
+            var expectedCount = cutoff;
+            if (cutoff % parallel != 0)
+            {
+                expectedCount += parallel - cutoff % parallel;
+            }
+
+            return expectedCount;
         }
 
         [Test]
         public async Task GenerateWithinStressWithSetupAndTeardownHonorsTimeLimit()
         {
+            options.ConfidenceIterations = 10_000_000;
+
             var counts = new BlockingCollection<bool>();
             var setups = new BlockingCollection<bool>();
             var teardowns = new BlockingCollection<bool>();
-
-            stopwatch.Start();
 
             await stressor.StressAsync(
                 () => TestSetup(setups),
                 async () => await TestWithGenerateAsync(counts),
                 () => TestTeardown(teardowns));
 
-            stopwatch.Stop();
-
-            Assert.That(stopwatch.Elapsed, Is.EqualTo(stressor.TimeLimit).Within(.1).Seconds);
-            Assert.That(counts, Has.Count.LessThan(Stressor.ConfidentIterations), "Count");
-            Assert.That(setups, Has.Count.LessThan(Stressor.ConfidentIterations), "Setup");
-            Assert.That(teardowns, Has.Count.LessThan(Stressor.ConfidentIterations), "Tear Down");
-            Assert.That(counts, Has.Count.AtLeast(1000), "Count");
-            Assert.That(setups, Has.Count.AtLeast(1000), "Setup");
-            Assert.That(teardowns, Has.Count.AtLeast(1000), "Tear Down");
+            Assert.That(stressor.TestDuration, Is.EqualTo(stressor.TimeLimit).Within(.1).Seconds);
+            Assert.That(counts, Has.Count.LessThan(options.ConfidenceIterations)
+                .And.Count.AtLeast(1000), "Count");
+            Assert.That(setups, Has.Count.LessThan(options.ConfidenceIterations)
+                .And.Count.AtLeast(1000), "Setup");
+            Assert.That(teardowns, Has.Count.LessThan(options.ConfidenceIterations)
+                .And.Count.AtLeast(1000), "Tear Down");
         }
 
         private async Task TestWithGenerateAsync(BlockingCollection<bool> collection)
@@ -268,8 +362,13 @@ namespace DnDGen.Stress.Tests
             Assert.That(collection, Has.Count.Positive);
         }
 
+        [TestCase(1)]
+        [TestCase(2)]
+        [TestCase(10)]
         [TestCase(65)]
         [TestCase(70)]
+        [TestCase(100)]
+        [TestCase(1000)]
         public async Task PercentageIsAccurate(int testCount)
         {
             options.IsFullStress = true;
@@ -287,15 +386,15 @@ namespace DnDGen.Stress.Tests
                 async () => await SlowTestAsync(counts),
                 () => TestTeardown(teardowns));
 
-            var time = stressor.TimeLimit.ToString().Substring(0, 10);
+            Assert.That(stressor.TestDuration, Is.AtLeast(stressor.TimeLimit));
+            Assert.That(stressor.TestIterations, Is.LessThan(options.ConfidenceIterations));
 
             Assert.That(output, Is.Not.Empty.And.Count.EqualTo(6));
             Assert.That(output[0], Is.EqualTo($"Stress timeout is {stressor.TimeLimit}"));
             Assert.That(output[1], Is.EqualTo($"Stress test complete"));
-            Assert.That(output[2], Does.StartWith($"\tTime: {time}"));
-            Assert.That(output[2], Does.Contain($"(100"));
-            Assert.That(output[3], Does.StartWith($"\tCompleted Iterations: "));
-            Assert.That(output[4], Does.StartWith($"\tIterations Per Second: "));
+            Assert.That(output[2], Is.EqualTo($"\tTime: {stressor.TestDuration} ({stressor.TestDuration.TotalSeconds / stressor.TimeLimit.TotalSeconds:P})"));
+            Assert.That(output[3], Is.EqualTo($"\tCompleted Iterations: {stressor.TestIterations} ({(double)stressor.TestIterations / options.ConfidenceIterations:P})"));
+            Assert.That(output[4], Is.EqualTo($"\tIterations Per Second: {stressor.TestIterations / stressor.TestDuration.TotalSeconds:N2}"));
             Assert.That(output[5], Is.EqualTo($"\tLikely Status: PASSED"));
         }
 
@@ -312,9 +411,10 @@ namespace DnDGen.Stress.Tests
                     async () => await FailStressAsync(counts),
                     () => TestTeardown(teardowns)));
 
-            Assert.That(counts, Has.Count.EqualTo(16));
-            Assert.That(setups, Has.Count.EqualTo(16));
-            Assert.That(teardowns, Has.Count.EqualTo(16));
+            var expectedCount = GetExpectedAsyncCount(10);
+            Assert.That(counts, Has.Count.EqualTo(expectedCount));
+            Assert.That(setups, Has.Count.EqualTo(expectedCount));
+            Assert.That(teardowns, Has.Count.EqualTo(expectedCount));
             Assert.That(exception.StackTrace.Trim(), Does.Not.StartsWith("at DnDGen.Stress.Stressor.RunActionAsync"));
         }
 
@@ -357,12 +457,7 @@ namespace DnDGen.Stress.Tests
                 async () => await FastTestAsync(counts),
                 () => TestTeardown(teardowns));
 
-            var expectedCount = Stressor.ConfidentIterations;
-            if (Stressor.ConfidentIterations % parallel != 0)
-            {
-                expectedCount += parallel - Stressor.ConfidentIterations % parallel;
-            }
-
+            var expectedCount = GetExpectedAsyncCount(options.ConfidenceIterations, parallel);
             Assert.That(counts, Has.Count.EqualTo(expectedCount));
             Assert.That(setups, Has.Count.EqualTo(expectedCount));
             Assert.That(teardowns, Has.Count.EqualTo(expectedCount));
