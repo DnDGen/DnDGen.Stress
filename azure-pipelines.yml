@@ -50,5 +50,5 @@ steps:
   condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
   displayName: Publish Artifacts
   inputs:
-    pathtoPublish: '$(Build.ArtifactStagingDirectory)' 
+    pathtoPublish: './DnDGen.Stress' 
     artifactName: 'dndgen-stress'
