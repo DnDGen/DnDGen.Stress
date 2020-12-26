@@ -9,8 +9,8 @@ namespace DnDGen.Stress.Tests
     [TestFixture]
     public class StressorTests
     {
-        private const int TestCount = 78;
-        private const int TestCaseCount = 83;
+        public const int TestCount = 84;
+        public const int TestCaseCount = 139;
 
         private Stressor stressor;
         private StressorOptions options;
@@ -21,6 +21,9 @@ namespace DnDGen.Stress.Tests
         {
             options = new StressorOptions();
             options.RunningAssembly = Assembly.GetExecutingAssembly();
+            options.ConfidenceIterations = 10_000;
+            options.BuildTimeLimitInSeconds = 1_000;
+            options.OutputTimeLimitInSeconds = 100;
 
             mockLogger = new Mock<ILogger>();
 
@@ -65,14 +68,6 @@ namespace DnDGen.Stress.Tests
             return string.IsNullOrEmpty(testCase.Ignore) && string.IsNullOrEmpty(testCase.IgnoreReason);
         }
 
-        [TestCase(Stressor.ConfidentIterations, 1000000)]
-        [TestCase(Stressor.TravisJobBuildTimeLimit, 50 * 60)]
-        [TestCase(Stressor.TravisJobOutputTimeLimit, 10 * 60)]
-        public void StressorConstant(double constant, double value)
-        {
-            Assert.That(constant, Is.EqualTo(value));
-        }
-
         [Test]
         public void ThrowExceptionIfOptionsAreNotValid()
         {
@@ -80,20 +75,58 @@ namespace DnDGen.Stress.Tests
             Assert.That(() => new Stressor(options), Throws.ArgumentException.With.Message.EqualTo("Stressor Options are not valid"));
         }
 
-        [Test]
-        public void SetPercentageViaOptions()
+        [TestCase(true)]
+        [TestCase(false)]
+        public void SetOptions_WithTestCount(bool isFull)
         {
             options.TimeLimitPercentage = .9266;
+            options.MaxAsyncBatch = 42;
+            options.BuildTimeLimitInSeconds = 90210;
+            options.ConfidenceIterations = 600;
+            options.IsFullStress = isFull;
+            options.OutputTimeLimitInSeconds = 1337;
+            options.TestCount = 1336;
+            options.RunningAssembly = null;
+
+            Assert.That(options.AreValid, Is.True);
+
             stressor = new Stressor(options);
-            Assert.That(stressor.TimeLimitPercentage, Is.EqualTo(.9266));
+            Assert.That(stressor.Options, Is.EqualTo(options));
+            Assert.That(stressor.Options.BuildTimeLimitInSeconds, Is.EqualTo(90210));
+            Assert.That(stressor.Options.ConfidenceIterations, Is.EqualTo(600));
+            Assert.That(stressor.Options.IsFullStress, Is.EqualTo(isFull));
+            Assert.That(stressor.Options.MaxAsyncBatch, Is.EqualTo(42));
+            Assert.That(stressor.Options.OutputTimeLimitInSeconds, Is.EqualTo(1337));
+            Assert.That(stressor.Options.TestCount, Is.EqualTo(1336));
+            Assert.That(stressor.StressTestCount, Is.EqualTo(1336));
+            Assert.That(stressor.Options.TimeLimitPercentage, Is.EqualTo(.9266));
         }
 
-        [Test]
-        public void SetMaxAsyncBatchViaOptions()
+        [TestCase(true)]
+        [TestCase(false)]
+        public void SetOptions_WithAssembly(bool isFull)
         {
+            options.TimeLimitPercentage = .9266;
             options.MaxAsyncBatch = 42;
+            options.BuildTimeLimitInSeconds = 90210;
+            options.ConfidenceIterations = 600;
+            options.IsFullStress = isFull;
+            options.OutputTimeLimitInSeconds = 1337;
+            options.TestCount = 0;
+            options.RunningAssembly = Assembly.GetExecutingAssembly();
+
+            Assert.That(options.AreValid, Is.True);
+
             stressor = new Stressor(options);
-            Assert.That(stressor.MaxAsyncBatch, Is.EqualTo(42));
+            Assert.That(stressor.Options, Is.EqualTo(options));
+            Assert.That(stressor.Options.BuildTimeLimitInSeconds, Is.EqualTo(90210));
+            Assert.That(stressor.Options.ConfidenceIterations, Is.EqualTo(600));
+            Assert.That(stressor.Options.IsFullStress, Is.EqualTo(isFull));
+            Assert.That(stressor.Options.MaxAsyncBatch, Is.EqualTo(42));
+            Assert.That(stressor.Options.OutputTimeLimitInSeconds, Is.EqualTo(1337));
+            Assert.That(stressor.Options.TestCount, Is.Zero);
+            Assert.That(stressor.StressTestCount, Is.EqualTo(TestCount + TestCaseCount));
+            Assert.That(stressor.Options.TimeLimitPercentage, Is.EqualTo(.9266));
         }
 
         [Test]
@@ -103,7 +136,7 @@ namespace DnDGen.Stress.Tests
             stressor = new Stressor(options);
             var oneSecondTimeLimit = new TimeSpan(0, 0, 1);
 
-            Assert.That(stressor.IsFullStress, Is.True);
+            Assert.That(stressor.Options.IsFullStress, Is.True);
             Assert.That(stressor.TimeLimit, Is.GreaterThan(oneSecondTimeLimit));
         }
 
@@ -112,44 +145,62 @@ namespace DnDGen.Stress.Tests
         {
             var oneSecondTimeLimit = new TimeSpan(0, 0, 1);
 
-            Assert.That(stressor.IsFullStress, Is.False);
+            Assert.That(stressor.Options.IsFullStress, Is.False);
             Assert.That(stressor.TimeLimit, Is.EqualTo(oneSecondTimeLimit));
         }
 
-        [TestCase(1)]
-        [TestCase(.9)]
-        public void ConstructWithSetTestCount(double percentage)
+        [TestCase(1, 1, 100)]
+        [TestCase(1, 2, 100)]
+        [TestCase(1, 10, 100)]
+        [TestCase(1, 100, 10)]
+        [TestCase(1, 1000, 1)]
+        [TestCase(0.95, 1, 95)]
+        [TestCase(0.95, 2, 95)]
+        [TestCase(0.95, 10, 95)]
+        [TestCase(0.95, 100, 9.5)]
+        [TestCase(0.95, 1000, .95)]
+        [TestCase(0.9, 1, 90)]
+        [TestCase(0.9, 2, 90)]
+        [TestCase(0.9, 10, 90)]
+        [TestCase(0.9, 100, 9)]
+        [TestCase(0.9, 1000, .9)]
+        [TestCase(0.8, 1, 80)]
+        [TestCase(0.8, 2, 80)]
+        [TestCase(0.8, 10, 80)]
+        [TestCase(0.8, 100, 8)]
+        [TestCase(0.8, 1000, .8)]
+        [TestCase(0.5, 1, 50)]
+        [TestCase(0.5, 2, 50)]
+        [TestCase(0.5, 10, 50)]
+        [TestCase(0.5, 100, 5)]
+        [TestCase(0.5, 1000, 0.5)]
+        public void ConstructWithSetTestCount(double percentage, int testCount, double timeLimitSeconds)
         {
             options.IsFullStress = true;
-            options.TestCount = 100;
+            options.TestCount = testCount;
             options.RunningAssembly = null;
             options.TimeLimitPercentage = percentage;
 
             stressor = new Stressor(options, mockLogger.Object);
 
-            var seconds = Stressor.TravisJobBuildTimeLimit * stressor.TimeLimitPercentage / 100;
-            var ticks = seconds * TimeSpan.TicksPerSecond;
-            var expectedTimeLimit = new TimeSpan((long)ticks);
-
-            Assert.That(stressor.IsFullStress, Is.True);
-            Assert.That(stressor.TimeLimit, Is.EqualTo(expectedTimeLimit));
+            Assert.That(stressor.Options.IsFullStress, Is.True);
+            Assert.That(stressor.TimeLimit, Is.EqualTo(TimeSpan.FromSeconds(timeLimitSeconds)).Within(1).Seconds);
         }
 
-        [TestCase(1)]
-        [TestCase(.9)]
-        public void ConstructWithCountFromRunningAssembly(double percentage)
+        [TestCase(1, 5)]
+        [TestCase(.95, 4.9)]
+        [TestCase(.9, 4.5)]
+        [TestCase(.8, 4)]
+        [TestCase(.5, 2.5)]
+        public void ConstructWithCountFromRunningAssembly(double percentage, double timeLimitSeconds)
         {
             options.IsFullStress = true;
             options.TimeLimitPercentage = percentage;
 
             stressor = new Stressor(options, mockLogger.Object);
 
-            var seconds = Stressor.TravisJobBuildTimeLimit * stressor.TimeLimitPercentage / (TestCount + TestCaseCount);
-            var ticks = seconds * TimeSpan.TicksPerSecond;
-            var expectedTimeLimit = new TimeSpan((long)ticks);
-
-            Assert.That(stressor.IsFullStress, Is.True);
-            Assert.That(stressor.TimeLimit, Is.EqualTo(expectedTimeLimit));
+            Assert.That(stressor.Options.IsFullStress, Is.True);
+            Assert.That(stressor.TimeLimit, Is.EqualTo(TimeSpan.FromSeconds(timeLimitSeconds)).Within(1).Seconds);
         }
 
         [Test]
@@ -194,25 +245,27 @@ namespace DnDGen.Stress.Tests
             Assert.Fail("This test should be ignored");
         }
 
-        [TestCase(1)]
-        [TestCase(.9)]
-        public void DurationIsTotalDurationDividedByTestCount(double percentage)
+        [TestCase(1, 5.1)]
+        [TestCase(.95, 4.9)]
+        [TestCase(.9, 4.6)]
+        [TestCase(.8, 4.1)]
+        [TestCase(.5, 2.5)]
+        public void DurationIsTotalDurationDividedByTestCount(double percentage, double timeLimitSeconds)
         {
             options.IsFullStress = true;
             options.TimeLimitPercentage = percentage;
 
             stressor = new Stressor(options, mockLogger.Object);
 
-            var seconds = Stressor.TravisJobBuildTimeLimit * stressor.TimeLimitPercentage / (TestCount + TestCaseCount);
-            var ticks = seconds * TimeSpan.TicksPerSecond;
-            var expectedTimeLimit = new TimeSpan((long)ticks);
-
-            Assert.That(stressor.IsFullStress, Is.True);
-            Assert.That(stressor.TimeLimit, Is.EqualTo(expectedTimeLimit));
+            Assert.That(stressor.Options.IsFullStress, Is.True);
+            Assert.That(stressor.TimeLimit, Is.EqualTo(TimeSpan.FromSeconds(timeLimitSeconds)).Within(1).Seconds);
         }
 
         [TestCase(1)]
+        [TestCase(.95)]
         [TestCase(.9)]
+        [TestCase(.8)]
+        [TestCase(.5)]
         public void DurationIsPercentageOfOutputLimit(double percentage)
         {
             options.IsFullStress = true;
@@ -221,11 +274,11 @@ namespace DnDGen.Stress.Tests
             options.TestCount = 5;
 
             stressor = new Stressor(options, mockLogger.Object);
-            var seconds = Convert.ToInt32(Stressor.TravisJobOutputTimeLimit * percentage);
-            var expectedTimeLimit = new TimeSpan(0, 0, seconds);
 
-            Assert.That(stressor.IsFullStress, Is.True);
-            Assert.That(stressor.TimeLimit, Is.EqualTo(expectedTimeLimit));
+            Assert.That(stressor.Options.IsFullStress, Is.True);
+
+            var expected = TimeSpan.FromSeconds(options.OutputTimeLimitInSeconds * percentage);
+            Assert.That(stressor.TimeLimit, Is.EqualTo(expected).Within(1).Seconds);
         }
 
         [Test]

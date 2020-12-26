@@ -23,6 +23,9 @@ namespace DnDGen.Stress.Tests
         {
             options = new StressorOptions();
             options.RunningAssembly = Assembly.GetExecutingAssembly();
+            options.ConfidenceIterations = 1_000;
+            options.BuildTimeLimitInSeconds = 10;
+            options.OutputTimeLimitInSeconds = 1;
 
             output = new List<string>();
             mockLogger = new Mock<ILogger>();
@@ -44,7 +47,9 @@ namespace DnDGen.Stress.Tests
             stopwatch.Stop();
 
             Assert.That(stopwatch.Elapsed, Is.EqualTo(stressor.TimeLimit).Within(.1).Seconds);
-            Assert.That(counts, Has.Count.LessThan(Stressor.ConfidentIterations));
+            Assert.That(stressor.TestDuration, Is.EqualTo(stressor.TimeLimit).Within(.1).Seconds);
+            Assert.That(stressor.TestIterations, Is.LessThan(options.ConfidenceIterations));
+            Assert.That(counts, Has.Count.LessThan(options.ConfidenceIterations));
         }
 
         private async Task SlowTestAsync(BlockingCollection<bool> collection)
@@ -67,15 +72,16 @@ namespace DnDGen.Stress.Tests
             options.RunningAssembly = null;
 
             stressor = new Stressor(options, mockLogger.Object);
-
             var counts = new BlockingCollection<bool>();
 
             stopwatch.Start();
             await stressor.StressAsync(async () => await FastTestAsync(counts));
             stopwatch.Stop();
 
-            Assert.That(stopwatch.Elapsed, Is.LessThan(stressor.TimeLimit));
-            Assert.That(counts, Has.Count.EqualTo(Stressor.ConfidentIterations));
+            Assert.That(stressor.TestDuration, Is.EqualTo(stopwatch.Elapsed).Within(.1).Seconds
+                .And.LessThan(stressor.TimeLimit));
+            Assert.That(stressor.TestIterations, Is.Positive.And.EqualTo(options.ConfidenceIterations));
+            Assert.That(counts, Has.Count.EqualTo(options.ConfidenceIterations));
         }
 
         [Test]
@@ -94,12 +100,16 @@ namespace DnDGen.Stress.Tests
             var counts = new BlockingCollection<bool>();
             await stressor.StressAsync(async () => await FastTestAsync(counts));
 
+            Assert.That(stressor.TestDuration, Is.GreaterThan(TimeSpan.FromSeconds(0))
+                .And.LessThan(stressor.TimeLimit));
+            Assert.That(stressor.TestIterations, Is.EqualTo(options.ConfidenceIterations));
+
             Assert.That(output, Is.Not.Empty.And.Count.EqualTo(6));
             Assert.That(output[0], Is.EqualTo($"Stress timeout is {stressor.TimeLimit}"));
             Assert.That(output[1], Is.EqualTo($"Stress test complete"));
-            Assert.That(output[2], Does.StartWith($"\tTime: 00:00:0"));
-            Assert.That(output[3], Does.StartWith($"\tCompleted Iterations: "));
-            Assert.That(output[4], Does.StartWith($"\tIterations Per Second: "));
+            Assert.That(output[2], Is.EqualTo($"\tTime: {stressor.TestDuration} ({stressor.TestDuration.TotalSeconds / stressor.TimeLimit.TotalSeconds:P})"));
+            Assert.That(output[3], Is.EqualTo($"\tCompleted Iterations: {stressor.TestIterations} (100.00%)"));
+            Assert.That(output[4], Is.EqualTo($"\tIterations Per Second: {stressor.TestIterations / stressor.TestDuration.TotalSeconds:N2}"));
             Assert.That(output[5], Is.EqualTo($"\tLikely Status: PASSED"));
         }
 
@@ -108,12 +118,15 @@ namespace DnDGen.Stress.Tests
         {
             Assert.That(async () => await stressor.StressAsync(FailedTestAsync), Throws.InstanceOf<AssertionException>());
 
+            Assert.That(stressor.TestDuration, Is.EqualTo(TimeSpan.FromSeconds(0)).Within(100).Milliseconds);
+            Assert.That(stressor.TestIterations, Is.Zero);
+
             Assert.That(output, Is.Not.Empty.And.Count.EqualTo(6));
             Assert.That(output[0], Is.EqualTo($"Stress timeout is {stressor.TimeLimit}"));
             Assert.That(output[1], Is.EqualTo($"Stress test complete"));
-            Assert.That(output[2], Does.StartWith($"\tTime: 00:00:00.0"));
-            Assert.That(output[3], Is.EqualTo($"\tCompleted Iterations: 0 (0%)"));
-            Assert.That(output[4], Is.EqualTo($"\tIterations Per Second: 0"));
+            Assert.That(output[2], Is.EqualTo($"\tTime: {stressor.TestDuration} ({stressor.TestDuration.TotalSeconds / stressor.TimeLimit.TotalSeconds:P})"));
+            Assert.That(output[3], Is.EqualTo($"\tCompleted Iterations: 0 (0.00%)"));
+            Assert.That(output[4], Is.EqualTo($"\tIterations Per Second: 0.00"));
             Assert.That(output[5], Is.EqualTo($"\tLikely Status: FAILED"));
         }
 
@@ -128,35 +141,84 @@ namespace DnDGen.Stress.Tests
             var counts = new BlockingCollection<bool>();
             await stressor.StressAsync(async () => await SlowTestAsync(counts));
 
+            Assert.That(stressor.TestDuration, Is.AtLeast(stressor.TimeLimit));
+            Assert.That(stressor.TestIterations, Is.LessThan(options.ConfidenceIterations));
+
             Assert.That(output, Is.Not.Empty.And.Count.EqualTo(6));
             Assert.That(output[0], Is.EqualTo($"Stress timeout is {stressor.TimeLimit}"));
             Assert.That(output[1], Is.EqualTo($"Stress test complete"));
-            Assert.That(output[2], Does.StartWith($"\tTime: 00:00:01.0"));
-            Assert.That(output[3], Does.StartWith($"\tCompleted Iterations: "));
-            Assert.That(output[4], Does.StartWith($"\tIterations Per Second: "));
+            Assert.That(output[2], Is.EqualTo($"\tTime: {stressor.TestDuration} ({stressor.TestDuration.TotalSeconds / stressor.TimeLimit.TotalSeconds:P})"));
+            Assert.That(output[3], Is.EqualTo($"\tCompleted Iterations: {stressor.TestIterations} ({(double)stressor.TestIterations / options.ConfidenceIterations:P})"));
+            Assert.That(output[4], Is.EqualTo($"\tIterations Per Second: {stressor.TestIterations / stressor.TestDuration.TotalSeconds:N2}"));
             Assert.That(output[5], Is.EqualTo($"\tLikely Status: PASSED"));
         }
 
         [Test]
-        public async Task StressATest()
+        public async Task StressATest_HitIterations()
         {
+            options.IsFullStress = true;
+            options.ConfidenceIterations = 1_000;
+            options.BuildTimeLimitInSeconds = 1_000;
+            options.OutputTimeLimitInSeconds = 1_000;
+
             var counts = new BlockingCollection<bool>();
             await stressor.StressAsync(async () => await FastTestAsync(counts));
 
-            Assert.That(counts, Has.Count.AtLeast(100_000));
+            Assert.That(stressor.TestDuration, Is.LessThan(stressor.TimeLimit));
+            Assert.That(stressor.TestIterations, Is.AtLeast(options.ConfidenceIterations));
+            Assert.That(counts, Has.Count.AtLeast(options.ConfidenceIterations));
+        }
+
+        [Test]
+        public async Task StressATest_HitTimeLimit_Output()
+        {
+            options.IsFullStress = true;
+            options.ConfidenceIterations = 1_000_000;
+            options.BuildTimeLimitInSeconds = 1_000;
+            options.OutputTimeLimitInSeconds = 1;
+
+            stressor = new Stressor(options, mockLogger.Object);
+
+            var counts = new BlockingCollection<bool>();
+            await stressor.StressAsync(async () => await FastTestAsync(counts));
+
+            Assert.That(stressor.TimeLimit, Is.EqualTo(TimeSpan.FromSeconds(1)));
+            Assert.That(stressor.TestDuration, Is.AtLeast(stressor.TimeLimit));
+            Assert.That(stressor.TestIterations, Is.LessThan(options.ConfidenceIterations));
+            Assert.That(counts, Has.Count.LessThan(options.ConfidenceIterations));
+        }
+
+        [Test]
+        public async Task StressATest_HitTimeLimit_Build()
+        {
+            options.IsFullStress = true;
+            options.ConfidenceIterations = 10_000_000;
+            options.BuildTimeLimitInSeconds = 3 * (StressorTests.TestCaseCount + StressorTests.TestCount);
+            options.OutputTimeLimitInSeconds = 10;
+
+            stressor = new Stressor(options, mockLogger.Object);
+
+            var counts = new BlockingCollection<bool>();
+            await stressor.StressAsync(async () => await FastTestAsync(counts));
+
+            Assert.That(stressor.TimeLimit, Is.EqualTo(TimeSpan.FromSeconds(3)));
+            Assert.That(stressor.TestDuration, Is.AtLeast(stressor.TimeLimit));
+            Assert.That(stressor.TestIterations, Is.LessThan(options.ConfidenceIterations));
+            Assert.That(counts, Has.Count.LessThan(options.ConfidenceIterations));
         }
 
         [Test]
         public async Task GenerateWithinStressHonorsTimeLimit()
         {
+            options.ConfidenceIterations = 1_000_000;
+
             var counts = new BlockingCollection<bool>();
 
-            stopwatch.Start();
             await stressor.StressAsync(async () => await TestWithGenerateAsync(counts));
-            stopwatch.Stop();
 
-            Assert.That(stopwatch.Elapsed, Is.LessThan(stressor.TimeLimit).Or.EqualTo(stressor.TimeLimit).Within(.1).Seconds);
-            Assert.That(counts, Has.Count.LessThan(Stressor.ConfidentIterations));
+            Assert.That(stressor.TestIterations, Is.LessThan(options.ConfidenceIterations));
+            Assert.That(stressor.TestDuration, Is.EqualTo(stressor.TimeLimit).Within(.1).Seconds);
+            Assert.That(counts, Has.Count.LessThan(options.ConfidenceIterations));
         }
 
         private async Task TestWithGenerateAsync(BlockingCollection<bool> collection)
@@ -169,8 +231,13 @@ namespace DnDGen.Stress.Tests
             Assert.That(collection, Has.Count.Positive);
         }
 
+        [TestCase(1)]
+        [TestCase(2)]
+        [TestCase(10)]
         [TestCase(65)]
         [TestCase(70)]
+        [TestCase(100)]
+        [TestCase(1000)]
         public async Task PercentageIsAccurate(int testCount)
         {
             options.IsFullStress = true;
@@ -182,15 +249,15 @@ namespace DnDGen.Stress.Tests
             var counts = new BlockingCollection<bool>();
             await stressor.StressAsync(async () => await SlowTestAsync(counts));
 
-            var time = stressor.TimeLimit.ToString().Substring(0, 10);
+            Assert.That(stressor.TestDuration, Is.AtLeast(stressor.TimeLimit));
+            Assert.That(stressor.TestIterations, Is.LessThan(options.ConfidenceIterations));
 
             Assert.That(output, Is.Not.Empty.And.Count.EqualTo(6));
             Assert.That(output[0], Is.EqualTo($"Stress timeout is {stressor.TimeLimit}"));
             Assert.That(output[1], Is.EqualTo($"Stress test complete"));
-            Assert.That(output[2], Does.StartWith($"\tTime: {time}"));
-            Assert.That(output[2], Does.Contain($"(100"));
-            Assert.That(output[3], Does.StartWith($"\tCompleted Iterations: "));
-            Assert.That(output[4], Does.StartWith($"\tIterations Per Second: "));
+            Assert.That(output[2], Is.EqualTo($"\tTime: {stressor.TestDuration} ({stressor.TestDuration.TotalSeconds / stressor.TimeLimit.TotalSeconds:P})"));
+            Assert.That(output[3], Is.EqualTo($"\tCompleted Iterations: {stressor.TestIterations} ({(double)stressor.TestIterations / options.ConfidenceIterations:P})"));
+            Assert.That(output[4], Is.EqualTo($"\tIterations Per Second: {stressor.TestIterations / stressor.TestDuration.TotalSeconds:N2}"));
             Assert.That(output[5], Is.EqualTo($"\tLikely Status: PASSED"));
         }
 
@@ -203,8 +270,22 @@ namespace DnDGen.Stress.Tests
                 await stressor.StressAsync(async () =>
                     await FailStressAsync(counts)));
 
-            Assert.That(counts, Has.Count.EqualTo(16));
+            var expectedCount = GetExpectedAsyncCount(10);
+            Assert.That(counts, Has.Count.EqualTo(expectedCount));
             Assert.That(exception.StackTrace.Trim(), Does.Not.StartsWith("at DnDGen.Stress.Stressor.RunActionAsync"));
+        }
+
+        private int GetExpectedAsyncCount(int cutoff) => GetExpectedAsyncCount(cutoff, Environment.ProcessorCount);
+
+        private int GetExpectedAsyncCount(int cutoff, int parallel)
+        {
+            var expectedCount = cutoff;
+            if (cutoff % parallel != 0)
+            {
+                expectedCount += parallel - cutoff % parallel;
+            }
+
+            return expectedCount;
         }
 
         public async Task FailStressAsync(BlockingCollection<bool> collection)
@@ -241,12 +322,8 @@ namespace DnDGen.Stress.Tests
 
             await stressor.StressAsync(async () => await FastTestAsync(counts));
 
-            var expectedCount = Stressor.ConfidentIterations;
-            if (Stressor.ConfidentIterations % parallel != 0)
-            {
-                expectedCount += parallel - Stressor.ConfidentIterations % parallel;
-            }
-
+            var expectedCount = GetExpectedAsyncCount(options.ConfidenceIterations, parallel);
+            Assert.That(stressor.TestIterations, Is.EqualTo(expectedCount));
             Assert.That(counts, Has.Count.EqualTo(expectedCount));
         }
     }
