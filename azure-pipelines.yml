@@ -35,3 +35,15 @@ steps:
   inputs:
     pathtoPublish: './DnDGen.Stress' 
     artifactName: 'dndgen-stress'
+
+- task: tmarkovski.projectversionasvariable.versionintovariable.projectversionasvariable@1
+  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
+  displayName: 'Get Project Version'
+  inputs:
+    path: ./DnDGen.Stress/DnDGen.Stress.csproj
+
+- task: git-tag-on-release-task@9
+  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
+  displayName: Tag Version
+  inputs:
+    staticTagName: "$(Version.MajorMinorBuild)"
