@@ -6,8 +6,6 @@
 trigger:
 - master
 - develop
-- feat/*
-- bug/*
 
 pool:
   vmImage: 'windows-latest'
@@ -31,4 +29,13 @@ steps:
     projects: './DnDGen.Stress.Tests/DnDGen.Stress.Tests.csproj'
     arguments: '-v normal'
 
-# Need to add nuget push from master
+- task: NuGetAuthenticate@0
+  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
+  inputs:
+    nuGetServiceConnections: 'NuGet.org'
+- task: NuGetCommand@2
+  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
+  inputs:
+    command: push
+    nuGetFeedType: external
+    packagesToPush: './DnDGen.Stress/**/*.nupkg'
