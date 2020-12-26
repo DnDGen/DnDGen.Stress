@@ -29,23 +29,6 @@ steps:
     projects: './DnDGen.Stress.Tests/DnDGen.Stress.Tests.csproj'
     arguments: '-v normal'
 
-#- task: NuGetCommand@2
-#  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
-#  displayName: Push NuGet Package   
-#  inputs:
-#    command: push push -ApiKey $(myNuGetApiKey)
-#    nuGetFeedType: external
-#    packagesToPush: './DnDGen.Stress/**/*.nupkg'
-#    publishFeedCredentials: 'NuGet.org'
-    
-#- task: GithubRelease@0 
-#  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
-#  displayName: Create GitHub Release
-#  inputs:
-#    gitHubConnection: github.com_cidthecoatrack  
-#    assets: './DnDGen.Stress/**/*.nupkg'
-#    title: '$(Major).$(Minor).$(rev:.r)'
-
 - task: PublishBuildArtifacts@1
   condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
   displayName: Publish Artifacts
