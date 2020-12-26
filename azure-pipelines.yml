@@ -40,8 +40,8 @@ steps:
     
 - task: GithubRelease@0 
   condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
-  displayName: Create GitHub Release  
+  displayName: Create GitHub Release
   inputs:
-    gitHubConnection: DnDGen  
+    gitHubConnection: github.com_cidthecoatrack  
     assets: './DnDGen.Stress/**/*.nupkg'
     title: '$(Major).$(Minor).$(rev:.r)'
