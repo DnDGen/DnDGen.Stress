@@ -23,19 +23,25 @@ steps:
     projects: './DnDGen.Stress/DnDGen.Stress.csproj'
     arguments: '--configuration $(buildConfiguration)'
 - task: DotNetCoreCLI@2
-  displayName: Unit Tests
+  displayName: Run Unit Tests
   inputs:
     command: test
     projects: './DnDGen.Stress.Tests/DnDGen.Stress.Tests.csproj'
     arguments: '-v normal'
 
-- task: NuGetAuthenticate@0
-  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
-  inputs:
-    nuGetServiceConnections: 'NuGet.org'
 - task: NuGetCommand@2
   condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
+  displayName: Push NuGet Package   
   inputs:
     command: push
     nuGetFeedType: external
     packagesToPush: './DnDGen.Stress/**/*.nupkg'
+    externalFeedCredentials: 'NuGet.org'
+    
+- task: GithubRelease@0 
+  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
+  displayName: Create GitHub Release  
+  inputs:
+    gitHubConnection: DnDGen  
+    assets: './DnDGen.Stress/**/*.nupkg'
+    title: '$(Major).$(Minor).$(rev:.r)'
