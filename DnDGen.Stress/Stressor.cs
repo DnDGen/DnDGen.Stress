@@ -100,6 +100,8 @@ namespace DnDGen.Stress
 
         protected virtual void StressSetup()
         {
+            logger.Log($"Beginning stress test '{TestContext.CurrentContext.Test.Name}'");
+
             iterations = 0;
             generatedSuccessfully = false;
             generationFailed = false;
@@ -124,7 +126,8 @@ namespace DnDGen.Stress
             var iterationPercentage = (double)iterations / Options.ConfidenceIterations;
             var status = IsLikelySuccess(timePercentage, iterationPercentage) ? "PASSED" : "FAILED";
 
-            logger.Log($"Stress test complete");
+            logger.Log($"Stress test '{TestContext.CurrentContext.Test.Name}' complete");
+            logger.Log($"\tFull Name: {TestContext.CurrentContext.Test.FullName}");
             logger.Log($"\tTime: {TestDuration} ({timePercentage:P})");
             logger.Log($"\tCompleted Iterations: {iterations} ({iterationPercentage:P})");
             logger.Log($"\tIterations Per Second: {iterationsPerSecond:N2}");
