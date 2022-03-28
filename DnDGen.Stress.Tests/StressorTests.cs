@@ -10,7 +10,7 @@ namespace DnDGen.Stress.Tests
     public class StressorTests
     {
         public const int TestCount = 84;
-        public const int TestCaseCount = 139;
+        public const int TestCaseCount = 149;
 
         private Stressor stressor;
         private StressorOptions options;
