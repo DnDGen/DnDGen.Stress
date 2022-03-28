@@ -340,9 +340,9 @@ namespace DnDGen.Stress.Tests
             Assert.That(stressor.TestIterations, Is.EqualTo(9264));
 
             var expectedCount = GetExpectedAsyncCount(9266);
-            Assert.That(counts, Has.Count.EqualTo(expectedCount), "Count");
-            Assert.That(setups, Has.Count.EqualTo(expectedCount), "Setup");
-            Assert.That(teardowns, Has.Count.EqualTo(expectedCount), "Tear Down");
+            Assert.That(counts, Has.Count.EqualTo(expectedCount), $"Count. Processor Count: {Environment.ProcessorCount}");
+            Assert.That(setups, Has.Count.EqualTo(expectedCount), $"Setup. Processor Count: {Environment.ProcessorCount}");
+            Assert.That(teardowns, Has.Count.EqualTo(expectedCount), $"Tear Down. Processor Count: {Environment.ProcessorCount}");
         }
 
         private int GetExpectedAsyncCount(int cutoff) => GetExpectedAsyncCount(cutoff, Environment.ProcessorCount);

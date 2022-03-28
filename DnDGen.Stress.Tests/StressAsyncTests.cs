@@ -296,7 +296,7 @@ namespace DnDGen.Stress.Tests
                     await FailStressAsync(counts)));
 
             var expectedCount = GetExpectedAsyncCount(10);
-            Assert.That(counts, Has.Count.EqualTo(expectedCount));
+            Assert.That(counts, Has.Count.EqualTo(expectedCount), $"Processor Count: {Environment.ProcessorCount}");
             Assert.That(exception.StackTrace.Trim(), Does.Not.StartsWith("at DnDGen.Stress.Stressor.RunActionAsync"));
         }
 
