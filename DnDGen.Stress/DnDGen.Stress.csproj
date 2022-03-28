@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFrameworks>netcoreapp3.1;net45</TargetFrameworks>
     <PackageId>DnDGen.Stress</PackageId>
-    <Version>3.2.3</Version>
+    <Version>3.3.0</Version>
     <Authors>Karl M. Speer</Authors>
     <Company>DnDGen</Company>
     <Product>Stress</Product>
