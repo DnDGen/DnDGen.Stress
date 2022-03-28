@@ -316,7 +316,7 @@ namespace DnDGen.Stress.Tests
         public async Task FailStressAsync(BlockingCollection<bool> collection)
         {
             collection.Add(true);
-            if (collection.Count > 10)
+            if (collection.Count >= 10)
                 throw new ArgumentException();
         }
 

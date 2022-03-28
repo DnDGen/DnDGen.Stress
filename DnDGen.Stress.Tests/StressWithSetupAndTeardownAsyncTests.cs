@@ -439,16 +439,16 @@ namespace DnDGen.Stress.Tests
                     () => TestTeardown(teardowns)));
 
             var expectedCount = GetExpectedAsyncCount(10);
-            Assert.That(counts, Has.Count.EqualTo(expectedCount));
-            Assert.That(setups, Has.Count.EqualTo(expectedCount));
-            Assert.That(teardowns, Has.Count.EqualTo(expectedCount));
+            Assert.That(counts, Has.Count.EqualTo(expectedCount), $"Count. Processor Count: {Environment.ProcessorCount}");
+            Assert.That(setups, Has.Count.EqualTo(expectedCount), $"Setup. Processor Count: {Environment.ProcessorCount}");
+            Assert.That(teardowns, Has.Count.EqualTo(expectedCount), $"Tear Down. Processor Count: {Environment.ProcessorCount}");
             Assert.That(exception.StackTrace.Trim(), Does.Not.StartsWith("at DnDGen.Stress.Stressor.RunActionAsync"));
         }
 
         public async Task FailStressAsync(BlockingCollection<bool> collection)
         {
             collection.Add(true);
-            if (collection.Count > 10)
+            if (collection.Count >= 10)
                 throw new ArgumentException();
         }
 
