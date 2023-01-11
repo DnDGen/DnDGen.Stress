@@ -1,9 +1,9 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netcoreapp3.1;net45</TargetFrameworks>
+    <TargetFrameworks>net6.0</TargetFrameworks>
     <PackageId>DnDGen.Stress</PackageId>
-    <Version>3.3.0</Version>
+    <Version>3.4.0</Version>
     <Authors>Karl M. Speer</Authors>
     <Company>DnDGen</Company>
     <Product>Stress</Product>
@@ -15,7 +15,7 @@
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageIcon>18531-twenty-sided-dice-vector-thumb.png</PackageIcon>
     <PackageIconUrl />
-    <PackageReleaseNotes>Configurable Confiedence Iterations, Build Timeout, and Output Timeout</PackageReleaseNotes>
+    <PackageReleaseNotes>Configurable Confidence Iterations, Build Timeout, and Output Timeout</PackageReleaseNotes>
   </PropertyGroup>
 
   <ItemGroup>
@@ -27,11 +27,6 @@
 
   <ItemGroup>
     <PackageReference Include="NUnit" Version="3.13.3" />
-  </ItemGroup>
-
-  <!--Needed for Framework compatibility when building in Travis-->
-  <ItemGroup>
-    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" PrivateAssets="All" Version="1.0.2" />
   </ItemGroup>
 
 </Project>
