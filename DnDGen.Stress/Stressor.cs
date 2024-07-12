@@ -109,13 +109,12 @@ namespace DnDGen.Stress
 
         protected virtual void StressSetup()
         {
-            logger.LogInformation($"Beginning stress test '{TestContext.CurrentContext.Test.Name}'");
+            logger.LogInformation($"Beginning stress test '{TestContext.CurrentContext.Test.Name}'"
+                + $"{Environment.NewLine}Stress timeout is {TimeLimit}");
 
             iterations = 0;
             generatedSuccessfully = false;
             generationFailed = false;
-
-            logger.LogInformation($"Stress timeout is {TimeLimit}");
 
             stressStopwatch.Restart();
         }
@@ -134,12 +133,12 @@ namespace DnDGen.Stress
             var iterationPercentage = (double)iterations / Options.ConfidenceIterations;
             var status = IsLikelySuccess(timePercentage, iterationPercentage) ? "PASSED" : "FAILED";
 
-            logger.LogInformation($"Stress test '{TestContext.CurrentContext.Test.Name}' complete");
-            logger.LogInformation($"\tFull Name: {TestContext.CurrentContext.Test.FullName}");
-            logger.LogInformation($"\tTime: {TestDuration} ({timePercentage:P})");
-            logger.LogInformation($"\tCompleted Iterations: {iterations} ({iterationPercentage:P})");
-            logger.LogInformation($"\tIterations Per Second: {iterationsPerSecond:N2}");
-            logger.LogInformation($"\tLikely Status: {status}");
+            logger.LogInformation($"Stress test '{TestContext.CurrentContext.Test.Name}' complete"
+                + $"{Environment.NewLine}\tFull Name: {TestContext.CurrentContext.Test.FullName}"
+                + $"{Environment.NewLine}\tTime: {TestDuration} ({timePercentage:P})"
+                + $"{Environment.NewLine}\tCompleted Iterations: {iterations} ({iterationPercentage:P})"
+                + $"{Environment.NewLine}\tIterations Per Second: {iterationsPerSecond:N2}"
+                + $"{Environment.NewLine}\tLikely Status: {status}");
         }
 
         private bool IsLikelySuccess(double timePercentage, double iterationPercentage)
@@ -250,7 +249,6 @@ namespace DnDGen.Stress
         {
             iterations += iterationCount;
             return TestDuration < TimeLimit && iterations < Options.ConfidenceIterations;
-            //return TestDuration.CompareTo(TimeLimit) < 0 && iterations < Options.ConfidenceIterations;
         }
 
         public virtual void Stress(Action test)
