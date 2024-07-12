@@ -13,6 +13,12 @@ namespace DnDGen.Stress.Tests.Integration
             var options = new StressorOptions();
             options.TestCount = 6;
 
+#if STRESS
+            options.IsFullStress = true;
+#else
+            options.IsFullStress = false;
+#endif
+
             _stressor = new Stressor(options);
         }
 
