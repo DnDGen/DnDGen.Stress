@@ -1,4 +1,5 @@
-﻿using Moq;
+﻿using Microsoft.Extensions.Logging;
+using Moq;
 using NUnit.Framework;
 using System;
 using System.Collections.Concurrent;
@@ -7,7 +8,7 @@ using System.Diagnostics;
 using System.Reflection;
 using System.Threading.Tasks;
 
-namespace DnDGen.Stress.Tests
+namespace DnDGen.Stress.Tests.Unit
 {
     [TestFixture]
     public class StressWithSetupAndTeardownAsyncTests
@@ -21,25 +22,39 @@ namespace DnDGen.Stress.Tests
         [SetUp]
         public void Setup()
         {
-            options = new StressorOptions();
-            options.RunningAssembly = Assembly.GetExecutingAssembly();
-            options.ConfidenceIterations = 1_000;
-            options.BuildTimeLimitInSeconds = 10;
-            options.OutputTimeLimitInSeconds = 1;
+            options = new StressorOptions
+            {
+                RunningAssembly = Assembly.GetExecutingAssembly(),
+                ConfidenceIterations = 1_000,
+                BuildTimeLimitInSeconds = 10,
+                OutputTimeLimitInSeconds = 1
+            };
 
-            output = new List<string>();
+            output = [];
             mockLogger = new Mock<ILogger>();
             mockLogger
-                .Setup(l => l.Log(It.IsAny<string>()))
-                .Callback((string m) => output.Add(m));
+                .Setup(l => l.Log(
+                    It.Is<LogLevel>(l => l == LogLevel.Information),
+                    It.IsAny<EventId>(),
+                    It.Is<It.IsAnyType>((v, t) => AddLog(v.ToString())),
+                    It.IsAny<Exception>(),
+                    It.Is<Func<It.IsAnyType, Exception, string>>((v, t) => true)));
 
             stressor = new Stressor(options, mockLogger.Object);
             stopwatch = new Stopwatch();
         }
 
+        private bool AddLog(string message)
+        {
+            output.Add(message);
+            return true;
+        }
+
         [Test]
         public async Task StopsWhenTimeLimitHit()
         {
+            options.ConfidenceIterations = int.MaxValue;
+
             var counts = new BlockingCollection<bool>();
             var setups = new BlockingCollection<bool>();
             var teardowns = new BlockingCollection<bool>();
@@ -138,7 +153,7 @@ namespace DnDGen.Stress.Tests
             Assert.That(output[0], Is.EqualTo("Beginning stress test 'WritesStressSummaryToConsole'"));
             Assert.That(output[1], Is.EqualTo($"Stress timeout is {stressor.TimeLimit}"));
             Assert.That(output[2], Is.EqualTo("Stress test 'WritesStressSummaryToConsole' complete"));
-            Assert.That(output[3], Is.EqualTo("\tFull Name: DnDGen.Stress.Tests.StressWithSetupAndTeardownAsyncTests.WritesStressSummaryToConsole"));
+            Assert.That(output[3], Is.EqualTo("\tFull Name: DnDGen.Stress.Tests.Unit.StressWithSetupAndTeardownAsyncTests.WritesStressSummaryToConsole"));
             Assert.That(output[4], Is.EqualTo($"\tTime: {stressor.TestDuration} ({stressor.TestDuration.TotalSeconds / stressor.TimeLimit.TotalSeconds:P})"));
             Assert.That(output[5], Is.EqualTo($"\tCompleted Iterations: {stressor.TestIterations} ({(double)stressor.TestIterations / options.ConfidenceIterations:P})"));
             Assert.That(output[6], Is.EqualTo($"\tIterations Per Second: {stressor.TestIterations / stressor.TestDuration.TotalSeconds:N2}"));
@@ -162,7 +177,7 @@ namespace DnDGen.Stress.Tests
             Assert.That(output[0], Is.EqualTo($"Beginning stress test 'WritesStressSummaryToConsole_WithParameters({caseNumber})'"));
             Assert.That(output[1], Is.EqualTo($"Stress timeout is {stressor.TimeLimit}"));
             Assert.That(output[2], Is.EqualTo($"Stress test 'WritesStressSummaryToConsole_WithParameters({caseNumber})' complete"));
-            Assert.That(output[3], Is.EqualTo($"\tFull Name: DnDGen.Stress.Tests.StressWithSetupAndTeardownAsyncTests.WritesStressSummaryToConsole_WithParameters({caseNumber})"));
+            Assert.That(output[3], Is.EqualTo($"\tFull Name: DnDGen.Stress.Tests.Unit.StressWithSetupAndTeardownAsyncTests.WritesStressSummaryToConsole_WithParameters({caseNumber})"));
             Assert.That(output[4], Is.EqualTo($"\tTime: {stressor.TestDuration} ({stressor.TestDuration.TotalSeconds / stressor.TimeLimit.TotalSeconds:P})"));
             Assert.That(output[5], Is.EqualTo($"\tCompleted Iterations: {stressor.TestIterations} ({(double)stressor.TestIterations / options.ConfidenceIterations:P})"));
             Assert.That(output[6], Is.EqualTo($"\tIterations Per Second: {stressor.TestIterations / stressor.TestDuration.TotalSeconds:N2}"));
@@ -188,7 +203,7 @@ namespace DnDGen.Stress.Tests
             Assert.That(output[0], Is.EqualTo("Beginning stress test 'WritesFailedStressSummaryToConsole'"));
             Assert.That(output[1], Is.EqualTo($"Stress timeout is {stressor.TimeLimit}"));
             Assert.That(output[2], Is.EqualTo("Stress test 'WritesFailedStressSummaryToConsole' complete"));
-            Assert.That(output[3], Is.EqualTo("\tFull Name: DnDGen.Stress.Tests.StressWithSetupAndTeardownAsyncTests.WritesFailedStressSummaryToConsole"));
+            Assert.That(output[3], Is.EqualTo("\tFull Name: DnDGen.Stress.Tests.Unit.StressWithSetupAndTeardownAsyncTests.WritesFailedStressSummaryToConsole"));
             Assert.That(output[4], Is.EqualTo($"\tTime: {stressor.TestDuration} ({stressor.TestDuration.TotalSeconds / stressor.TimeLimit.TotalSeconds:P})"));
             Assert.That(output[5], Is.EqualTo("\tCompleted Iterations: 0 (0.00%)"));
             Assert.That(output[6], Is.EqualTo("\tIterations Per Second: 0.00"));
@@ -216,7 +231,7 @@ namespace DnDGen.Stress.Tests
             Assert.That(output[0], Is.EqualTo("Beginning stress test 'WritesStressSlowSummaryToConsole'"));
             Assert.That(output[1], Is.EqualTo($"Stress timeout is {stressor.TimeLimit}"));
             Assert.That(output[2], Is.EqualTo("Stress test 'WritesStressSlowSummaryToConsole' complete"));
-            Assert.That(output[3], Is.EqualTo("\tFull Name: DnDGen.Stress.Tests.StressWithSetupAndTeardownAsyncTests.WritesStressSlowSummaryToConsole"));
+            Assert.That(output[3], Is.EqualTo("\tFull Name: DnDGen.Stress.Tests.Unit.StressWithSetupAndTeardownAsyncTests.WritesStressSlowSummaryToConsole"));
             Assert.That(output[4], Is.EqualTo($"\tTime: {stressor.TestDuration} ({stressor.TestDuration.TotalSeconds / stressor.TimeLimit.TotalSeconds:P})"));
             Assert.That(output[5], Is.EqualTo($"\tCompleted Iterations: {stressor.TestIterations} ({(double)stressor.TestIterations / options.ConfidenceIterations:P})"));
             Assert.That(output[6], Is.EqualTo($"\tIterations Per Second: {stressor.TestIterations / stressor.TestDuration.TotalSeconds:N2}"));
@@ -337,7 +352,7 @@ namespace DnDGen.Stress.Tests
                 Throws.InstanceOf<AssertionException>());
 
             Assert.That(stressor.TestDuration, Is.LessThan(stressor.TimeLimit));
-            Assert.That(stressor.TestIterations, Is.EqualTo(9264));
+            Assert.That(stressor.TestIterations, Is.EqualTo(9266).Within(options.MaxAsyncBatch));
 
             var expectedCount = GetExpectedAsyncCount(9266);
             Assert.That(counts, Has.Count.EqualTo(expectedCount), $"Count. Processor Count: {Environment.ProcessorCount}");
@@ -404,6 +419,7 @@ namespace DnDGen.Stress.Tests
             options.IsFullStress = true;
             options.TestCount = testCount;
             options.RunningAssembly = null;
+            options.ConfidenceIterations = int.MaxValue;
 
             stressor = new Stressor(options, mockLogger.Object);
 

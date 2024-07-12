@@ -1,16 +1,18 @@
-﻿using Moq;
+﻿using Microsoft.Extensions.Logging;
+using Moq;
 using NUnit.Framework;
 using System;
 using System.Linq;
 using System.Reflection;
 
-namespace DnDGen.Stress.Tests
+namespace DnDGen.Stress.Tests.Unit
 {
     [TestFixture]
     public class StressorTests
     {
-        public const int TestCount = 84;
-        public const int TestCaseCount = 149;
+        //Unit + Integration
+        public const int TestCount = 84 + 6;
+        public const int TestCaseCount = 149 + 0;
 
         private Stressor stressor;
         private StressorOptions options;

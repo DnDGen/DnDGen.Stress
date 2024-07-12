@@ -1,11 +1,12 @@
-﻿using Moq;
+﻿using Microsoft.Extensions.Logging;
+using Moq;
 using NUnit.Framework;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Reflection;
 
-namespace DnDGen.Stress.Tests
+namespace DnDGen.Stress.Tests.Unit
 {
     [TestFixture]
     public class GenerateTests
@@ -19,20 +20,32 @@ namespace DnDGen.Stress.Tests
         [SetUp]
         public void Setup()
         {
-            options = new StressorOptions();
-            options.RunningAssembly = Assembly.GetExecutingAssembly();
-            options.ConfidenceIterations = 1_000;
-            options.BuildTimeLimitInSeconds = 10;
-            options.OutputTimeLimitInSeconds = 1;
+            options = new StressorOptions
+            {
+                RunningAssembly = Assembly.GetExecutingAssembly(),
+                ConfidenceIterations = 1_000,
+                BuildTimeLimitInSeconds = 10,
+                OutputTimeLimitInSeconds = 1
+            };
 
-            output = new List<string>();
+            output = [];
             mockLogger = new Mock<ILogger>();
             mockLogger
-                .Setup(l => l.Log(It.IsAny<string>()))
-                .Callback((string m) => output.Add(m));
+                .Setup(l => l.Log(
+                    It.Is<LogLevel>(l => l == LogLevel.Information),
+                    It.IsAny<EventId>(),
+                    It.Is<It.IsAnyType>((v, t) => AddLog(v.ToString())),
+                    It.IsAny<Exception>(),
+                    It.Is<Func<It.IsAnyType, Exception, string>>((v, t) => true)));
 
             stressor = new Stressor(options, mockLogger.Object);
             stopwatch = new Stopwatch();
+        }
+
+        private bool AddLog(string message)
+        {
+            output.Add(message);
+            return true;
         }
 
         [Test]

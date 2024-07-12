@@ -1,4 +1,5 @@
-﻿using Moq;
+﻿using Microsoft.Extensions.Logging;
+using Moq;
 using NUnit.Framework;
 using System;
 using System.Collections.Generic;
@@ -6,10 +7,10 @@ using System.Diagnostics;
 using System.Reflection;
 using System.Threading;
 
-namespace DnDGen.Stress.Tests
+namespace DnDGen.Stress.Tests.Unit
 {
     [TestFixture]
-    public class StressWithSetupAndTeardownTests
+    public class StressTests
     {
         private Stressor stressor;
         private Mock<ILogger> mockLogger;
@@ -20,46 +21,47 @@ namespace DnDGen.Stress.Tests
         [SetUp]
         public void Setup()
         {
-            options = new StressorOptions();
-            options.RunningAssembly = Assembly.GetExecutingAssembly();
-            options.ConfidenceIterations = 1_000;
-            options.BuildTimeLimitInSeconds = 10;
-            options.OutputTimeLimitInSeconds = 1;
+            options = new StressorOptions
+            {
+                RunningAssembly = Assembly.GetExecutingAssembly(),
+                ConfidenceIterations = 1_000,
+                BuildTimeLimitInSeconds = 10,
+                OutputTimeLimitInSeconds = 1
+            };
 
-            output = new List<string>();
+            output = [];
             mockLogger = new Mock<ILogger>();
             mockLogger
-                .Setup(l => l.Log(It.IsAny<string>()))
-                .Callback((string m) => output.Add(m));
+                .Setup(l => l.Log(
+                    It.Is<LogLevel>(l => l == LogLevel.Information),
+                    It.IsAny<EventId>(),
+                    It.Is<It.IsAnyType>((v, t) => AddLog(v.ToString())),
+                    It.IsAny<Exception>(),
+                    It.Is<Func<It.IsAnyType, Exception, string>>((v, t) => true)));
 
             stressor = new Stressor(options, mockLogger.Object);
             stopwatch = new Stopwatch();
+        }
+
+        private bool AddLog(string message)
+        {
+            output.Add(message);
+            return true;
         }
 
         [Test]
         public void StopsWhenTimeLimitHit()
         {
             var count = 0;
-            var setup = 0;
-            var teardown = 0;
 
             stopwatch.Start();
-
-            stressor.Stress(
-                () => TestSetup(ref setup),
-                () => SlowTest(ref count),
-                () => TestTeardown(ref teardown));
-
+            stressor.Stress(() => SlowTest(ref count));
             stopwatch.Stop();
 
             Assert.That(stopwatch.Elapsed, Is.EqualTo(stressor.TimeLimit).Within(.1).Seconds);
             Assert.That(stressor.TestDuration, Is.EqualTo(stressor.TimeLimit).Within(.1).Seconds);
             Assert.That(stressor.TestIterations, Is.LessThan(options.ConfidenceIterations));
             Assert.That(count, Is.LessThan(options.ConfidenceIterations));
-            Assert.That(setup, Is.LessThan(options.ConfidenceIterations));
-            Assert.That(teardown, Is.LessThan(options.ConfidenceIterations));
-            Assert.That(count, Is.EqualTo(setup)
-                .And.EqualTo(teardown));
         }
 
         private void SlowTest(ref int count)
@@ -68,10 +70,10 @@ namespace DnDGen.Stress.Tests
             Thread.Sleep(1);
         }
 
-        private void FastTest(ref int count, int failLimit = int.MaxValue)
+        private void FastTest(ref int count)
         {
             count++;
-            Assert.That(count, Is.Positive.And.LessThan(failLimit));
+            Assert.That(count, Is.Positive);
         }
 
         [Test]
@@ -84,37 +86,22 @@ namespace DnDGen.Stress.Tests
             stressor = new Stressor(options, mockLogger.Object);
 
             var count = 0;
-            var setup = 0;
-            var teardown = 0;
 
             stopwatch.Start();
-
-            stressor.Stress(
-                () => TestSetup(ref setup),
-                () => FastTest(ref count),
-                () => TestTeardown(ref teardown));
-
+            stressor.Stress(() => FastTest(ref count));
             stopwatch.Stop();
 
             Assert.That(stressor.TestDuration, Is.EqualTo(stopwatch.Elapsed).Within(.1).Seconds
                 .And.LessThan(stressor.TimeLimit));
             Assert.That(stressor.TestIterations, Is.Positive.And.EqualTo(options.ConfidenceIterations));
             Assert.That(count, Is.EqualTo(options.ConfidenceIterations));
-            Assert.That(setup, Is.EqualTo(options.ConfidenceIterations));
-            Assert.That(teardown, Is.EqualTo(options.ConfidenceIterations));
         }
 
         [Test]
         public void WritesStressDurationToConsole()
         {
             var count = 0;
-            var setup = 0;
-            var teardown = 0;
-
-            stressor.Stress(
-                () => TestSetup(ref setup),
-                () => FastTest(ref count),
-                () => TestTeardown(ref teardown));
+            stressor.Stress(() => FastTest(ref count));
 
             Assert.That(output, Is.Not.Empty);
             Assert.That(output, Contains.Item($"Stress timeout is {stressor.TimeLimit}"));
@@ -124,19 +111,13 @@ namespace DnDGen.Stress.Tests
         public void WritesStressSummaryToConsole()
         {
             var count = 0;
-            var setup = 0;
-            var teardown = 0;
-
-            stressor.Stress(
-                () => TestSetup(ref setup),
-                () => FastTest(ref count),
-                () => TestTeardown(ref teardown));
+            stressor.Stress(() => FastTest(ref count));
 
             Assert.That(output, Is.Not.Empty.And.Count.EqualTo(8));
             Assert.That(output[0], Is.EqualTo("Beginning stress test 'WritesStressSummaryToConsole'"));
             Assert.That(output[1], Is.EqualTo($"Stress timeout is {stressor.TimeLimit}"));
             Assert.That(output[2], Is.EqualTo("Stress test 'WritesStressSummaryToConsole' complete"));
-            Assert.That(output[3], Is.EqualTo("\tFull Name: DnDGen.Stress.Tests.StressWithSetupAndTeardownTests.WritesStressSummaryToConsole"));
+            Assert.That(output[3], Is.EqualTo("\tFull Name: DnDGen.Stress.Tests.Unit.StressTests.WritesStressSummaryToConsole"));
             Assert.That(output[4], Is.EqualTo($"\tTime: {stressor.TestDuration} ({stressor.TestDuration.TotalSeconds / stressor.TimeLimit.TotalSeconds:P})"));
             Assert.That(output[5], Is.EqualTo($"\tCompleted Iterations: {stressor.TestIterations} ({(double)stressor.TestIterations / options.ConfidenceIterations:P})"));
             Assert.That(output[6], Is.EqualTo($"\tIterations Per Second: {stressor.TestIterations / stressor.TestDuration.TotalSeconds:N2}"));
@@ -148,19 +129,13 @@ namespace DnDGen.Stress.Tests
         public void WritesStressSummaryToConsole_WithParameters(int caseNumber)
         {
             var count = 0;
-            var setup = 0;
-            var teardown = 0;
-
-            stressor.Stress(
-                () => TestSetup(ref setup),
-                () => FastTest(ref count),
-                () => TestTeardown(ref teardown));
+            stressor.Stress(() => FastTest(ref count));
 
             Assert.That(output, Is.Not.Empty.And.Count.EqualTo(8));
             Assert.That(output[0], Is.EqualTo($"Beginning stress test 'WritesStressSummaryToConsole_WithParameters({caseNumber})'"));
             Assert.That(output[1], Is.EqualTo($"Stress timeout is {stressor.TimeLimit}"));
             Assert.That(output[2], Is.EqualTo($"Stress test 'WritesStressSummaryToConsole_WithParameters({caseNumber})' complete"));
-            Assert.That(output[3], Is.EqualTo($"\tFull Name: DnDGen.Stress.Tests.StressWithSetupAndTeardownTests.WritesStressSummaryToConsole_WithParameters({caseNumber})"));
+            Assert.That(output[3], Is.EqualTo($"\tFull Name: DnDGen.Stress.Tests.Unit.StressTests.WritesStressSummaryToConsole_WithParameters({caseNumber})"));
             Assert.That(output[4], Is.EqualTo($"\tTime: {stressor.TestDuration} ({stressor.TestDuration.TotalSeconds / stressor.TimeLimit.TotalSeconds:P})"));
             Assert.That(output[5], Is.EqualTo($"\tCompleted Iterations: {stressor.TestIterations} ({(double)stressor.TestIterations / options.ConfidenceIterations:P})"));
             Assert.That(output[6], Is.EqualTo($"\tIterations Per Second: {stressor.TestIterations / stressor.TestDuration.TotalSeconds:N2}"));
@@ -170,21 +145,16 @@ namespace DnDGen.Stress.Tests
         [Test]
         public void WritesFailedStressSummaryToConsole()
         {
-            var setup = 0;
-            var teardown = 0;
-
-            Assert.That(() => stressor.Stress(() => setup++, FailedTest, () => teardown++), Throws.InstanceOf<AssertionException>());
-            Assert.That(setup, Is.EqualTo(1));
-            Assert.That(teardown, Is.EqualTo(1));
+            Assert.That(() => stressor.Stress(FailedTest), Throws.InstanceOf<AssertionException>());
 
             Assert.That(output, Is.Not.Empty.And.Count.EqualTo(8));
             Assert.That(output[0], Is.EqualTo("Beginning stress test 'WritesFailedStressSummaryToConsole'"));
             Assert.That(output[1], Is.EqualTo($"Stress timeout is {stressor.TimeLimit}"));
             Assert.That(output[2], Is.EqualTo("Stress test 'WritesFailedStressSummaryToConsole' complete"));
-            Assert.That(output[3], Is.EqualTo("\tFull Name: DnDGen.Stress.Tests.StressWithSetupAndTeardownTests.WritesFailedStressSummaryToConsole"));
+            Assert.That(output[3], Is.EqualTo("\tFull Name: DnDGen.Stress.Tests.Unit.StressTests.WritesFailedStressSummaryToConsole"));
             Assert.That(output[4], Is.EqualTo($"\tTime: {stressor.TestDuration} ({stressor.TestDuration.TotalSeconds / stressor.TimeLimit.TotalSeconds:P})"));
-            Assert.That(output[5], Is.EqualTo($"\tCompleted Iterations: 0 (0.00%)"));
-            Assert.That(output[6], Is.EqualTo($"\tIterations Per Second: 0.00"));
+            Assert.That(output[5], Is.EqualTo("\tCompleted Iterations: 0 (0.00%)"));
+            Assert.That(output[6], Is.EqualTo("\tIterations Per Second: 0.00"));
             Assert.That(output[7], Is.EqualTo("\tLikely Status: FAILED"));
         }
 
@@ -197,19 +167,13 @@ namespace DnDGen.Stress.Tests
         public void WritesStressSlowSummaryToConsole()
         {
             var count = 0;
-            var setup = 0;
-            var teardown = 0;
-
-            stressor.Stress(
-                () => TestSetup(ref setup),
-                () => SlowTest(ref count),
-                () => TestTeardown(ref teardown));
+            stressor.Stress(() => SlowTest(ref count));
 
             Assert.That(output, Is.Not.Empty.And.Count.EqualTo(8));
             Assert.That(output[0], Is.EqualTo("Beginning stress test 'WritesStressSlowSummaryToConsole'"));
             Assert.That(output[1], Is.EqualTo($"Stress timeout is {stressor.TimeLimit}"));
             Assert.That(output[2], Is.EqualTo("Stress test 'WritesStressSlowSummaryToConsole' complete"));
-            Assert.That(output[3], Is.EqualTo("\tFull Name: DnDGen.Stress.Tests.StressWithSetupAndTeardownTests.WritesStressSlowSummaryToConsole"));
+            Assert.That(output[3], Is.EqualTo("\tFull Name: DnDGen.Stress.Tests.Unit.StressTests.WritesStressSlowSummaryToConsole"));
             Assert.That(output[4], Is.EqualTo($"\tTime: {stressor.TestDuration} ({stressor.TestDuration.TotalSeconds / stressor.TimeLimit.TotalSeconds:P})"));
             Assert.That(output[5], Is.EqualTo($"\tCompleted Iterations: {stressor.TestIterations} ({(double)stressor.TestIterations / options.ConfidenceIterations:P})"));
             Assert.That(output[6], Is.EqualTo($"\tIterations Per Second: {stressor.TestIterations / stressor.TestDuration.TotalSeconds:N2}"));
@@ -217,7 +181,7 @@ namespace DnDGen.Stress.Tests
         }
 
         [Test]
-        public void StressATestWithSetupAndTeardown_HitIterations()
+        public void StressATest_HitIterations()
         {
             options.IsFullStress = true;
             options.ConfidenceIterations = 1_000;
@@ -225,130 +189,69 @@ namespace DnDGen.Stress.Tests
             options.OutputTimeLimitInSeconds = 1_000;
 
             var count = 0;
-            var setup = 0;
-            var teardown = 0;
-            stressor.Stress(() => TestSetup(ref setup), () => FastTest(ref count), () => TestTeardown(ref teardown));
+            stressor.Stress(() => FastTest(ref count));
 
             Assert.That(stressor.TestDuration, Is.LessThan(stressor.TimeLimit));
             Assert.That(stressor.TestIterations, Is.AtLeast(options.ConfidenceIterations));
-            Assert.That(count, Is.AtLeast(options.ConfidenceIterations), "Count");
-            Assert.That(setup, Is.AtLeast(options.ConfidenceIterations), "Setup");
-            Assert.That(teardown, Is.AtLeast(options.ConfidenceIterations), "Tear Down");
-            Assert.That(count, Is.EqualTo(stressor.TestIterations)
-                .And.EqualTo(setup)
-                .And.EqualTo(teardown));
+            Assert.That(count, Is.AtLeast(options.ConfidenceIterations));
         }
 
         [Test]
-        public void StressATestWithSetupAndTeardown_HitTimeLimit_Output()
+        public void StressATest_HitTimeLimit_Output()
         {
             options.IsFullStress = true;
-            options.ConfidenceIterations = 10_000_000;
+            options.ConfidenceIterations = int.MaxValue;
             options.BuildTimeLimitInSeconds = 1_000;
             options.OutputTimeLimitInSeconds = 1;
 
             stressor = new Stressor(options, mockLogger.Object);
 
             var count = 0;
-            var setup = 0;
-            var teardown = 0;
-            stressor.Stress(() => TestSetup(ref setup), () => FastTest(ref count), () => TestTeardown(ref teardown));
+            stressor.Stress(() => FastTest(ref count));
 
             Assert.That(stressor.TimeLimit, Is.EqualTo(TimeSpan.FromSeconds(1)));
-            Assert.That(stressor.TestDuration, Is.AtLeast(stressor.TimeLimit));
             Assert.That(stressor.TestIterations, Is.LessThan(options.ConfidenceIterations));
-            Assert.That(count, Is.LessThan(options.ConfidenceIterations), "Count");
-            Assert.That(setup, Is.LessThan(options.ConfidenceIterations), "Setup");
-            Assert.That(teardown, Is.LessThan(options.ConfidenceIterations), "Tear Down");
-            Assert.That(count, Is.EqualTo(stressor.TestIterations)
-                .And.EqualTo(setup)
-                .And.EqualTo(teardown));
+            Assert.That(stressor.TestDuration, Is.AtLeast(stressor.TimeLimit));
+            Assert.That(count, Is.LessThan(options.ConfidenceIterations));
         }
 
         [Test]
-        public void StressATestWithSetupAndTeardown_HitTimeLimit_Build()
+        public void StressATest_HitTimeLimit_Build()
         {
             options.IsFullStress = true;
-            options.ConfidenceIterations = 10_000_000;
+            options.ConfidenceIterations = int.MaxValue;
             options.BuildTimeLimitInSeconds = 3 * (StressorTests.TestCaseCount + StressorTests.TestCount);
             options.OutputTimeLimitInSeconds = 10;
 
             stressor = new Stressor(options, mockLogger.Object);
 
             var count = 0;
-            var setup = 0;
-            var teardown = 0;
-            stressor.Stress(() => TestSetup(ref setup), () => FastTest(ref count), () => TestTeardown(ref teardown));
+            stressor.Stress(() => FastTest(ref count));
 
             Assert.That(stressor.TimeLimit, Is.EqualTo(TimeSpan.FromSeconds(3)).Within(0.1).Seconds);
-            Assert.That(stressor.TestDuration, Is.AtLeast(stressor.TimeLimit));
             Assert.That(stressor.TestIterations, Is.LessThan(options.ConfidenceIterations));
-            Assert.That(count, Is.LessThan(options.ConfidenceIterations), "Count");
-            Assert.That(setup, Is.LessThan(options.ConfidenceIterations), "Setup");
-            Assert.That(teardown, Is.LessThan(options.ConfidenceIterations), "Tear Down");
-            Assert.That(count, Is.EqualTo(stressor.TestIterations)
-                .And.EqualTo(setup)
-                .And.EqualTo(teardown));
-        }
-
-        private void TestSetup(ref int setup)
-        {
-            setup++;
-        }
-
-        private void TestTeardown(ref int teardown)
-        {
-            teardown++;
+            Assert.That(stressor.TestDuration, Is.AtLeast(stressor.TimeLimit));
+            Assert.That(count, Is.LessThan(options.ConfidenceIterations));
         }
 
         [Test]
-        public void StressAFailedTestWithSetupAndTeardown()
+        public void GenerateWithinStressHonorsTimeLimit()
         {
-            options.ConfidenceIterations = 10_000;
+            options.ConfidenceIterations = int.MaxValue;
 
             var count = 0;
-            var setup = 0;
-            var teardown = 0;
+            stressor.Stress(() => TestWithGenerate(ref count));
 
-            Assert.That(() => stressor.Stress(() => TestSetup(ref setup), () => FastTest(ref count, 9266), () => TestTeardown(ref teardown)), Throws.InstanceOf<AssertionException>());
-            Assert.That(stressor.TestDuration, Is.LessThan(stressor.TimeLimit));
-            Assert.That(stressor.TestIterations, Is.EqualTo(9265));
-            Assert.That(count, Is.EqualTo(9266), "Count");
-            Assert.That(setup, Is.EqualTo(9266), "Setup");
-            Assert.That(teardown, Is.EqualTo(9266), "Tear Down");
-        }
-
-        [Test]
-        public void GenerateWithinStressWithSetupAndTeardownHonorsTimeLimit()
-        {
-            options.ConfidenceIterations = 10_000_000;
-
-            var count = 0;
-            var setup = 0;
-            var teardown = 0;
-
-            stressor.Stress(
-                () => TestSetup(ref setup),
-                () => TestWithGenerate(ref count),
-                () => TestTeardown(ref teardown));
-
+            Assert.That(stressor.TestIterations, Is.LessThan(options.ConfidenceIterations));
             Assert.That(stressor.TestDuration, Is.EqualTo(stressor.TimeLimit).Within(.1).Seconds);
-            Assert.That(count, Is.LessThan(options.ConfidenceIterations)
-                .And.AtLeast(1000), "Count");
-            Assert.That(setup, Is.LessThan(options.ConfidenceIterations)
-                .And.AtLeast(1000), "Setup");
-            Assert.That(teardown, Is.LessThan(options.ConfidenceIterations)
-                .And.AtLeast(1000), "Tear Down");
+            Assert.That(count, Is.LessThan(options.ConfidenceIterations));
         }
 
         private void TestWithGenerate(ref int count)
         {
-            count++;
-            var subcount = 0;
-
-            var result = stressor.Generate(() => subcount++, c => c == 9266);
-            Assert.That(result, Is.EqualTo(9266));
-            Assert.That(count, Is.Positive);
+            var innerCount = count;
+            count = stressor.Generate(() => innerCount++, c => c > 1);
+            Assert.That(count, Is.AtLeast(2));
         }
 
         [TestCase(1)]
@@ -367,13 +270,7 @@ namespace DnDGen.Stress.Tests
             stressor = new Stressor(options, mockLogger.Object);
 
             var count = 0;
-            var setup = 0;
-            var teardown = 0;
-
-            stressor.Stress(
-                () => TestSetup(ref setup),
-                () => SlowTest(ref count),
-                () => TestTeardown(ref teardown));
+            stressor.Stress(() => SlowTest(ref count));
 
             Assert.That(stressor.TestDuration, Is.AtLeast(stressor.TimeLimit));
             Assert.That(stressor.TestIterations, Is.LessThan(options.ConfidenceIterations));
@@ -388,13 +285,9 @@ namespace DnDGen.Stress.Tests
         public void PreserveStackTrace()
         {
             var count = 0;
-            var setup = 0;
-            var teardown = 0;
 
-            var exception = Assert.Throws<ArgumentException>(() => stressor.Stress(() => TestSetup(ref setup), () => FailStress(count++), () => TestTeardown(ref teardown)));
+            var exception = Assert.Throws<ArgumentException>(() => stressor.Stress(() => FailStress(count++)));
             Assert.That(count, Is.EqualTo(12));
-            Assert.That(setup, Is.EqualTo(12));
-            Assert.That(teardown, Is.EqualTo(12));
             Assert.That(exception.StackTrace.Trim(), Does.Not.StartsWith("at DnDGen.Stress.Stressor.RunAction"));
         }
 
