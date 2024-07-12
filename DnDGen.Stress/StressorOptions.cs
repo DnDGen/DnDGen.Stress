@@ -16,7 +16,7 @@ namespace DnDGen.Stress
 
         public const int DefaultOutputTimeLimitInSeconds = 10 * 60;
         public const int DefaultBuildTimeLimitInSeconds = 60 * 60;
-        public const int DefaultConfidenceIterations = 1000000;
+        public const int DefaultConfidenceIterations = 1_000_000;
 
         public virtual bool AreValid
         {

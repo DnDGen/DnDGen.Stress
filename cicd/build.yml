@@ -22,7 +22,7 @@ steps:
   inputs:
     command: test
     projects: './DnDGen.Stress.Tests/DnDGen.Stress.Tests.csproj'
-    arguments: '-v normal'
+    arguments: '-v normal --configuration Stress'
 
 - task: tmarkovski.projectversionasvariable.versionintovariable.projectversionasvariable@1
   condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
