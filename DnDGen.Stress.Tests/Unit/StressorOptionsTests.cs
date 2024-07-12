@@ -2,7 +2,7 @@
 using System;
 using System.Reflection;
 
-namespace DnDGen.Stress.Tests
+namespace DnDGen.Stress.Tests.Unit
 {
     [TestFixture]
     public class StressorOptionsTests

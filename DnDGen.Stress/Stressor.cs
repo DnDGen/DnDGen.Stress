@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿using Microsoft.Extensions.Logging;
+using NUnit.Framework;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -36,8 +37,16 @@ namespace DnDGen.Stress
         protected readonly ILogger logger;
 
         public Stressor(StressorOptions options)
-            : this(options, new Logger())
+            : this(options, GetLogger())
         {
+        }
+
+        private static ILogger GetLogger()
+        {
+            using var factory = LoggerFactory.Create(builder => builder.AddConsole());
+            var logger = factory.CreateLogger<Stressor>();
+
+            return logger;
         }
 
         public Stressor(StressorOptions options, ILogger logger)
@@ -74,9 +83,9 @@ namespace DnDGen.Stress
         {
             var types = runningAssembly.GetTypes();
             var methods = types.SelectMany(t => t.GetMethods());
-            var activeStressTests = methods.Where(m => IsActiveTest(m));
+            var activeStressTests = methods.Where(IsActiveTest);
             var stressTestsCount = activeStressTests.Sum(m => m.GetCustomAttributes<TestAttribute>(true).Count());
-            var stressTestCasesCount = activeStressTests.Sum(m => m.GetCustomAttributes<TestCaseAttribute>().Count(tc => TestCaseIsActive(tc)));
+            var stressTestCasesCount = activeStressTests.Sum(m => m.GetCustomAttributes<TestCaseAttribute>().Count(TestCaseIsActive));
             var stressTestsTotal = stressTestsCount + stressTestCasesCount;
 
             return stressTestsTotal;
@@ -90,7 +99,7 @@ namespace DnDGen.Stress
             if (method.GetCustomAttributes<TestAttribute>(true).Any())
                 return true;
 
-            return method.GetCustomAttributes<TestCaseAttribute>(true).Any(tc => TestCaseIsActive(tc));
+            return method.GetCustomAttributes<TestCaseAttribute>(true).Any(TestCaseIsActive);
         }
 
         private static bool TestCaseIsActive(TestCaseAttribute testCase)
@@ -100,16 +109,14 @@ namespace DnDGen.Stress
 
         protected virtual void StressSetup()
         {
-            logger.Log($"Beginning stress test '{TestContext.CurrentContext.Test.Name}'");
+            logger.LogInformation($"Beginning stress test '{TestContext.CurrentContext.Test.Name}'"
+                + $"{Environment.NewLine}Stress timeout is {TimeLimit}");
 
             iterations = 0;
             generatedSuccessfully = false;
             generationFailed = false;
 
-            logger.Log($"Stress timeout is {TimeLimit}");
-
-            stressStopwatch.Reset();
-            stressStopwatch.Start();
+            stressStopwatch.Restart();
         }
 
         protected virtual void StressTearDown()
@@ -126,12 +133,12 @@ namespace DnDGen.Stress
             var iterationPercentage = (double)iterations / Options.ConfidenceIterations;
             var status = IsLikelySuccess(timePercentage, iterationPercentage) ? "PASSED" : "FAILED";
 
-            logger.Log($"Stress test '{TestContext.CurrentContext.Test.Name}' complete");
-            logger.Log($"\tFull Name: {TestContext.CurrentContext.Test.FullName}");
-            logger.Log($"\tTime: {TestDuration} ({timePercentage:P})");
-            logger.Log($"\tCompleted Iterations: {iterations} ({iterationPercentage:P})");
-            logger.Log($"\tIterations Per Second: {iterationsPerSecond:N2}");
-            logger.Log($"\tLikely Status: {status}");
+            logger.LogInformation($"Stress test '{TestContext.CurrentContext.Test.Name}' complete"
+                + $"{Environment.NewLine}\tFull Name: {TestContext.CurrentContext.Test.FullName}"
+                + $"{Environment.NewLine}\tTime: {TestDuration} ({timePercentage:P})"
+                + $"{Environment.NewLine}\tCompleted Iterations: {iterations} ({iterationPercentage:P})"
+                + $"{Environment.NewLine}\tIterations Per Second: {iterationsPerSecond:N2}"
+                + $"{Environment.NewLine}\tLikely Status: {status}");
         }
 
         private bool IsLikelySuccess(double timePercentage, double iterationPercentage)
@@ -230,7 +237,7 @@ namespace DnDGen.Stress
             catch (Exception e)
             {
                 ExceptionDispatchInfo.Capture(e).Throw();
-                return default(T);
+                return default;
             }
             finally
             {
