@@ -137,7 +137,7 @@ namespace DnDGen.Stress.Tests.Unit
             Assert.That(output[1], Is.EqualTo("Stress test 'WritesStressSummaryToConsole' complete"
                 + $"{Environment.NewLine}\tFull Name: DnDGen.Stress.Tests.Unit.GenerateOrFailTests.WritesStressSummaryToConsole"
                 + $"{Environment.NewLine}\tTime: {stressor.TestDuration} ({stressor.TestDuration.TotalSeconds / stressor.TimeLimit.TotalSeconds:P})"
-                + $"{Environment.NewLine}\tCompleted Iterations: 9267 (92.67%)"
+                + $"{Environment.NewLine}\tCompleted Iterations: 9,267 (92.67%)"
                 + $"{Environment.NewLine}\tIterations Per Second: {stressor.TestIterations / stressor.TestDuration.TotalSeconds:N2}"
                 + $"{Environment.NewLine}\tLikely Status: PASSED"));
         }
@@ -160,7 +160,7 @@ namespace DnDGen.Stress.Tests.Unit
             Assert.That(output[1], Is.EqualTo($"Stress test 'WritesStressSummaryToConsole_WithParameters({caseNumber})' complete"
                 + $"{Environment.NewLine}\tFull Name: DnDGen.Stress.Tests.Unit.GenerateOrFailTests.WritesStressSummaryToConsole_WithParameters({caseNumber})"
                 + $"{Environment.NewLine}\tTime: {stressor.TestDuration} ({stressor.TestDuration.TotalSeconds / stressor.TimeLimit.TotalSeconds:P})"
-                + $"{Environment.NewLine}\tCompleted Iterations: 9267 (92.67%)"
+                + $"{Environment.NewLine}\tCompleted Iterations: 9,267 (92.67%)"
                 + $"{Environment.NewLine}\tIterations Per Second: {stressor.TestIterations / stressor.TestDuration.TotalSeconds:N2}"
                 + $"{Environment.NewLine}\tLikely Status: PASSED"));
         }
@@ -177,7 +177,7 @@ namespace DnDGen.Stress.Tests.Unit
             Assert.That(output[1], Is.EqualTo("Stress test 'WritesFailedStressSummaryToConsole' complete"
                 + $"{Environment.NewLine}\tFull Name: DnDGen.Stress.Tests.Unit.GenerateOrFailTests.WritesFailedStressSummaryToConsole"
                 + $"{Environment.NewLine}\tTime: {stressor.TestDuration} ({stressor.TestDuration.TotalSeconds / stressor.TimeLimit.TotalSeconds:P})"
-                + $"{Environment.NewLine}\tCompleted Iterations: {stressor.TestIterations} ({(double)stressor.TestIterations / options.ConfidenceIterations:P})"
+                + $"{Environment.NewLine}\tCompleted Iterations: {stressor.TestIterations:N0} ({(double)stressor.TestIterations / options.ConfidenceIterations:P})"
                 + $"{Environment.NewLine}\tIterations Per Second: {stressor.TestIterations / stressor.TestDuration.TotalSeconds:N2}"
                 + $"{Environment.NewLine}\tLikely Status: FAILED"));
         }
