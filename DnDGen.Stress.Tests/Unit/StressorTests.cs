@@ -37,7 +37,7 @@ namespace DnDGen.Stress.Tests.Unit
         {
             var types = options.RunningAssembly.GetTypes();
             var methods = types.SelectMany(t => t.GetMethods());
-            var activeStressTests = methods.Where(m => IsActiveTest(m));
+            var activeStressTests = methods.Where(IsActiveTest);
             var stressTestsCount = activeStressTests.Sum(m => m.GetCustomAttributes<TestAttribute>(true).Count());
 
             Assert.That(TestCount, Is.EqualTo(stressTestsCount));
@@ -48,8 +48,8 @@ namespace DnDGen.Stress.Tests.Unit
         {
             var types = options.RunningAssembly.GetTypes();
             var methods = types.SelectMany(t => t.GetMethods());
-            var activeStressTests = methods.Where(m => IsActiveTest(m));
-            var stressTestCasesCount = activeStressTests.Sum(m => m.GetCustomAttributes<TestCaseAttribute>().Count(tc => TestCaseIsActive(tc)));
+            var activeStressTests = methods.Where(IsActiveTest);
+            var stressTestCasesCount = activeStressTests.Sum(m => m.GetCustomAttributes<TestCaseAttribute>().Count(TestCaseIsActive));
 
             Assert.That(TestCaseCount, Is.EqualTo(stressTestCasesCount));
         }
@@ -289,7 +289,8 @@ namespace DnDGen.Stress.Tests.Unit
             options.RunningAssembly = Assembly.GetAssembly(typeof(int));
             options.IsFullStress = true;
 
-            Assert.That(() => stressor = new Stressor(options, mockLogger.Object), Throws.ArgumentException.With.Message.EqualTo("No tests were detected in the running assembly"));
+            Assert.That(() => stressor = new Stressor(options, mockLogger.Object),
+                Throws.ArgumentException.With.Message.EqualTo("No tests were detected in the running assembly"));
         }
 
         [Test]
@@ -298,7 +299,8 @@ namespace DnDGen.Stress.Tests.Unit
             options.RunningAssembly = Assembly.GetAssembly(typeof(int));
             options.IsFullStress = false;
 
-            Assert.That(() => stressor = new Stressor(options, mockLogger.Object), Throws.ArgumentException.With.Message.EqualTo("No tests were detected in the running assembly"));
+            Assert.That(() => stressor = new Stressor(options, mockLogger.Object),
+                Throws.ArgumentException.With.Message.EqualTo("No tests were detected in the running assembly"));
         }
 
         [Test]

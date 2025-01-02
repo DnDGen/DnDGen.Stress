@@ -2,7 +2,7 @@
   <PropertyGroup>
     <TargetFrameworks>net8.0</TargetFrameworks>
     <PackageId>DnDGen.Stress</PackageId>
-    <Version>4.0.1</Version>
+    <Version>4.1.0</Version>
     <Authors>Karl M. Speer</Authors>
     <Company>DnDGen</Company>
     <Product>Stress</Product>
@@ -15,9 +15,8 @@
     <PackageIcon>18531-twenty-sided-dice-vector-thumb.png</PackageIcon>
     <PackageIconUrl />
     <PackageReleaseNotes>
-      4.0.0: .Net 8
-      4.0.1: Package updates for security vulnerabilities
-    </PackageReleaseNotes>
+		4.1.0: #34 - Enhance readability of iterations in stress test output
+	</PackageReleaseNotes>
   </PropertyGroup>
   <ItemGroup>
     <None Include="..\DnDGen.Stress\18531-twenty-sided-dice-vector-thumb.png">

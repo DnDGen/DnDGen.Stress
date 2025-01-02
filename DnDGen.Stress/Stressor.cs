@@ -136,7 +136,7 @@ namespace DnDGen.Stress
             logger.LogInformation($"Stress test '{TestContext.CurrentContext.Test.Name}' complete"
                 + $"{Environment.NewLine}\tFull Name: {TestContext.CurrentContext.Test.FullName}"
                 + $"{Environment.NewLine}\tTime: {TestDuration} ({timePercentage:P})"
-                + $"{Environment.NewLine}\tCompleted Iterations: {iterations} ({iterationPercentage:P})"
+                + $"{Environment.NewLine}\tCompleted Iterations: {iterations:N0} ({iterationPercentage:P})"
                 + $"{Environment.NewLine}\tIterations Per Second: {iterationsPerSecond:N2}"
                 + $"{Environment.NewLine}\tLikely Status: {status}");
         }
