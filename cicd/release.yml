@@ -10,7 +10,7 @@ resources:
     source: 'DnDGen.Stress - Build'
     trigger: 
       branches:
-      - master
+      - main
 
 jobs:
 

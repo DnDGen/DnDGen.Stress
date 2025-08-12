@@ -25,7 +25,7 @@ steps:
     arguments: '-v normal --configuration Stress'
 
 - task: PowerShell@2
-  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
+  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
   displayName: 'Get Project Version'
   inputs:
     targetType: 'inline'
@@ -39,12 +39,12 @@ steps:
      echo "Tagging with version $(version)"
      git tag $(version)
      git push origin $(version)
-  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
+  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
   displayName: 'Tag Version'
   workingDirectory: $(Build.SourcesDirectory)
 
 - task: PublishBuildArtifacts@1
-  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
+  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
   displayName: Publish Artifacts
   inputs:
     pathtoPublish: './DnDGen.Stress/bin/Release' 
