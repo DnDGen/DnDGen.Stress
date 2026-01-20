@@ -2,7 +2,7 @@
   <PropertyGroup>
     <TargetFrameworks>net8.0</TargetFrameworks>
     <PackageId>DnDGen.Stress</PackageId>
-    <Version>4.1.1</Version>
+    <Version>4.1.2</Version>
     <Authors>Karl M. Speer</Authors>
     <Company>DnDGen</Company>
     <Product>Stress</Product>
@@ -14,9 +14,7 @@
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageIcon>18531-twenty-sided-dice-vector-thumb.png</PackageIcon>
     <PackageIconUrl />
-    <PackageReleaseNotes>
-		4.1.1: Change default branch name to main
-	</PackageReleaseNotes>
+    <PackageReleaseNotes>Dependabot updates</PackageReleaseNotes>
   </PropertyGroup>
   <ItemGroup>
     <None Include="..\DnDGen.Stress\18531-twenty-sided-dice-vector-thumb.png">
