@@ -22,7 +22,7 @@ steps:
   inputs:
     command: test
     projects: './DnDGen.Stress.Tests/DnDGen.Stress.Tests.csproj'
-    arguments: '-v normal --configuration Stress'
+    arguments: '-v normal --collect "Code Coverage" --configuration Stress'
 
 - task: PowerShell@2
   condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
