@@ -21,11 +21,13 @@ namespace DnDGen.Stress.Tests.Unit
         [SetUp]
         public void Setup()
         {
-            options = new StressorOptions();
-            options.RunningAssembly = Assembly.GetExecutingAssembly();
-            options.ConfidenceIterations = 10_000;
-            options.BuildTimeLimitInSeconds = 1_000;
-            options.OutputTimeLimitInSeconds = 100;
+            options = new StressorOptions
+            {
+                RunningAssembly = Assembly.GetExecutingAssembly(),
+                ConfidenceIterations = 10_000,
+                BuildTimeLimitInSeconds = 1_000,
+                OutputTimeLimitInSeconds = 100
+            };
 
             mockLogger = new Mock<ILogger>();
 
@@ -74,7 +76,7 @@ namespace DnDGen.Stress.Tests.Unit
         public void ThrowExceptionIfOptionsAreNotValid()
         {
             options.RunningAssembly = null;
-            Assert.That(() => new Stressor(options), Throws.ArgumentException.With.Message.EqualTo("Stressor Options are not valid"));
+            Assert.That((Func<Stressor>)(() => new Stressor(options)), Throws.ArgumentException.With.Message.EqualTo("Stressor Options are not valid"));
         }
 
         [TestCase(true)]
@@ -228,6 +230,7 @@ namespace DnDGen.Stress.Tests.Unit
         [TestCase(2)]
         public void CountIncludesTestCases(int caseNumber)
         {
+            Assert.That(caseNumber, Is.Positive);
             Assert.That(stressor.StressTestCount, Is.EqualTo(TestCount + TestCaseCount));
         }
 
@@ -244,6 +247,7 @@ namespace DnDGen.Stress.Tests.Unit
         [Ignore("Ignoring to verify count")]
         public void CountDoesNotIncludeAnyIgnoredTestCases(int caseNumber)
         {
+            Assert.That(caseNumber, Is.EqualTo(3));
             Assert.Fail("This test should be ignored");
         }
 
@@ -289,7 +293,7 @@ namespace DnDGen.Stress.Tests.Unit
             options.RunningAssembly = Assembly.GetAssembly(typeof(int));
             options.IsFullStress = true;
 
-            Assert.That(() => stressor = new Stressor(options, mockLogger.Object),
+            Assert.That((Func<Stressor>)(() => stressor = new Stressor(options, mockLogger.Object)),
                 Throws.ArgumentException.With.Message.EqualTo("No tests were detected in the running assembly"));
         }
 
@@ -299,7 +303,7 @@ namespace DnDGen.Stress.Tests.Unit
             options.RunningAssembly = Assembly.GetAssembly(typeof(int));
             options.IsFullStress = false;
 
-            Assert.That(() => stressor = new Stressor(options, mockLogger.Object),
+            Assert.That((Func<Stressor>)(() => stressor = new Stressor(options, mockLogger.Object)),
                 Throws.ArgumentException.With.Message.EqualTo("No tests were detected in the running assembly"));
         }
 

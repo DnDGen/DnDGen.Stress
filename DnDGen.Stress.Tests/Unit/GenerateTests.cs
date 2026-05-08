@@ -129,15 +129,15 @@ namespace DnDGen.Stress.Tests.Unit
         {
             var count = 0;
 
-            var exception = Assert.Throws<ArgumentException>(() => stressor.Generate(() => FailGeneration(count++), c => c > 9266));
+            var exception = Assert.Throws<ArgumentException>((Action)(() => stressor.Generate(() => FailGeneration(count++), c => c > 9266)));
             Assert.That(count, Is.EqualTo(12));
             Assert.That(exception.StackTrace, Contains.Substring("FailGeneration"));
         }
 
-        public int FailGeneration(int count)
+        public static int FailGeneration(int count)
         {
             if (count > 10)
-                throw new ArgumentException();
+                throw new ArgumentException("Count is too high");
 
             return count;
         }

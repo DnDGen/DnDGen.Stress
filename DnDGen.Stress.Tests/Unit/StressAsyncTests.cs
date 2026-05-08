@@ -67,13 +67,13 @@ namespace DnDGen.Stress.Tests.Unit
             Assert.That(counts, Has.Count.LessThan(options.ConfidenceIterations));
         }
 
-        private async Task SlowTestAsync(BlockingCollection<bool> collection)
+        private static async Task SlowTestAsync(BlockingCollection<bool> collection)
         {
             await FastTestAsync(collection);
             await Task.Delay(1);
         }
 
-        private async Task FastTestAsync(BlockingCollection<bool> collection)
+        private static async Task FastTestAsync(BlockingCollection<bool> collection)
         {
             collection.Add(true);
             Assert.That(collection, Has.Count.Positive);
@@ -158,7 +158,7 @@ namespace DnDGen.Stress.Tests.Unit
         [Test]
         public async Task WritesFailedStressSummaryToConsole()
         {
-            Assert.That(async () => await stressor.StressAsync(FailedTestAsync), Throws.InstanceOf<AssertionException>());
+            Assert.That((Func<Task>)(async () => await stressor.StressAsync(FailedTestAsync)), Throws.InstanceOf<AssertionException>());
 
             Assert.That(stressor.TestDuration, Is.EqualTo(TimeSpan.FromSeconds(0)).Within(100).Milliseconds);
             Assert.That(stressor.TestIterations, Is.Zero);
@@ -312,18 +312,18 @@ namespace DnDGen.Stress.Tests.Unit
         {
             var counts = new BlockingCollection<bool>();
 
-            var exception = Assert.ThrowsAsync<ArgumentException>(async () =>
+            var exception = Assert.ThrowsAsync<ArgumentException>((Func<Task>)(async () =>
                 await stressor.StressAsync(async () =>
-                    await FailStressAsync(counts)));
+                    await FailStressAsync(counts))));
 
             var expectedCount = GetExpectedAsyncCount(10);
             Assert.That(counts, Has.Count.EqualTo(expectedCount), $"Processor Count: {Environment.ProcessorCount}");
             Assert.That(exception.StackTrace.Trim(), Does.Not.StartsWith("at DnDGen.Stress.Stressor.RunActionAsync"));
         }
 
-        private int GetExpectedAsyncCount(int cutoff) => GetExpectedAsyncCount(cutoff, Environment.ProcessorCount);
+        private static int GetExpectedAsyncCount(int cutoff) => GetExpectedAsyncCount(cutoff, Environment.ProcessorCount);
 
-        private int GetExpectedAsyncCount(int cutoff, int parallel)
+        private static int GetExpectedAsyncCount(int cutoff, int parallel)
         {
             var expectedCount = cutoff;
             if (cutoff % parallel != 0)
@@ -334,11 +334,11 @@ namespace DnDGen.Stress.Tests.Unit
             return expectedCount;
         }
 
-        public async Task FailStressAsync(BlockingCollection<bool> collection)
+        public static async Task FailStressAsync(BlockingCollection<bool> collection)
         {
             collection.Add(true);
             if (collection.Count >= 10)
-                throw new ArgumentException();
+                throw new ArgumentException("Collection Count is too high");
         }
 
         [TestCase(1)]

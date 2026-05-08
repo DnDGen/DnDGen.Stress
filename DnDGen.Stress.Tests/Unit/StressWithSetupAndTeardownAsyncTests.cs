@@ -78,13 +78,13 @@ namespace DnDGen.Stress.Tests.Unit
                 .And.Count.EqualTo(teardowns.Count));
         }
 
-        private async Task SlowTestAsync(BlockingCollection<bool> collection)
+        private static async Task SlowTestAsync(BlockingCollection<bool> collection)
         {
             await FastTestAsync(collection);
             await Task.Delay(1);
         }
 
-        private async Task FastTestAsync(BlockingCollection<bool> collection, int failLimit = int.MaxValue)
+        private static async Task FastTestAsync(BlockingCollection<bool> collection, int failLimit = int.MaxValue)
         {
             collection.Add(true);
             Assert.That(collection, Has.Count.Positive
@@ -196,11 +196,11 @@ namespace DnDGen.Stress.Tests.Unit
             var setups = new BlockingCollection<bool>();
             var teardowns = new BlockingCollection<bool>();
 
-            Assert.That(async () =>
+            Assert.That((Func<Task>)(async () =>
                 await stressor.StressAsync(
                     () => setups.Add(true),
                     FailedTestAsync,
-                    () => teardowns.Add(true)),
+                    () => teardowns.Add(true))),
                 Throws.InstanceOf<AssertionException>());
             Assert.That(setups, Has.Count.EqualTo(Environment.ProcessorCount));
             Assert.That(teardowns, Has.Count.EqualTo(Environment.ProcessorCount));
@@ -331,12 +331,12 @@ namespace DnDGen.Stress.Tests.Unit
                 .And.Count.EqualTo(teardowns.Count));
         }
 
-        private void TestSetup(BlockingCollection<bool> collection)
+        private static void TestSetup(BlockingCollection<bool> collection)
         {
             collection.Add(true);
         }
 
-        private void TestTeardown(BlockingCollection<bool> collection)
+        private static void TestTeardown(BlockingCollection<bool> collection)
         {
             collection.Add(true);
         }
@@ -350,11 +350,11 @@ namespace DnDGen.Stress.Tests.Unit
             var setups = new BlockingCollection<bool>();
             var teardowns = new BlockingCollection<bool>();
 
-            Assert.That(async () =>
+            Assert.That((Func<Task>)(async () =>
                 await stressor.StressAsync(
                     () => TestSetup(setups),
                     async () => await FastTestAsync(counts, 9266),
-                    () => TestTeardown(teardowns)),
+                    () => TestTeardown(teardowns))),
                 Throws.InstanceOf<AssertionException>());
 
             Assert.That(stressor.TestDuration, Is.LessThan(stressor.TimeLimit));
@@ -366,9 +366,9 @@ namespace DnDGen.Stress.Tests.Unit
             Assert.That(teardowns, Has.Count.EqualTo(expectedCount), $"Tear Down. Processor Count: {Environment.ProcessorCount}");
         }
 
-        private int GetExpectedAsyncCount(int cutoff) => GetExpectedAsyncCount(cutoff, Environment.ProcessorCount);
+        private static int GetExpectedAsyncCount(int cutoff) => GetExpectedAsyncCount(cutoff, Environment.ProcessorCount);
 
-        private int GetExpectedAsyncCount(int cutoff, int parallel)
+        private static int GetExpectedAsyncCount(int cutoff, int parallel)
         {
             var expectedCount = cutoff;
             if (cutoff % parallel != 0)
@@ -454,11 +454,11 @@ namespace DnDGen.Stress.Tests.Unit
             var setups = new BlockingCollection<bool>();
             var teardowns = new BlockingCollection<bool>();
 
-            var exception = Assert.ThrowsAsync<ArgumentException>(async () =>
+            var exception = Assert.ThrowsAsync<ArgumentException>((Func<Task>)(async () =>
                 await stressor.StressAsync(
                     () => TestSetup(setups),
                     async () => await FailStressAsync(counts),
-                    () => TestTeardown(teardowns)));
+                    () => TestTeardown(teardowns))));
 
             var expectedCount = GetExpectedAsyncCount(10);
             Assert.That(counts, Has.Count.EqualTo(expectedCount), $"Count. Processor Count: {Environment.ProcessorCount}");
@@ -467,11 +467,11 @@ namespace DnDGen.Stress.Tests.Unit
             Assert.That(exception.StackTrace.Trim(), Does.Not.StartsWith("at DnDGen.Stress.Stressor.RunActionAsync"));
         }
 
-        public async Task FailStressAsync(BlockingCollection<bool> collection)
+        public static async Task FailStressAsync(BlockingCollection<bool> collection)
         {
             collection.Add(true);
             if (collection.Count >= 10)
-                throw new ArgumentException();
+                throw new ArgumentException("Collection Count is too high");
         }
 
         [TestCase(1)]
