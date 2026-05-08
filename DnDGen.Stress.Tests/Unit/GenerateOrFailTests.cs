@@ -55,7 +55,7 @@ namespace DnDGen.Stress.Tests.Unit
             var count = 0;
 
             stopwatch.Start();
-            Assert.That(() => stressor.GenerateOrFail(() => SlowGenerate(ref count), c => false),
+            Assert.That((Func<object>)(() => stressor.GenerateOrFail(() => SlowGenerate(ref count), c => false)),
                 Throws.InstanceOf<AssertionException>().With.Message.EqualTo("Generation timed out"));
             stopwatch.Stop();
 
@@ -65,7 +65,7 @@ namespace DnDGen.Stress.Tests.Unit
             Assert.That(count, Is.LessThan(options.ConfidenceIterations));
         }
 
-        private int SlowGenerate(ref int count)
+        private static int SlowGenerate(ref int count)
         {
             count++;
             Thread.Sleep(1);
@@ -78,7 +78,8 @@ namespace DnDGen.Stress.Tests.Unit
             var count = 0;
 
             stopwatch.Start();
-            Assert.That(() => stressor.GenerateOrFail(() => count++, c => false), Throws.InstanceOf<AssertionException>().With.Message.EqualTo("Generation timed out"));
+            Assert.That((Func<object>)(() => stressor.GenerateOrFail(() => count++, c => false)),
+                Throws.InstanceOf<AssertionException>().With.Message.EqualTo("Generation timed out"));
             stopwatch.Stop();
 
             Assert.That(stopwatch.Elapsed, Is.EqualTo(stressor.TestDuration).Within(.1).Seconds);
@@ -169,7 +170,7 @@ namespace DnDGen.Stress.Tests.Unit
         public void WritesFailedStressSummaryToConsole()
         {
             var count = 0;
-            Assert.That(() => stressor.GenerateOrFail(() => count++, c => false), Throws.InstanceOf<AssertionException>());
+            Assert.That((Func<object>)(() => stressor.GenerateOrFail(() => count++, c => false)), Throws.InstanceOf<AssertionException>());
 
             Assert.That(output, Is.Not.Empty.And.Count.EqualTo(2));
             Assert.That(output[0], Is.EqualTo("Beginning stress test 'WritesFailedStressSummaryToConsole'"
@@ -219,7 +220,8 @@ namespace DnDGen.Stress.Tests.Unit
         public void GenerateAndFail()
         {
             var count = 0;
-            Assert.That(() => stressor.GenerateOrFail(() => count++, c => false), Throws.InstanceOf<AssertionException>().With.Message.EqualTo("Generation timed out"));
+            Assert.That((Func<object>)(() => stressor.GenerateOrFail(() => count++, c => false)),
+                Throws.InstanceOf<AssertionException>().With.Message.EqualTo("Generation timed out"));
         }
 
         [Test]
@@ -231,11 +233,11 @@ namespace DnDGen.Stress.Tests.Unit
 
             stopwatch.Start();
             Assert.That(
-                () => stressor.GenerateOrFail(
+                (Func<object>)(() => stressor.GenerateOrFail(
                     () => stressor.Generate(
                         () => count++,
                         c => c % 9266 == 0),
-                    c => c < 0),
+                    c => c < 0)),
                 Throws.InstanceOf<AssertionException>());
             stopwatch.Stop();
 
@@ -250,15 +252,15 @@ namespace DnDGen.Stress.Tests.Unit
         {
             var count = 0;
 
-            var exception = Assert.Throws<ArgumentException>(() => stressor.GenerateOrFail(() => FailGeneration(count++), c => c > 9266));
+            var exception = Assert.Throws<ArgumentException>((Action)(() => stressor.GenerateOrFail(() => FailGeneration(count++), c => c > 9266)));
             Assert.That(count, Is.EqualTo(12));
             Assert.That(exception.StackTrace, Contains.Substring("FailGeneration"));
         }
 
-        public int FailGeneration(int count)
+        public static int FailGeneration(int count)
         {
             if (count > 10)
-                throw new ArgumentException();
+                throw new ArgumentException("Count is too high");
 
             return count;
         }

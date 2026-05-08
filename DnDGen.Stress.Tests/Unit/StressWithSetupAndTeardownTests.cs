@@ -75,13 +75,13 @@ namespace DnDGen.Stress.Tests.Unit
                 .And.EqualTo(teardown));
         }
 
-        private void SlowTest(ref int count)
+        private static void SlowTest(ref int count)
         {
             FastTest(ref count);
             Thread.Sleep(1);
         }
 
-        private void FastTest(ref int count, int failLimit = int.MaxValue)
+        private static void FastTest(ref int count, int failLimit = int.MaxValue)
         {
             count++;
             Assert.That(count, Is.Positive.And.LessThan(failLimit));
@@ -192,7 +192,7 @@ namespace DnDGen.Stress.Tests.Unit
             var setup = 0;
             var teardown = 0;
 
-            Assert.That(() => stressor.Stress(() => setup++, FailedTest, () => teardown++), Throws.InstanceOf<AssertionException>());
+            Assert.That((Action)(() => stressor.Stress(() => setup++, FailedTest, () => teardown++)), Throws.InstanceOf<AssertionException>());
             Assert.That(setup, Is.EqualTo(1));
             Assert.That(teardown, Is.EqualTo(1));
 
@@ -310,12 +310,12 @@ namespace DnDGen.Stress.Tests.Unit
                 .And.EqualTo(teardown));
         }
 
-        private void TestSetup(ref int setup)
+        private static void TestSetup(ref int setup)
         {
             setup++;
         }
 
-        private void TestTeardown(ref int teardown)
+        private static void TestTeardown(ref int teardown)
         {
             teardown++;
         }
@@ -329,7 +329,7 @@ namespace DnDGen.Stress.Tests.Unit
             var setup = 0;
             var teardown = 0;
 
-            Assert.That(() => stressor.Stress(() => TestSetup(ref setup), () => FastTest(ref count, 9266), () => TestTeardown(ref teardown)),
+            Assert.That((Action)(() => stressor.Stress(() => TestSetup(ref setup), () => FastTest(ref count, 9266), () => TestTeardown(ref teardown))),
                 Throws.InstanceOf<AssertionException>());
             Assert.That(stressor.TestDuration, Is.LessThan(stressor.TimeLimit));
             Assert.That(stressor.TestIterations, Is.EqualTo(9265));
@@ -411,17 +411,17 @@ namespace DnDGen.Stress.Tests.Unit
             var setup = 0;
             var teardown = 0;
 
-            var exception = Assert.Throws<ArgumentException>(() => stressor.Stress(() => TestSetup(ref setup), () => FailStress(count++), () => TestTeardown(ref teardown)));
+            var exception = Assert.Throws<ArgumentException>((Action)(() => stressor.Stress(() => TestSetup(ref setup), () => FailStress(count++), () => TestTeardown(ref teardown))));
             Assert.That(count, Is.EqualTo(12));
             Assert.That(setup, Is.EqualTo(12));
             Assert.That(teardown, Is.EqualTo(12));
             Assert.That(exception.StackTrace.Trim(), Does.Not.StartsWith("at DnDGen.Stress.Stressor.RunAction"));
         }
 
-        public void FailStress(int count)
+        public static void FailStress(int count)
         {
             if (count > 10)
-                throw new ArgumentException();
+                throw new ArgumentException("Count is too high");
         }
     }
 }

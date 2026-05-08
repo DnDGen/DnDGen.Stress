@@ -64,13 +64,13 @@ namespace DnDGen.Stress.Tests.Unit
             Assert.That(count, Is.LessThan(options.ConfidenceIterations));
         }
 
-        private void SlowTest(ref int count)
+        private static void SlowTest(ref int count)
         {
             FastTest(ref count);
             Thread.Sleep(1);
         }
 
-        private void FastTest(ref int count)
+        private static void FastTest(ref int count)
         {
             count++;
             Assert.That(count, Is.Positive);
@@ -148,7 +148,7 @@ namespace DnDGen.Stress.Tests.Unit
         [Test]
         public void WritesFailedStressSummaryToConsole()
         {
-            Assert.That(() => stressor.Stress(FailedTest), Throws.InstanceOf<AssertionException>());
+            Assert.That((Action)(() => stressor.Stress(FailedTest)), Throws.InstanceOf<AssertionException>());
 
             Assert.That(output, Is.Not.Empty.And.Count.EqualTo(2));
             Assert.That(output[0], Is.EqualTo("Beginning stress test 'WritesFailedStressSummaryToConsole'"
@@ -290,15 +290,15 @@ namespace DnDGen.Stress.Tests.Unit
         {
             var count = 0;
 
-            var exception = Assert.Throws<ArgumentException>(() => stressor.Stress(() => FailStress(count++)));
+            var exception = Assert.Throws<ArgumentException>((Action)(() => stressor.Stress(() => FailStress(count++))));
             Assert.That(count, Is.EqualTo(12));
             Assert.That(exception.StackTrace.Trim(), Does.Not.StartsWith("at DnDGen.Stress.Stressor.RunAction"));
         }
 
-        public void FailStress(int count)
+        public static void FailStress(int count)
         {
             if (count > 10)
-                throw new ArgumentException();
+                throw new ArgumentException("Count is too high");
         }
     }
 }
