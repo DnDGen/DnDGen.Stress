@@ -210,11 +210,11 @@ namespace DnDGen.Stress.Tests.Unit
             stressor = new Stressor(options, mockLogger.Object);
 
             var count = 0;
-            stressor.Stress(() => FastTest(ref count));
+            stressor.Stress(() => SlowTest(ref count));
 
             Assert.That(stressor.TimeLimit, Is.EqualTo(TimeSpan.FromSeconds(1)));
             Assert.That(stressor.TestIterations, Is.LessThan(options.ConfidenceIterations));
-            Assert.That(stressor.TestDuration, Is.AtLeast(stressor.TimeLimit));
+            Assert.That(stressor.TestDuration, Is.AtLeast(stressor.TimeLimit).And.EqualTo(stressor.TimeLimit).Within(.1).Seconds);
             Assert.That(count, Is.LessThan(options.ConfidenceIterations));
         }
 
@@ -229,11 +229,11 @@ namespace DnDGen.Stress.Tests.Unit
             stressor = new Stressor(options, mockLogger.Object);
 
             var count = 0;
-            stressor.Stress(() => FastTest(ref count));
+            stressor.Stress(() => SlowTest(ref count));
 
             Assert.That(stressor.TimeLimit, Is.EqualTo(TimeSpan.FromSeconds(3)).Within(0.1).Seconds);
             Assert.That(stressor.TestIterations, Is.LessThan(options.ConfidenceIterations));
-            Assert.That(stressor.TestDuration, Is.AtLeast(stressor.TimeLimit));
+            Assert.That(stressor.TestDuration, Is.AtLeast(stressor.TimeLimit).And.EqualTo(stressor.TimeLimit).Within(.1).Seconds);
             Assert.That(count, Is.LessThan(options.ConfidenceIterations));
         }
 

@@ -12,9 +12,10 @@ namespace DnDGen.Stress.Tests.Unit
         [SetUp]
         public void Setup()
         {
-            options = new StressorOptions();
-
-            options.RunningAssembly = Assembly.GetExecutingAssembly();
+            options = new StressorOptions
+            {
+                RunningAssembly = Assembly.GetExecutingAssembly()
+            };
         }
 
         [TestCase(StressorOptions.DefaultBuildTimeLimitInSeconds, 60 * 60)]

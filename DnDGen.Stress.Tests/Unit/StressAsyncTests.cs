@@ -27,7 +27,9 @@ namespace DnDGen.Stress.Tests.Unit
                 RunningAssembly = Assembly.GetExecutingAssembly(),
                 ConfidenceIterations = 1_000,
                 BuildTimeLimitInSeconds = 10,
-                OutputTimeLimitInSeconds = 1
+                OutputTimeLimitInSeconds = 1,
+                //INFO: Pinned to a divisor of ConfidenceIterations, so iteration counts don't depend on the machine's core count
+                MaxAsyncBatch = 8
             };
 
             output = [];
@@ -228,10 +230,10 @@ namespace DnDGen.Stress.Tests.Unit
             stressor = new Stressor(options, mockLogger.Object);
 
             var counts = new BlockingCollection<bool>();
-            await stressor.StressAsync(async () => await FastTestAsync(counts));
+            await stressor.StressAsync(async () => await SlowTestAsync(counts));
 
             Assert.That(stressor.TimeLimit, Is.EqualTo(TimeSpan.FromSeconds(1)));
-            Assert.That(stressor.TestDuration, Is.AtLeast(stressor.TimeLimit));
+            Assert.That(stressor.TestDuration, Is.AtLeast(stressor.TimeLimit).And.EqualTo(stressor.TimeLimit).Within(.1).Seconds);
             Assert.That(stressor.TestIterations, Is.LessThan(options.ConfidenceIterations));
             Assert.That(counts, Has.Count.LessThan(options.ConfidenceIterations));
         }
@@ -240,17 +242,17 @@ namespace DnDGen.Stress.Tests.Unit
         public async Task StressATest_HitTimeLimit_Build()
         {
             options.IsFullStress = true;
-            options.ConfidenceIterations = 10_000_000;
+            options.ConfidenceIterations = int.MaxValue;
             options.BuildTimeLimitInSeconds = 3 * (StressorTests.TestCaseCount + StressorTests.TestCount);
             options.OutputTimeLimitInSeconds = 10;
 
             stressor = new Stressor(options, mockLogger.Object);
 
             var counts = new BlockingCollection<bool>();
-            await stressor.StressAsync(async () => await FastTestAsync(counts));
+            await stressor.StressAsync(async () => await SlowTestAsync(counts));
 
             Assert.That(stressor.TimeLimit, Is.EqualTo(TimeSpan.FromSeconds(3)).Within(0.1).Seconds);
-            Assert.That(stressor.TestDuration, Is.AtLeast(stressor.TimeLimit));
+            Assert.That(stressor.TestDuration, Is.AtLeast(stressor.TimeLimit).And.EqualTo(stressor.TimeLimit).Within(.1).Seconds);
             Assert.That(stressor.TestIterations, Is.LessThan(options.ConfidenceIterations));
             Assert.That(counts, Has.Count.LessThan(options.ConfidenceIterations));
         }
@@ -312,16 +314,16 @@ namespace DnDGen.Stress.Tests.Unit
         {
             var counts = new BlockingCollection<bool>();
 
-            var exception = Assert.ThrowsAsync<ArgumentException>((Func<Task>)(async () =>
+            var exception = await Assert.ThrowsAsync<ArgumentException>((Func<Task>)(async () =>
                 await stressor.StressAsync(async () =>
                     await FailStressAsync(counts))));
 
             var expectedCount = GetExpectedAsyncCount(10);
-            Assert.That(counts, Has.Count.EqualTo(expectedCount), $"Processor Count: {Environment.ProcessorCount}");
+            Assert.That(counts, Has.Count.EqualTo(expectedCount), $"Max Async Batch: {options.MaxAsyncBatch}");
             Assert.That(exception.StackTrace.Trim(), Does.Not.StartsWith("at DnDGen.Stress.Stressor.RunActionAsync"));
         }
 
-        private static int GetExpectedAsyncCount(int cutoff) => GetExpectedAsyncCount(cutoff, Environment.ProcessorCount);
+        private int GetExpectedAsyncCount(int cutoff) => GetExpectedAsyncCount(cutoff, options.MaxAsyncBatch);
 
         private static int GetExpectedAsyncCount(int cutoff, int parallel)
         {
