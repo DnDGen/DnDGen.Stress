@@ -262,7 +262,7 @@ namespace DnDGen.Stress.Tests.Unit
         public void StressATestWithSetupAndTeardown_HitTimeLimit_Output()
         {
             options.IsFullStress = true;
-            options.ConfidenceIterations = 10_000_000;
+            options.ConfidenceIterations = int.MaxValue;
             options.BuildTimeLimitInSeconds = 1_000;
             options.OutputTimeLimitInSeconds = 1;
 
@@ -271,10 +271,10 @@ namespace DnDGen.Stress.Tests.Unit
             var count = 0;
             var setup = 0;
             var teardown = 0;
-            stressor.Stress(() => TestSetup(ref setup), () => FastTest(ref count), () => TestTeardown(ref teardown));
+            stressor.Stress(() => TestSetup(ref setup), () => SlowTest(ref count), () => TestTeardown(ref teardown));
 
             Assert.That(stressor.TimeLimit, Is.EqualTo(TimeSpan.FromSeconds(1)));
-            Assert.That(stressor.TestDuration, Is.AtLeast(stressor.TimeLimit));
+            Assert.That(stressor.TestDuration, Is.AtLeast(stressor.TimeLimit).And.EqualTo(stressor.TimeLimit).Within(.1).Seconds);
             Assert.That(stressor.TestIterations, Is.LessThan(options.ConfidenceIterations));
             Assert.That(count, Is.LessThan(options.ConfidenceIterations), "Count");
             Assert.That(setup, Is.LessThan(options.ConfidenceIterations), "Setup");
@@ -288,7 +288,7 @@ namespace DnDGen.Stress.Tests.Unit
         public void StressATestWithSetupAndTeardown_HitTimeLimit_Build()
         {
             options.IsFullStress = true;
-            options.ConfidenceIterations = 10_000_000;
+            options.ConfidenceIterations = int.MaxValue;
             options.BuildTimeLimitInSeconds = 3 * (StressorTests.TestCaseCount + StressorTests.TestCount);
             options.OutputTimeLimitInSeconds = 10;
 
@@ -297,10 +297,10 @@ namespace DnDGen.Stress.Tests.Unit
             var count = 0;
             var setup = 0;
             var teardown = 0;
-            stressor.Stress(() => TestSetup(ref setup), () => FastTest(ref count), () => TestTeardown(ref teardown));
+            stressor.Stress(() => TestSetup(ref setup), () => SlowTest(ref count), () => TestTeardown(ref teardown));
 
             Assert.That(stressor.TimeLimit, Is.EqualTo(TimeSpan.FromSeconds(3)).Within(0.1).Seconds);
-            Assert.That(stressor.TestDuration, Is.AtLeast(stressor.TimeLimit));
+            Assert.That(stressor.TestDuration, Is.AtLeast(stressor.TimeLimit).And.EqualTo(stressor.TimeLimit).Within(.1).Seconds);
             Assert.That(stressor.TestIterations, Is.LessThan(options.ConfidenceIterations));
             Assert.That(count, Is.LessThan(options.ConfidenceIterations), "Count");
             Assert.That(setup, Is.LessThan(options.ConfidenceIterations), "Setup");
@@ -341,7 +341,7 @@ namespace DnDGen.Stress.Tests.Unit
         [Test]
         public void GenerateWithinStressWithSetupAndTeardownHonorsTimeLimit()
         {
-            options.ConfidenceIterations = 10_000_000;
+            options.ConfidenceIterations = int.MaxValue;
 
             var count = 0;
             var setup = 0;

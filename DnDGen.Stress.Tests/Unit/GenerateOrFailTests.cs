@@ -227,7 +227,7 @@ namespace DnDGen.Stress.Tests.Unit
         [Test]
         public void GenerateWithinGenerateOrFailHonorsTimeLimit()
         {
-            options.ConfidenceIterations = 10_000_000;
+            options.ConfidenceIterations = int.MaxValue;
 
             var count = 0;
 
