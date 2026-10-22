@@ -7,81 +7,112 @@
 A codebase that does everything one way is easier to work in than a "cleaner" one that does
 things a hundred ways. Consistency is the first test of any change.
 
-- **Emulate what exists, here first, then across DnDGen.** The preferred implementation follows
-  the patterns and practices already in this codebase. When this codebase has no precedent, look
-  to the other DnDGen repositories before inventing one: what's new to this repository is often
-  established elsewhere. For example, RollGen's caching was added as a caching proxy that follows
-  the structure in DnDGen.Infrastructure, not as caching inside the generator itself. Confirm a
-  pattern from more than one example before treating it as the convention.
-- **A new pattern must be worth everyone conforming to it.** Adopting one is a decision for the
-  whole codebase, though the move happens incrementally as code is touched (Principle III). If the
-  benefit doesn't justify that, the existing pattern stays. IDE and analyzer suggestions are new
-  patterns too, and new ones keep arriving as the language changes, so each is judged by three
-  criteria rather than a fixed list. A suggestion is applied only if all three hold:
-  1. **Safe, one-step fix.** The IDE offers a quick fix (Ctrl+.) and applying it doesn't change
-     behaviour. A suggestion with no fix is ignored. One that changes behaviour, such as making an
-     `async` test helper synchronous, is not a style fix.
-  2. **Clearer to a reader**, not just shorter or more explicit. Collection expressions and
-     removing a redundant cast pass. Explicit types instead of `var` fail, because a good name
-     should already say what the variable is; so do ternaries in place of `if`, and `_ =` in front
-     of every ignored return value.
-  3. **One answer the whole codebase can follow.** Rules that flip-flop with their own opposite,
-     such as block versus expression bodies, aren't enforced either way: expression bodies are
-     preferred for one-line members. Braces may be left off only when every branch of an
-     `if`/`else` is a single line.
-- **Code reads like well-written prose.** Names and structure carry the meaning, so a reader can
-  follow the code without comments. Design follows SOLID, with each concern kept in its own place.
-  Comments are added only by a human, or when a human asks for one, and only to record what the
-  code cannot say:
-  - `//INFO:` why a choice was made, typically so a later change doesn't undo it and break things
-  - `//HACK:` an acknowledged poor solution
-  - `//BUG:` an acknowledged known defect
+**I.1 Emulate what exists, here first, then across DnDGen.** The preferred implementation follows
+the patterns and practices already in this codebase. When this codebase has no precedent, look to
+the other DnDGen repositories before inventing one: what's new to this repository is often
+established elsewhere. Confirm a pattern from more than one example before treating it as the
+convention.
+
+- *Example:* RollGen's caching was added as a caching proxy that follows the structure in
+  DnDGen.Infrastructure, not as caching inside the generator itself.
+
+**I.2 A new pattern must be worth everyone conforming to it.** Adopting one is a decision for the
+whole codebase, though the move happens incrementally as code is touched (III.2). If the benefit
+doesn't justify that, the existing pattern stays. IDE and analyzer suggestions are new patterns
+too, and new ones keep arriving as the language changes, so each is judged by three criteria
+rather than a fixed list. A suggestion is applied only if all three hold:
+
+- **I.2.a Safe, one-step fix.** The IDE offers a quick fix (Ctrl+.) and applying it doesn't change
+  behaviour. A suggestion with no fix is ignored.
+  - *Example:* Making an `async` test helper synchronous changes how its exceptions reach
+    `StressAsync`, so it is not a style fix.
+- **I.2.b Clearer to a reader**, not just shorter or more explicit.
+  - *Examples:* Collection expressions and removing a redundant cast pass. Explicit types instead
+    of `var` fail, because a good name should already say what the variable is; so do ternaries
+    in place of `if`, and `_ =` in front of every ignored return value.
+- **I.2.c One answer the whole codebase can follow.**
+  - *Examples:* Block and expression bodies flip-flop with each other, so neither is enforced;
+    expression bodies are preferred for one-line members. Braces may be left off only when every
+    branch of an `if`/`else` is a single line.
+
+**I.3 Code reads like well-written prose.** Names and structure carry the meaning, so a reader can
+follow the code without comments. Design follows SOLID, with each concern kept in its own place.
+Comments are added only by a human, or when a human asks for one, and only to record what the code
+cannot say:
+
+- **I.3.a `//INFO:`** why a choice was made, typically so a later change doesn't undo it and break
+  things.
+- **I.3.b `//HACK:`** an acknowledged poor solution.
+- **I.3.c `//BUG:`** an acknowledged known defect.
 
 ### II. Tests Are the Spec
 
 Behaviour is defined by tests before it is implemented: write or change the tests first, see them
 fail for the expected reason, then change the code until they pass.
 
-- **What to test: what a consumer does and sees.** Each case is a sentence from the consumer's
-  side: "if I do X, I expect Y, and I'll confirm that with Z." The list of cases is written that
-  way, as if the implementation had never been seen, and cases are named as consumer outcomes in
-  the consumer's vocabulary. Every capability and option has its own case, even when two cases
-  run the same lines of code.
-- **How much to test: everything when it's cheap, chosen values when it isn't.**
-  - When the valid range of an input is small enough, test all of it.
-  - Otherwise, test anything that counts or repeats at 0, 1, and many, where "many" is chosen to
-    expose off-by-one and batching mistakes (10, or 1337, not 2). Test every boundary and limit,
-    along with the value just past it.
-  - Coverage confirms nothing was missed. Line and branch coverage of `DnDGen.Stress.dll` stays at
-    100%. An uncovered line is either a missing case or code that can never run. Code that can
-    never run is removed only after showing why it can't run, what it was originally there for,
-    and that removing it changes nothing a consumer can observe, and after the maintainer agrees.
-- **How a test fails: when (not if) it fails, it says exactly where, why, and what to fix.**
-  - Use the strongest assertion available: compare the whole observed value, so the failure shows
-    what actually happened.
-  - No implied assertions: everything a test relies on is written down in the test. The current
-    pattern of chained mocks (input → mock A → mock B → mock C → result), each answering only its
-    exact expected input, counts as written down, because a correct result proves every link. A
-    broken link shows up only as a wrong final result; a better pattern for that can replace this
-    one once it's agreed (Principle I).
-  - A failure means one thing: this case found a defect in the code. Each case runs, passes, and
-    fails on its own, and none fails because of the machine (core count, CPU speed), timing slack,
-    or another test.
+**II.1 What to test: what a consumer does and sees.**
+
+- **II.1.a** Each case is a sentence from the consumer's side: "if I do X, I expect Y, and I'll
+  confirm that with Z."
+- **II.1.b** The list of cases is written as if the implementation had never been seen, and cases
+  are named as consumer outcomes, in the consumer's vocabulary.
+- **II.1.c** Every capability and option has its own case, even when two cases run the same lines
+  of code.
+
+**II.2 How much to test: everything when it's cheap, a deliberate sample when it isn't.**
+
+- **II.2.a** When the valid range of an input is small enough, test all of it.
+- **II.2.b** Otherwise, sample the range deliberately:
+  - **II.2.b.i** Anything that counts or repeats is tested at 0, 1, and many. "Many" is the
+    largest realistic count: a number that would expose off-by-one or batching mistakes, such as
+    10 or 1337, is stronger, but 2 is fine where larger counts aren't realistic.
+    - *Example:* CreatureGen tests chaining 0, 1, and 2 templates, and a few chains of 3. Chaining
+      10 templates isn't realistic.
+  - **II.2.b.ii** A wide range is tested at each order of magnitude.
+    - *Example:* For 1 to 1,000,000: 1, 2, 10, 100, 1,000, 10,000, 100,000, and 1,000,000.
+  - **II.2.b.iii** Every boundary and limit is tested, along with the values either side of it.
+    - *Example:* For an upper limit of 1,000,000, also 999,999 and 1,000,001. For a lower limit of
+      1, also 0 and 2.
+- **II.2.c** Coverage confirms nothing was missed. Line and branch coverage of `DnDGen.Stress.dll`
+  stays at 100%. An uncovered line is either a missing case or code that can never run. Code that
+  can never run is removed only after showing why it can't run, what it was originally there for,
+  and that removing it changes nothing a consumer can observe, and after the maintainer agrees.
+
+**II.3 How a test fails: when (not if) it fails, it says exactly where, why, and what to fix.**
+
+- **II.3.a** Use the strongest assertion available: compare the whole observed value, so the
+  failure shows what actually happened.
+- **II.3.b** No implied assertions: everything a test relies on is written down in the test.
+  - *Example:* The current pattern of chained mocks (input → mock A → mock B → mock C → result),
+    each answering only its exact expected input, counts as written down, because a correct result
+    proves every link. A broken link shows up only as a wrong final result; a better pattern for
+    that can replace this one once it's agreed (I.2).
+- **II.3.c** A failure means one thing: this case found a defect in the code. Each case runs,
+  passes, and fails on its own, and none fails because of the machine, timing slack, or another
+  test.
+  - *Example:* Async batching tests set `MaxAsyncBatch` explicitly instead of inheriting the
+    machine's core count.
 
 ### III. Leave It Better Than You Found It
 
 Every change may also improve the code it touches, as long as the improvement doesn't change
 behaviour.
 
-- **In scope: maintenance.** Updating packages (including major versions), applying IDE
-  suggestions that pass Principle I's criteria, and replacing outdated patterns or practices with
-  the codebase's agreed ones. A package update that breaks something is fixed in the same change,
-  or held back with the reason stated in the pull request.
-- **Improve where you are, in its own commit.** Improvements are made in the code already being
-  changed, each in its own commit. Improving one file doesn't oblige anyone to make the same
-  improvement everywhere; the rest of the codebase gets it the next time it is touched.
-- **Out of scope: behaviour.** Bug fixes, performance work, or features discovered along the way
-  are recorded as GitHub issues so they aren't lost, and handled as their own changes.
+**III.1 In scope: maintenance.**
+
+- **III.1.a** Updating packages, including major versions. An update that breaks something is fixed
+  in the same change, or held back with the reason stated in the pull request.
+- **III.1.b** Replacing outdated patterns and practices with the codebase's agreed ones, including
+  IDE suggestions that pass I.2.
+- **III.1.c** Correcting stale comments and documentation, or removing them once they're no longer
+  true. New comments still follow I.3.
+
+**III.2 Improve where you are, in its own commit.** Improvements are made in the code already being
+changed, each in its own commit. Improving one file doesn't oblige anyone to make the same
+improvement everywhere; the rest of the codebase gets it the next time it is touched.
+
+**III.3 Out of scope: behaviour.** Bug fixes, performance work, or features discovered along the
+way are recorded as GitHub issues so they aren't lost, and handled as their own changes.
 
 **How the three interact:** an improvement (III) moves the code toward the codebase's agreed
 patterns (I) and stays green against the tests (II). Extensive automated coverage is what makes
@@ -116,7 +147,7 @@ routine cleanup safe in this repository, and improving only where you are keeps 
   verified and what was not.
 - Spec Kit artifacts under `specs/` record one change at the time it was made. They are not
   maintained after the change merges, and MAY be deleted later. The lasting record of how the
-  package behaves is its tests (Principle II), the README, and this constitution.
+  package behaves is its tests (II), the README, and this constitution.
 
 ## Governance
 
@@ -128,9 +159,12 @@ This constitution supersedes other practices for this repository.
   merges with or replaces an existing one rather than simply being added.
 - **Amendments** are made by pull request, with the reasoning in the pull request description, and
   versioned semantically: MAJOR for removing or redefining a principle, MINOR for a new principle
-  or materially expanded guidance, PATCH for clarifications and wording. Principles that apply
-  across the DnDGen organisation MAY later move to a shared, organisation-wide document.
-- **Compliance**: Every plan and pull request is checked against these principles. A deviation
-  MUST be justified in the pull request, or the change is not merged.
+  or materially expanded guidance, PATCH for clarifications and wording. Principles are labelled
+  I, II, III; their points I.1, I.2; sub-points I.2.a; and a further level II.2.b.i, so that plans
+  and reviews can cite them. Examples sit unlabelled under the rule they illustrate. Principles
+  that apply across the DnDGen organisation MAY later move to a shared, organisation-wide document.
+- **Compliance**: Every plan and pull request is checked against these principles, citing them by
+  label. A deviation MUST be justified in the pull request, or the change is not merged.
 
-**Version**: 1.0.0 | **Ratified**: 2026-10-22 | **Last Amended**: 2026-10-22
+**Version**: 1.0.0 | **Ratified**: TODO(RATIFICATION_DATE): the date this constitution is first
+merged to `main` | **Last Amended**: 2026-10-23
