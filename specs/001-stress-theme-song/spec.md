@@ -13,10 +13,19 @@
 ### Session 2026-10-23
 
 - Q: Confirm the forge folk metal proposal, or choose another genre? → A: Forge folk metal, aiming for the vibe of
-  Wind Rose's "Diggy Diggy Hole". The main theme used Latin, Middle High German, and anagrams for a cinematic,
-  vocals-as-texture sound; this song doesn't need that, so its lyrics are in English.
-- Q: Does the song record live in DnDGen.Stress or in DnDGen/.github? → A: In DnDGen.Stress. The exact folder is
-  left to the plan.
+  Wind Rose's "Diggy Diggy Hole". The main theme used Latin, Middle High German, and anagrams because its genre
+  wanted a cinematic, vocals-as-texture sound. Most repository songs won't, and this one is in English.
+- Q: Does the song record live in DnDGen.Stress or in DnDGen/.github? → A: In DnDGen.Stress. The folder is
+  `docs/theme-song`, which the plan records.
+- Q: Do the support libraries (Stress, Infrastructure, Web) get leitmotif anagrams like the generators? → A: No.
+  Their songs describe their READMEs as they are. The generators' songs bring back the leitmotifs the main theme
+  gave them.
+- Q: Does the README link only to the song, or to its record too? → A: Both. The record is supporting
+  documentation, so the README is still the contract.
+- Q: What makes a take "the" theme song? → A: Whichever take the maintainer picks. The spec sets no criteria for
+  that choice.
+- Added User Story 3: changing the README comes with clear instructions to update the song, and changes that
+  don't touch the README need no song change.
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -35,61 +44,82 @@ in this feature has anything to describe.
 1. **Given** the README on GitHub, **When** a reader looks at the badges, **Then** a "Theme Song" badge sits next to
    the build badge, in the same style as the main theme's badge in the organization README.
 2. **Given** the badge, **When** a reader clicks it, **Then** the published song opens.
-3. **Given** the package page on NuGet, **When** a reader views the README there, **Then** the badge displays, or
-   the README still reads correctly without it.
+3. **Given** the README, **When** a reader wants to know more about the song, **Then** a link takes them to its
+   record.
+4. **Given** the package page on NuGet, **When** a reader views the README there, **Then** the badge displays and
+   both links work, or the README still reads correctly without the badge.
 
 ---
 
-### User Story 2 - Trace and remix the song (Priority: P2)
+### User Story 2 - Trace the song back to the README (Priority: P2)
 
 The maintainer, or anyone after them, can read the song's record and see where every lyric came from in the
-README, which leitmotifs it uses, and how to remix it when the README changes.
+README.
 
 **Why this priority**: Theme songs last and follow their README. A song that can't be traced back to the README
 can't be kept in step with it.
 
 **Independent Test**: Hand the record to someone who did not write the song. Using only the record, they can match
-every lyric to the README and produce a remix.
+every lyric to the README.
 
 **Acceptance Scenarios**:
 
 1. **Given** the song's record, **When** a reader looks up any lyric line, **Then** the source table gives the
    README phrase it came from, or marks it as not from the README.
-2. **Given** a README change the song should reflect, **When** the maintainer follows the record's remix steps,
-   **Then** they know which lyrics, sources, and links to update.
-3. **Given** the record, **When** a reader views it, **Then** it shows the album art, the style, the title, the
+2. **Given** the record, **When** a reader views it, **Then** it shows the album art, the style, the title, the
    lyrics, and the lessons learned while generating the song.
 
 ---
 
-### User Story 3 - Find Stress in the soundtrack (Priority: P3)
+### User Story 3 - Keep the song in step with the README (Priority: P3)
 
-Someone reading the organization's theme-song page sees Stress in the soundtrack plan, with its genre confirmed
-and its song linked, and sees Stress's leitmotif in the leitmotif table.
+Someone changing the DnDGen.Stress README is told that the theme song follows the README, and is given a clear
+procedure for updating it. Someone making a change that doesn't touch the README has nothing to do for the song.
 
-**Why this priority**: The soundtrack ties the repositories together, but Stress's own song is useful without it.
+**Why this priority**: Without this, the song drifts from the README with the first change after it is written.
+It matters only once the song exists.
 
-**Independent Test**: Read the organization theme-song page and find Stress's leitmotif, confirmed genre, and song
-link.
+**Independent Test**: Ask someone to make a README change, without mentioning the song. They find the update
+instructions on their own and can follow them.
 
 **Acceptance Scenarios**:
 
-1. **Given** the organization theme-song page, **When** a reader looks at the leitmotif table, **Then** Stress has a
-   row with its leitmotif and that leitmotif's meaning.
-2. **Given** the soundtrack plan, **When** a reader finds the Stress row, **Then** it shows the confirmed genre and
+1. **Given** a change to the README, **When** the contributor makes it, **Then** they find instructions that the
+   theme song should be updated, and where the update procedure is.
+2. **Given** a README change, **When** the contributor follows the procedure, **Then** they know whether the song
+   needs updating and, if it does, which lyrics, sources, record entries, and links to update and who remixes the
+   song.
+3. **Given** a change that doesn't touch the README, **When** it is reviewed, **Then** no song change is expected.
+
+---
+
+### User Story 4 - Find Stress in the soundtrack (Priority: P4)
+
+Someone reading the organization's theme-song page sees Stress in the soundtrack plan, with its genre confirmed
+and its song linked, and learns why Stress has no leitmotif.
+
+**Why this priority**: The soundtrack ties the repositories together, but Stress's own song is useful without it.
+
+**Independent Test**: Read the organization theme-song page and find Stress's confirmed genre and song link, and
+the note on support libraries.
+
+**Acceptance Scenarios**:
+
+1. **Given** the soundtrack plan, **When** a reader finds the Stress row, **Then** it shows the confirmed genre and
    links to the song.
+2. **Given** the leitmotif section, **When** a reader looks for Stress, **Then** it says that the support libraries
+   (Stress, Infrastructure, Web) have no leitmotif, and that their songs describe their READMEs as they are.
 
 ### Edge Cases
 
-- **The README changes after the song is written.** Most changes don't need a remix. The record says what kind of
-  change does, as the main theme's record does.
-- **Suno drops, garbles, or growls lines.** The chosen take is the one that sings the Stress leitmotif and
-  "Rogante Marendor". Anything it drops or alters is recorded in the record's lessons, as the main theme records
-  its dropped *Argenteus Re*.
-- **"Stress" gives no satisfying anagram.** The leitmotif may instead be an anagram of another name the repository
-  is known by, such as its main type, as long as the record says which name it comes from.
+- **Suno drops, garbles, or growls lines in the take the maintainer picks.** The take is still the song. The
+  record notes what it drops or changes, as the main theme notes its dropped *Argenteus Re*.
 - **The style or title is over Suno's limits** (1,000 characters for the style, 80 for the title). It is shortened
   before generating, not truncated by Suno.
+- **The README is read on NuGet**, where links relative to the repository don't resolve. Links in the README still
+  reach the song and its record.
+- **The person changing the README can't remix the song**, for example because they have no access to the Suno
+  account. The procedure says who does it.
 - **The two repositories merge at different times.** Neither change links to something the other has not yet
   published.
 
@@ -101,40 +131,45 @@ link.
 
 - **FR-001**: DnDGen.Stress MUST have a theme song published on Suno, with a title and a style prompt within Suno's
   limits.
-- **FR-002**: Every lyric MUST come from the DnDGen.Stress README, except lines explicitly marked as not from the
-  README in the source table, as the main theme marks its *Nibelungenlied* opening.
-- **FR-003**: The lyrics MUST be in English, apart from the leitmotif names, with a second voice for
-  call-and-response written in parentheses.
-- **FR-004**: The song MUST be forge folk metal, aiming for the vibe of Wind Rose's "Diggy Diggy Hole".
-- **FR-005**: The song MUST sing both its own leitmotif and the main theme's "Rogante Marendor".
-
-**The leitmotif**
-
-- **FR-006**: DnDGen.Stress MUST have a leitmotif: a secret name that is an anagram of the repository's name, with a
-  meaning, following the convention of the main theme's leitmotif table.
-- **FR-007**: The maintainer MUST confirm the leitmotif before it is published anywhere.
+- **FR-002**: The song MUST be forge folk metal, aiming for the vibe of Wind Rose's "Diggy Diggy Hole".
+- **FR-003**: The lyrics MUST be in English and describe the DnDGen.Stress README as it is. Every lyric MUST come
+  from the README, except lines explicitly marked as not from the README in the source table, as the main theme
+  marks its *Nibelungenlied* opening.
+- **FR-004**: The song MUST NOT need a leitmotif. Stress is a support library, so it has no anagram name.
 
 **The record**
 
-- **FR-008**: The song MUST have a written record in the DnDGen.Stress repository, next to the README it comes
-  from, containing its title, Suno link, style, lyrics, source table, the leitmotifs it uses, remix steps, lessons
-  learned while generating it, and album art with instructions to render the art again.
-- **FR-009**: The album art MUST be square, MUST be recognizably part of the same family as the main theme's cover,
+- **FR-005**: The song MUST have a written record in the DnDGen.Stress repository, containing its title, Suno link,
+  style, lyrics, source table, update procedure, lessons learned while generating it, and album art with
+  instructions to render the art again.
+- **FR-006**: The album art MUST be square, MUST be recognizably part of the same family as the main theme's cover,
   and MUST credit and license everything it reuses.
+
+**Keeping it in step with the README**
+
+- **FR-007**: Someone changing the DnDGen.Stress README MUST be told, where they make the change, that the theme
+  song follows the README and where its update procedure is.
+- **FR-008**: The update procedure MUST say which README changes need the song updated, and the steps when they do:
+  [NEEDS CLARIFICATION: does every README change need a song update, or only changes to what the song sings about?]
+- **FR-009**: The song update MUST land [NEEDS CLARIFICATION: in the same pull request as the README change, or in
+  a follow-up after it merges?]
+- **FR-010**: A change that doesn't touch the README MUST NOT require a song change.
 
 **Linking it in**
 
-- **FR-010**: The DnDGen.Stress README MUST show a "Theme Song" badge next to the build badge, linking to the song.
-- **FR-011**: The organization theme-song page MUST list Stress in its leitmotif table and show Stress's confirmed
-  genre and song link in its soundtrack plan.
-- **FR-012**: The DnDGen.Stress change MUST be released as the constitution requires for documentation changes.
+- **FR-011**: The DnDGen.Stress README MUST show a "Theme Song" badge next to the build badge, linking to the song,
+  and MUST link to the song's record. Both links MUST work wherever the README is read, including NuGet.
+- **FR-012**: The organization theme-song page MUST show Stress's confirmed genre and song link in its soundtrack
+  plan, and MUST say that the support libraries have no leitmotif and that their songs describe their READMEs as
+  they are.
+- **FR-013**: The DnDGen.Stress change MUST be released as the constitution requires for documentation changes.
 
 ### Key Entities
 
 - **Theme song**: the published song. It has a title, a Suno link, a genre, a style prompt, and lyrics.
 - **Source entry**: one lyric line and the README phrase it came from.
-- **Leitmotif**: a repository's secret name. It has the name it is an anagram of, and a meaning.
-- **Song record**: the written page that holds the song's details, its art, and how to remix it.
+- **Song record**: the written page that holds the song's details, its art, and its update procedure.
+- **Update procedure**: the steps for deciding whether a README change needs the song updated, and for updating it.
 - **Soundtrack plan entry**: a repository's row in the organization's plan. It has a genre, an area, and a link to
   the song once it exists.
 
@@ -144,26 +179,26 @@ link.
 
 - **SC-001**: Every lyric line, 100%, has an entry in the source table that traces it to the README or marks it as
   not from the README.
-- **SC-002**: A reader gets from the Stress README to the song in one click.
-- **SC-003**: The chosen take sings the Stress leitmotif and "Rogante Marendor" at least once each.
-- **SC-004**: Someone who did not write the song can remix it after a README change using only its record.
+- **SC-002**: From the README, on GitHub or NuGet, a reader gets to the song in one click and to its record in one
+  click.
+- **SC-003**: Someone changing the README for the first time finds the update instructions without being told where
+  to look.
+- **SC-004**: Someone who did not write the song can update it after a README change using only its record.
 - **SC-005**: The organization's soundtrack plan no longer shows Stress's genre as a proposal.
-- **SC-006**: The maintainer approves the chosen take, the leitmotif, and the album art.
+- **SC-006**: The theme song is the take the maintainer picks, and the maintainer approves the album art.
 
 ## Assumptions
 
 - Suno is the given way to make and publish the song. The free plan's limits apply, including the lack of Replace
   Section.
-- "Diggy Diggy Hole" is a reference for the maintainer, not words for the style prompt. As the main theme's
-  lessons say, the style names the sound itself (a stomping singalong chorus, anvil hits, a dwarven war chant)
-  rather than a band or tradition.
 - "Strictly from the README" follows the main theme's practice: a line that is not from the README is allowed only
   when the source table says so.
-- The main theme's lines that already sing about Stress ("Aber unde aber", the lament about a flaw hidden in a
-  thousand rolls) may come back as motifs, in English or in the original, since they come from the same idea in
-  the README.
+- "Diggy Diggy Hole" is a reference for the maintainer, not words for the style prompt. As the main theme's
+  lessons say, the style names the sound itself rather than a band or tradition.
 - The album art reuses the main theme's ingredients (the dndgen.com d20 and the Cinzel typeface) and their licenses
   carry over.
+- The record is supporting documentation, not documentation of the package, so the README stays the contract the
+  constitution describes.
 - Changes to DnDGen/.github are a separate pull request in that repository, made by the maintainer from their
   personal account.
 - The package's code and behaviour do not change. The README is packed into the package, so the change still ships
