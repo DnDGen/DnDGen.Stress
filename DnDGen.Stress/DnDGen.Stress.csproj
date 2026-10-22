@@ -14,7 +14,7 @@
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageIcon>18531-twenty-sided-dice-vector-thumb.png</PackageIcon>
     <PackageReadmeFile>README.md</PackageReadmeFile>
-    <PackageReleaseNotes>Stress log messages now end with a newline. Removed unreachable exception handling from Stressor, so exception stack traces no longer repeat the Stressor frames. Builds now publish code coverage.</PackageReleaseNotes>
+    <PackageReleaseNotes>The stress start and summary log messages now end with a newline. Removed redundant catch-and-rethrow blocks from Stressor, so exception stack traces no longer repeat the Stressor frames after a "--- End of stack trace from previous location ---" line.</PackageReleaseNotes>
   </PropertyGroup>
   <ItemGroup>
     <None Include="..\DnDGen.Stress\18531-twenty-sided-dice-vector-thumb.png">
