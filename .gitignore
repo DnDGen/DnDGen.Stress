@@ -286,3 +286,6 @@ __pycache__/
 *.btm.cs
 *.odx.cs
 *.xsd.cs
+
+# Claude Code machine-local settings (SpecKit skills in .claude/skills are shared)
+.claude/settings.local.json
