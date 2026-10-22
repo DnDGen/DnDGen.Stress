@@ -7,13 +7,17 @@
 A codebase that does everything one way is easier to work in than a "cleaner" one that does
 things a hundred ways. Consistency is the first test of any change.
 
-- **Emulate what exists.** The preferred implementation is the one that follows the patterns and
-  practices already in the codebase. Confirm a pattern from more than one example before treating
-  it as the convention.
+- **Emulate what exists, here first, then across DnDGen.** The preferred implementation follows
+  the patterns and practices already in this codebase. When this codebase has no precedent, look
+  to the other DnDGen repositories before inventing one: what's new to this repository is often
+  established elsewhere. For example, RollGen's caching was added as a caching proxy that follows
+  the structure in DnDGen.Infrastructure, not as caching inside the generator itself. Confirm a
+  pattern from more than one example before treating it as the convention.
 - **A new pattern must be worth everyone conforming to it.** Introducing one means deciding that
   the whole codebase should move to it. The move itself happens incrementally, as code is touched
   (Principle III). If the benefit doesn't justify that, the existing pattern stays.
-- **SOLID, and code that explains itself.** Names and structure carry the meaning, not comments.
+- **Code reads like well-written prose.** Names and structure carry the meaning, so a reader can
+  follow the code without comments. Design follows SOLID, with each concern kept in its own place.
 - **No comments except the three human tags.** Code comments are added only by a human, or when a
   human asks for one, and only to record what the code cannot say:
   - `//INFO:` why a choice was made, typically so a later change doesn't undo it and break things
