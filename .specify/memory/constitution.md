@@ -138,14 +138,12 @@ routine cleanup safe in this repository, and improving only where you are keeps 
 - **Versioning and release**: Semantic versioning in the csproj `<Version>`. MAJOR for breaking
   changes, including removing or renaming public members, changing option defaults or the
   time-limit formula, and raising the minimum .NET or NUnit major version. MINOR for additive
-  public API or options. PATCH for fixes and internal changes. Release pull requests bump
-  `<Version>`, replace `<PackageReleaseNotes>` with notes for that release only, and are titled
-  `X.Y.Z: <summary>`. On `main`, `cicd/build.yml` builds and runs every test in the `Stress`
-  configuration with code coverage, then tags the commit with `<Version>`; `cicd/release.yml`
-  publishes to NuGet.org and creates a GitHub release.
-  - TODO(NON_RELEASE_MERGES): Because every build on `main` tags `<Version>`, a merge that doesn't
-    bump it fails the build at the tagging step. Decide how documentation, tooling, and Spec Kit
-    changes reach `main`.
+  public API or options. PATCH for fixes, internal changes, and changes outside the package itself,
+  such as dependencies, the pipeline, documentation, or Spec Kit. Every merge to `main` is a
+  release: its pull request bumps `<Version>`, replaces `<PackageReleaseNotes>` with notes for that
+  release only, and is titled `X.Y.Z: <summary>`. On `main`, `cicd/build.yml` builds and runs every
+  test in the `Stress` configuration with code coverage, then tags the commit with `<Version>`;
+  `cicd/release.yml` publishes to NuGet.org and creates a GitHub release.
 - **README as contract**: The README is packed into the NuGet package and is the only
   documentation consumers see. It documents every `Stressor` constructor and method and every
   `StressorOptions` setting with its default, states which .NET and NUnit versions each major
