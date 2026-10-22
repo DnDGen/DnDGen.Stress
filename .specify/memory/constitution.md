@@ -140,8 +140,10 @@ routine cleanup safe in this repository, and improving only where you are keeps 
   time-limit formula, and raising the minimum .NET or NUnit major version. MINOR for additive
   public API or options. PATCH for fixes, internal changes, and changes outside the package itself,
   such as dependencies, the pipeline, documentation, or Spec Kit. Every merge to `main` is a
-  release: its pull request bumps `<Version>`, replaces `<PackageReleaseNotes>` with notes for that
-  release only, and is titled `X.Y.Z: <summary>`. On `main`, `cicd/build.yml` builds and runs every
+  release: its pull request bumps `<Version>` and is titled `X.Y.Z: <summary>`. If the release
+  changes the package, its pull request replaces `<PackageReleaseNotes>` with notes for that release
+  only; if not, the previous notes stay, so anyone upgrading from an older version still sees the
+  last real change. On `main`, `cicd/build.yml` builds and runs every
   test in the `Stress` configuration with code coverage, then tags the commit with `<Version>`;
   `cicd/release.yml` publishes to NuGet.org and creates a GitHub release.
 - **README as contract**: The README is packed into the NuGet package and is the only
