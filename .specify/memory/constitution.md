@@ -11,8 +11,8 @@ things a hundred ways. Consistency is the first test of any change.
   practices already in the codebase. Confirm a pattern from more than one example before treating
   it as the convention.
 - **A new pattern must be worth everyone conforming to it.** Introducing one means deciding that
-  the whole codebase should move to it, and then moving it. If the benefit doesn't justify that
-  effort, the existing pattern stays.
+  the whole codebase should move to it. The move itself happens incrementally, as code is touched
+  (Principle III). If the benefit doesn't justify that, the existing pattern stays.
 - **SOLID, and code that explains itself.** Names and structure carry the meaning, not comments.
 - **No comments except the three human tags.** Code comments are added only by a human, or when a
   human asks for one, and only to record what the code cannot say:
@@ -46,16 +46,19 @@ Every change may also improve the code it touches, as long as the improvement do
 behaviour.
 
 - **Always in scope:** updating packages (including major versions), applying IDE suggestions,
-  and replacing outdated patterns or practices, the last applied consistently (Principle I).
+  and replacing outdated patterns or practices with the codebase's agreed ones (Principle I).
   Package updates that break something are fixed in the same change, or held back with the reason
   stated in the pull request.
+- **Improve where you are.** Improvements are made in the code already being changed. Improving
+  one file doesn't oblige anyone to make the same improvement everywhere; the rest of the codebase
+  gets it the next time it is touched.
 - **Kept apart from the change itself:** each improvement goes in its own commit.
 - **Never in scope:** bug fixes, performance work, or features discovered along the way. Those are
   recorded as GitHub issues so they aren't lost, and handled as their own changes.
 
-**How the three interact:** an improvement (III) has to be applied consistently (I) and stay green
-against the tests (II). Extensive automated coverage is what makes routine cleanup safe in this
-repository.
+**How the three interact:** an improvement (III) moves the code toward the codebase's agreed
+patterns (I) and stays green against the tests (II). Extensive automated coverage is what makes
+routine cleanup safe in this repository, and improving only where you are keeps each change small.
 
 ## Technology & Release Constraints
 
