@@ -2,7 +2,7 @@
   <PropertyGroup>
     <TargetFrameworks>net10.0</TargetFrameworks>
     <PackageId>DnDGen.Stress</PackageId>
-    <Version>5.0.0</Version>
+    <Version>5.0.1</Version>
     <Authors>Karl M. Speer</Authors>
     <Company>DnDGen</Company>
     <Product>Stress</Product>
@@ -14,7 +14,7 @@
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageIcon>18531-twenty-sided-dice-vector-thumb.png</PackageIcon>
     <PackageReadmeFile>README.md</PackageReadmeFile>
-    <PackageReleaseNotes>Breaking: now targets .NET 10 (was .NET 8) and depends on NUnit 5.0.0 (was NUnit 4). Updated Microsoft.Extensions.Logging and Microsoft.Extensions.Logging.Console to 10.0.13. Added README to the package.</PackageReleaseNotes>
+    <PackageReleaseNotes>Stress log messages now end with a newline. Removed unreachable exception handling from Stressor, so exception stack traces no longer repeat the Stressor frames. Builds now publish code coverage.</PackageReleaseNotes>
   </PropertyGroup>
   <ItemGroup>
     <None Include="..\DnDGen.Stress\18531-twenty-sided-dice-vector-thumb.png">

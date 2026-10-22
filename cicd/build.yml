@@ -22,7 +22,11 @@ steps:
   inputs:
     command: test
     projects: './DnDGen.Stress.Tests/DnDGen.Stress.Tests.csproj'
-    arguments: '-v normal --collect "Code Coverage" --configuration Stress'
+    arguments: '-v normal --collect "Code Coverage" --settings CodeCoverage.runsettings --configuration Stress'
+- task: PublishCodeCoverageResults@2
+  displayName: Publish Code Coverage
+  inputs:
+    summaryFileLocation: '$(Agent.TempDirectory)/**/*.cobertura.xml'
 
 - task: PowerShell@2
   condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))

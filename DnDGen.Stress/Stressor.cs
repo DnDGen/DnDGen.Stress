@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.ExceptionServices;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace DnDGen.Stress
@@ -83,23 +83,20 @@ namespace DnDGen.Stress
         {
             var types = runningAssembly.GetTypes();
             var methods = types.SelectMany(t => t.GetMethods());
-            var activeStressTests = methods.Where(IsActiveTest);
-            var stressTestsCount = activeStressTests.Sum(m => m.GetCustomAttributes<TestAttribute>(true).Count());
-            var stressTestCasesCount = activeStressTests.Sum(m => m.GetCustomAttributes<TestCaseAttribute>().Count(TestCaseIsActive));
-            var stressTestsTotal = stressTestsCount + stressTestCasesCount;
+            var stressTestsTotal = methods.Sum(CountActiveTestsIn);
 
             return stressTestsTotal;
         }
 
-        private static bool IsActiveTest(MethodInfo method)
+        private static int CountActiveTestsIn(MethodInfo method)
         {
             if (method.GetCustomAttributes<IgnoreAttribute>(true).Any())
-                return false;
+                return 0;
 
-            if (method.GetCustomAttributes<TestAttribute>(true).Any())
-                return true;
+            var testsCount = method.GetCustomAttributes<TestAttribute>(true).Count();
+            var testCasesCount = method.GetCustomAttributes<TestCaseAttribute>(true).Count(TestCaseIsActive);
 
-            return method.GetCustomAttributes<TestCaseAttribute>(true).Any(TestCaseIsActive);
+            return testsCount + testCasesCount;
         }
 
         private static bool TestCaseIsActive(TestCaseAttribute testCase)
@@ -109,14 +106,25 @@ namespace DnDGen.Stress
 
         protected virtual void StressSetup()
         {
-            logger.LogInformation($"Beginning stress test '{TestContext.CurrentContext.Test.Name}'"
-                + $"{Environment.NewLine}Stress timeout is {TimeLimit}");
+            var message = BuildLogMessage(
+                $"Beginning stress test '{TestContext.CurrentContext.Test.Name}'",
+                $"Stress timeout is {TimeLimit}");
+            logger.LogInformation(message);
 
             iterations = 0;
             generatedSuccessfully = false;
             generationFailed = false;
 
             stressStopwatch.Restart();
+        }
+
+        private static string BuildLogMessage(params string[] lines)
+        {
+            var builder = new StringBuilder();
+            foreach (var line in lines)
+                builder.AppendLine(line);
+
+            return builder.ToString();
         }
 
         protected virtual void StressTearDown()
@@ -133,12 +141,14 @@ namespace DnDGen.Stress
             var iterationPercentage = (double)iterations / Options.ConfidenceIterations;
             var status = IsLikelySuccess(timePercentage, iterationPercentage) ? "PASSED" : "FAILED";
 
-            logger.LogInformation($"Stress test '{TestContext.CurrentContext.Test.Name}' complete"
-                + $"{Environment.NewLine}\tFull Name: {TestContext.CurrentContext.Test.FullName}"
-                + $"{Environment.NewLine}\tTime: {TestDuration} ({timePercentage:P})"
-                + $"{Environment.NewLine}\tCompleted Iterations: {iterations:N0} ({iterationPercentage:P})"
-                + $"{Environment.NewLine}\tIterations Per Second: {iterationsPerSecond:N2}"
-                + $"{Environment.NewLine}\tLikely Status: {status}");
+            var message = BuildLogMessage(
+                $"Stress test '{TestContext.CurrentContext.Test.Name}' complete",
+                $"\tFull Name: {TestContext.CurrentContext.Test.FullName}",
+                $"\tTime: {TestDuration} ({timePercentage:P})",
+                $"\tCompleted Iterations: {iterations:N0} ({iterationPercentage:P})",
+                $"\tIterations Per Second: {iterationsPerSecond:N2}",
+                $"\tLikely Status: {status}");
+            logger.LogInformation(message);
         }
 
         private bool IsLikelySuccess(double timePercentage, double iterationPercentage)
@@ -188,7 +198,7 @@ namespace DnDGen.Stress
             while (TestShouldKeepRunning(Options.MaxAsyncBatch));
         }
 
-        private void RunAction(Action setup, Action action, Action teardown)
+        private static void RunAction(Action setup, Action action, Action teardown)
         {
             setup();
 
@@ -196,29 +206,19 @@ namespace DnDGen.Stress
             {
                 action();
             }
-            catch (Exception e)
-            {
-                ExceptionDispatchInfo.Capture(e).Throw();
-                return;
-            }
             finally
             {
                 teardown();
             }
         }
 
-        private async Task RunActionAsync(Action setup, Func<Task> action, Action teardown)
+        private static async Task RunActionAsync(Action setup, Func<Task> action, Action teardown)
         {
             setup();
 
             try
             {
                 await action();
-            }
-            catch (Exception e)
-            {
-                ExceptionDispatchInfo.Capture(e).Throw();
-                return;
             }
             finally
             {
@@ -233,11 +233,6 @@ namespace DnDGen.Stress
             try
             {
                 return function();
-            }
-            catch (Exception e)
-            {
-                ExceptionDispatchInfo.Capture(e).Throw();
-                return default;
             }
             finally
             {
@@ -312,8 +307,7 @@ namespace DnDGen.Stress
         private T RunGenerateOrFail<T>(Func<T> generate, Func<T, bool> isValid)
         {
             T generatedObject;
-            var shouldKeepRunning = false;
-
+            bool shouldKeepRunning;
             do
             {
                 generatedObject = generate();
@@ -322,11 +316,10 @@ namespace DnDGen.Stress
             }
             while (shouldKeepRunning && !generatedSuccessfully);
 
-            if (!generatedSuccessfully && !shouldKeepRunning)
-            {
-                generationFailed = true;
-                Assert.Fail($"Generation timed out");
-            }
+            //INFO: The loop only exits without a success once it has run out of time or iterations
+            generationFailed = !generatedSuccessfully;
+            if (generationFailed)
+                Assert.Fail("Generation timed out");
 
             return generatedObject;
         }
