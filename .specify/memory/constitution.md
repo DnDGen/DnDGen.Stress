@@ -178,5 +178,4 @@ This constitution supersedes other practices for this repository.
 - **Compliance**: Every plan and pull request is checked against these principles, citing them by
   label. A deviation MUST be justified in the pull request, or the change is not merged.
 
-**Version**: 1.0.0 | **Ratified**: 2026.10.23: the date this constitution is first
-merged to `main` | **Last Amended**: 2026-10-23
+**Version**: 1.0.0 | **Ratified**: 2026-10-23 | **Last Amended**: 2026-10-23
