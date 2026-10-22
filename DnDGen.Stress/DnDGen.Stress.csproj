@@ -2,7 +2,7 @@
   <PropertyGroup>
     <TargetFrameworks>net10.0</TargetFrameworks>
     <PackageId>DnDGen.Stress</PackageId>
-    <Version>5.0.1</Version>
+    <Version>5.0.2</Version>
     <Authors>Karl M. Speer</Authors>
     <Company>DnDGen</Company>
     <Product>Stress</Product>
@@ -14,7 +14,7 @@
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageIcon>18531-twenty-sided-dice-vector-thumb.png</PackageIcon>
     <PackageReadmeFile>README.md</PackageReadmeFile>
-    <PackageReleaseNotes>The stress start and summary log messages now end with a newline. Removed redundant catch-and-rethrow blocks from Stressor, so exception stack traces no longer repeat the Stressor frames after a "--- End of stack trace from previous location ---" line.</PackageReleaseNotes>
+    <PackageReleaseNotes>No changes to the package. The repository now uses Spec Kit, with a constitution that sets out its engineering principles.</PackageReleaseNotes>
   </PropertyGroup>
   <ItemGroup>
     <None Include="..\DnDGen.Stress\18531-twenty-sided-dice-vector-thumb.png">
