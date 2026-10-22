@@ -147,13 +147,15 @@ namespace DnDGen.Stress.Tests.Unit
 
             Assert.That(output, Is.Not.Empty.And.Count.EqualTo(2));
             Assert.That(output[0], Is.EqualTo("Beginning stress test 'WritesStressSummaryToConsole'"
-                + $"{Environment.NewLine}Stress timeout is {stressor.TimeLimit}"));
+                + $"{Environment.NewLine}Stress timeout is {stressor.TimeLimit}"
+                + Environment.NewLine));
             Assert.That(output[1], Is.EqualTo("Stress test 'WritesStressSummaryToConsole' complete"
                 + $"{Environment.NewLine}\tFull Name: DnDGen.Stress.Tests.Unit.StressWithSetupAndTeardownTests.WritesStressSummaryToConsole"
                 + $"{Environment.NewLine}\tTime: {stressor.TestDuration} ({stressor.TestDuration.TotalSeconds / stressor.TimeLimit.TotalSeconds:P})"
                 + $"{Environment.NewLine}\tCompleted Iterations: {stressor.TestIterations:N0} ({(double)stressor.TestIterations / options.ConfidenceIterations:P})"
                 + $"{Environment.NewLine}\tIterations Per Second: {stressor.TestIterations / stressor.TestDuration.TotalSeconds:N2}"
-                + $"{Environment.NewLine}\tLikely Status: PASSED"));
+                + $"{Environment.NewLine}\tLikely Status: PASSED"
+                + Environment.NewLine));
 
             Assert.That(stressor.TestIterations, Is.EqualTo(count)
                 .And.EqualTo(setup)
@@ -177,13 +179,15 @@ namespace DnDGen.Stress.Tests.Unit
 
             Assert.That(output, Is.Not.Empty.And.Count.EqualTo(2));
             Assert.That(output[0], Is.EqualTo($"Beginning stress test 'WritesStressSummaryToConsole_WithParameters({caseNumber})'"
-                + $"{Environment.NewLine}Stress timeout is {stressor.TimeLimit}"));
+                + $"{Environment.NewLine}Stress timeout is {stressor.TimeLimit}"
+                + Environment.NewLine));
             Assert.That(output[1], Is.EqualTo($"Stress test 'WritesStressSummaryToConsole_WithParameters({caseNumber})' complete"
                 + $"{Environment.NewLine}\tFull Name: DnDGen.Stress.Tests.Unit.StressWithSetupAndTeardownTests.WritesStressSummaryToConsole_WithParameters({caseNumber})"
                 + $"{Environment.NewLine}\tTime: {stressor.TestDuration} ({stressor.TestDuration.TotalSeconds / stressor.TimeLimit.TotalSeconds:P})"
                 + $"{Environment.NewLine}\tCompleted Iterations: {stressor.TestIterations:N0} ({(double)stressor.TestIterations / options.ConfidenceIterations:P})"
                 + $"{Environment.NewLine}\tIterations Per Second: {stressor.TestIterations / stressor.TestDuration.TotalSeconds:N2}"
-                + $"{Environment.NewLine}\tLikely Status: PASSED"));
+                + $"{Environment.NewLine}\tLikely Status: PASSED"
+                + Environment.NewLine));
         }
 
         [Test]
@@ -198,13 +202,15 @@ namespace DnDGen.Stress.Tests.Unit
 
             Assert.That(output, Is.Not.Empty.And.Count.EqualTo(2));
             Assert.That(output[0], Is.EqualTo("Beginning stress test 'WritesFailedStressSummaryToConsole'"
-                + $"{Environment.NewLine}Stress timeout is {stressor.TimeLimit}"));
+                + $"{Environment.NewLine}Stress timeout is {stressor.TimeLimit}"
+                + Environment.NewLine));
             Assert.That(output[1], Is.EqualTo("Stress test 'WritesFailedStressSummaryToConsole' complete"
                 + $"{Environment.NewLine}\tFull Name: DnDGen.Stress.Tests.Unit.StressWithSetupAndTeardownTests.WritesFailedStressSummaryToConsole"
                 + $"{Environment.NewLine}\tTime: {stressor.TestDuration} ({stressor.TestDuration.TotalSeconds / stressor.TimeLimit.TotalSeconds:P})"
                 + $"{Environment.NewLine}\tCompleted Iterations: 0 (0.00%)"
                 + $"{Environment.NewLine}\tIterations Per Second: 0.00"
-                + $"{Environment.NewLine}\tLikely Status: FAILED"));
+                + $"{Environment.NewLine}\tLikely Status: FAILED"
+                + Environment.NewLine));
         }
 
         private void FailedTest()
@@ -226,13 +232,15 @@ namespace DnDGen.Stress.Tests.Unit
 
             Assert.That(output, Is.Not.Empty.And.Count.EqualTo(2));
             Assert.That(output[0], Is.EqualTo("Beginning stress test 'WritesStressSlowSummaryToConsole'"
-                + $"{Environment.NewLine}Stress timeout is {stressor.TimeLimit}"));
+                + $"{Environment.NewLine}Stress timeout is {stressor.TimeLimit}"
+                + Environment.NewLine));
             Assert.That(output[1], Is.EqualTo("Stress test 'WritesStressSlowSummaryToConsole' complete"
                 + $"{Environment.NewLine}\tFull Name: DnDGen.Stress.Tests.Unit.StressWithSetupAndTeardownTests.WritesStressSlowSummaryToConsole"
                 + $"{Environment.NewLine}\tTime: {stressor.TestDuration} ({stressor.TestDuration.TotalSeconds / stressor.TimeLimit.TotalSeconds:P})"
                 + $"{Environment.NewLine}\tCompleted Iterations: {stressor.TestIterations} ({(double)stressor.TestIterations / options.ConfidenceIterations:P})"
                 + $"{Environment.NewLine}\tIterations Per Second: {stressor.TestIterations / stressor.TestDuration.TotalSeconds:N2}"
-                + $"{Environment.NewLine}\tLikely Status: PASSED"));
+                + $"{Environment.NewLine}\tLikely Status: PASSED"
+                + Environment.NewLine));
         }
 
         [Test]
