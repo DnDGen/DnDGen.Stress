@@ -8,6 +8,16 @@
 
 **Input**: User description: "Give DnDGen.Stress its theme song, as part of the DnDGen soundtrack documented in DnDGen/.github theme-song/README.md. The song is a Suno song whose lyrics come strictly from the DnDGen.Stress README, following the main theme's conventions: names in Latin or anagrams, descriptions in Middle High German, call-and-response in parentheses, and it brings back the Stress leitmotif (an anagram name Stress doesn't have yet) alongside the main theme's \"Rogante Marendor\". The soundtrack plan proposes a dwarven forge song (folk metal with anvil percussion) for the forge area, \"proving steel by striking it over and over\", but the genre is a proposal to confirm. Deliverables: the Suno style prompt, title, lyrics with a translation table back to the README, album art, a \"Theme Song\" badge next to the build badge in the Stress README, and the soundtrack and leitmotif tables in the org theme-song README updated with Stress."
 
+## Clarifications
+
+### Session 2026-10-23
+
+- Q: Confirm the forge folk metal proposal, or choose another genre? → A: Forge folk metal, aiming for the vibe of
+  Wind Rose's "Diggy Diggy Hole". The main theme used Latin, Middle High German, and anagrams for a cinematic,
+  vocals-as-texture sound; this song doesn't need that, so its lyrics are in English.
+- Q: Does the song record live in DnDGen.Stress or in DnDGen/.github? → A: In DnDGen.Stress. The exact folder is
+  left to the plan.
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Listen from the README (Priority: P1)
@@ -43,10 +53,10 @@ every lyric to the README and produce a remix.
 
 **Acceptance Scenarios**:
 
-1. **Given** the song's record, **When** a reader looks up any lyric line, **Then** the translation table gives its
-   language, its English meaning, and the README phrase it came from, or marks it as not from the README.
+1. **Given** the song's record, **When** a reader looks up any lyric line, **Then** the source table gives the
+   README phrase it came from, or marks it as not from the README.
 2. **Given** a README change the song should reflect, **When** the maintainer follows the record's remix steps,
-   **Then** they know which lyrics, translations, and links to update.
+   **Then** they know which lyrics, sources, and links to update.
 3. **Given** the record, **When** a reader views it, **Then** it shows the album art, the style, the title, the
    lyrics, and the lessons learned while generating the song.
 
@@ -92,11 +102,10 @@ link.
 - **FR-001**: DnDGen.Stress MUST have a theme song published on Suno, with a title and a style prompt within Suno's
   limits.
 - **FR-002**: Every lyric MUST come from the DnDGen.Stress README, except lines explicitly marked as not from the
-  README in the translation table, as the main theme marks its *Nibelungenlied* opening.
-- **FR-003**: The lyrics MUST follow the main theme's conventions: names in Latin or as anagrams, descriptions in
-  Middle High German, the dice refrain in Latin, and a second voice for call-and-response written in parentheses.
-- **FR-004**: The song MUST be in the confirmed genre: [NEEDS CLARIFICATION: confirm the forge folk metal proposal,
-  or choose another genre for the forge area?]
+  README in the source table, as the main theme marks its *Nibelungenlied* opening.
+- **FR-003**: The lyrics MUST be in English, apart from the leitmotif names, with a second voice for
+  call-and-response written in parentheses.
+- **FR-004**: The song MUST be forge folk metal, aiming for the vibe of Wind Rose's "Diggy Diggy Hole".
 - **FR-005**: The song MUST sing both its own leitmotif and the main theme's "Rogante Marendor".
 
 **The leitmotif**
@@ -107,10 +116,9 @@ link.
 
 **The record**
 
-- **FR-008**: The song MUST have a written record containing its title, Suno link, style, lyrics, translation table,
-  the leitmotifs it uses, remix steps, lessons learned while generating it, and album art with instructions to
-  render the art again. The record lives in [NEEDS CLARIFICATION: the DnDGen.Stress repository, next to the README
-  it comes from, or the DnDGen/.github theme-song folder, next to the main theme?]
+- **FR-008**: The song MUST have a written record in the DnDGen.Stress repository, next to the README it comes
+  from, containing its title, Suno link, style, lyrics, source table, the leitmotifs it uses, remix steps, lessons
+  learned while generating it, and album art with instructions to render the art again.
 - **FR-009**: The album art MUST be square, MUST be recognizably part of the same family as the main theme's cover,
   and MUST credit and license everything it reuses.
 
@@ -124,7 +132,7 @@ link.
 ### Key Entities
 
 - **Theme song**: the published song. It has a title, a Suno link, a genre, a style prompt, and lyrics.
-- **Translation entry**: one lyric line, with its language, its English meaning, and the README phrase it came from.
+- **Source entry**: one lyric line and the README phrase it came from.
 - **Leitmotif**: a repository's secret name. It has the name it is an anagram of, and a meaning.
 - **Song record**: the written page that holds the song's details, its art, and how to remix it.
 - **Soundtrack plan entry**: a repository's row in the organization's plan. It has a genre, an area, and a link to
@@ -134,8 +142,8 @@ link.
 
 ### Measurable Outcomes
 
-- **SC-001**: Every lyric line, 100%, has an entry in the translation table that traces it to the README or marks
-  it as not from the README.
+- **SC-001**: Every lyric line, 100%, has an entry in the source table that traces it to the README or marks it as
+  not from the README.
 - **SC-002**: A reader gets from the Stress README to the song in one click.
 - **SC-003**: The chosen take sings the Stress leitmotif and "Rogante Marendor" at least once each.
 - **SC-004**: Someone who did not write the song can remix it after a README change using only its record.
@@ -146,10 +154,14 @@ link.
 
 - Suno is the given way to make and publish the song. The free plan's limits apply, including the lack of Replace
   Section.
+- "Diggy Diggy Hole" is a reference for the maintainer, not words for the style prompt. As the main theme's
+  lessons say, the style names the sound itself (a stomping singalong chorus, anvil hits, a dwarven war chant)
+  rather than a band or tradition.
 - "Strictly from the README" follows the main theme's practice: a line that is not from the README is allowed only
-  when the translation table says so.
+  when the source table says so.
 - The main theme's lines that already sing about Stress ("Aber unde aber", the lament about a flaw hidden in a
-  thousand rolls) may come back as motifs, since they come from the same idea in the README.
+  thousand rolls) may come back as motifs, in English or in the original, since they come from the same idea in
+  the README.
 - The album art reuses the main theme's ingredients (the dndgen.com d20 and the Cinzel typeface) and their licenses
   carry over.
 - Changes to DnDGen/.github are a separate pull request in that repository, made by the maintainer from their

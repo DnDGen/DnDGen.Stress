@@ -13,7 +13,7 @@
 
 ## Requirement Completeness
 
-- [ ] No [NEEDS CLARIFICATION] markers remain
+- [x] No [NEEDS CLARIFICATION] markers remain
 - [x] Requirements are testable and unambiguous
 - [x] Success criteria are measurable
 - [x] Success criteria are technology-agnostic (no implementation details)
@@ -33,4 +33,5 @@
 
 - Suno, GitHub, and NuGet are named because the feature is defined by where the song is published and read, not
   because of how it is built.
-- Two [NEEDS CLARIFICATION] markers remain: the genre (FR-004) and where the song record lives (FR-008).
+- Both [NEEDS CLARIFICATION] markers were answered on 2026-10-23 and recorded under Clarifications: the genre
+  (FR-004) and where the song record lives (FR-008).
