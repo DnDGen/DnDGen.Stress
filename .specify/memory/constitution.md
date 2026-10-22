@@ -19,7 +19,7 @@ things a hundred ways. Consistency is the first test of any change.
   - `//INFO:` why a choice was made, typically so a later change doesn't undo it and break things
   - `//HACK:` an acknowledged poor solution
   - `//BUG:` an acknowledged known defect
-- **IDE suggestions are applied**, except those listed under Technology & Release Constraints.
+- **IDE suggestions are applied when they pass the criteria** under Development Workflow.
 
 ### II. Tests Are the Spec
 
@@ -78,7 +78,6 @@ repository.
 - TODO(NON_RELEASE_MERGES): Every build on `main` tags `<Version>`, so a merge that doesn't bump it
   fails the build at the tagging step. Decide how documentation, tooling, and Spec Kit changes
   reach `main`.
-- TODO(IDE_EXCEPTIONS): IDE suggestions that are not applied in this codebase, and why.
 
 ## Development Workflow
 
@@ -86,6 +85,19 @@ repository.
   reviewed by the maintainer.
 - Pull request descriptions are written from the actual diff against `main`, and state what was
   verified and what was not.
+- **IDE and analyzer suggestions** keep changing as the language does, so they are judged against
+  three criteria rather than a fixed list. A suggestion is applied only if all three hold:
+  1. **Safe, one-step fix.** The IDE offers a quick fix (Ctrl+.) and applying it doesn't change
+     behaviour. A suggestion with no fix is ignored. One that changes behaviour, such as making an
+     `async` test helper synchronous, is not a style fix.
+  2. **Clearer to a reader**, not just shorter or more explicit. Collection expressions and
+     removing a redundant cast pass. Explicit types instead of `var` fail, because a good name
+     should already say what the variable is; so do ternaries in place of `if`, and `_ =` in front
+     of every ignored return value.
+  3. **One answer the whole codebase can follow** (Principle I). Rules that flip-flop with their
+     own opposite, such as block versus expression bodies, aren't enforced either way: expression
+     bodies are preferred for one-line members. Braces may be left off only when every branch of
+     an `if`/`else` is a single line.
 - Spec Kit artifacts under `specs/` record one change at the time it was made. They are not
   maintained after the change merges, and MAY be deleted later. The lasting record of how the
   package behaves is its tests (Principle II), the README, and this constitution.
