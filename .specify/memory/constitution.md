@@ -31,18 +31,31 @@ Behaviour is defined by tests before it is implemented.
 
 - **Red, then green.** Write or change the tests first, see them fail for the expected reason,
   then change the code until they pass.
-- **Tests describe what a consumer can observe**, not how the code is built. Every capability and
-  option has its own case, and anything that counts or repeats is tested at 0, 1, and many.
-- **When (not if) a test fails, it says exactly where, why, and what to fix.**
+- **What to test: what a consumer does and sees.** Each case is a sentence from the consumer's
+  side: "if I do X, I expect Y, and I'll confirm that with Z." The list of cases is written that
+  way, as if the implementation had never been seen, and cases are named as consumer outcomes in
+  the consumer's vocabulary. Every capability and option has its own case, even when two cases
+  run the same lines of code.
+- **How much to test: everything when it's cheap, chosen values when it isn't.** When the valid
+  range of an input is small enough, test all of it. Otherwise:
+  - Anything that counts or repeats is tested at 0, 1, and many. "Many" is chosen to expose
+    off-by-one and batching mistakes (10, or 1337), not 2.
+  - Every boundary and limit is tested, along with the value just past it.
+- **How a test fails: when (not if) it fails, it says exactly where, why, and what to fix.**
   - Use the strongest assertion available: compare the whole observed value, so the failure shows
     what actually happened.
-  - No implied assertions: every behaviour a test relies on is asserted where it matters, not
-    assumed from a step along the way.
+  - No implied assertions: everything a test relies on is written down in the test. A mock setup
+    that answers only the exact expected input counts as written down, so a chain of them
+    (input → mock A → mock B → mock C → result) proves every link when the result is right. When a
+    broken link would only show up as a wrong final result, make the failure name the link, for
+    example with a strict mock, which fails on the unexpected call and shows its arguments.
   - Each case runs, passes, and fails on its own.
   - A test fails only because the code is wrong, never because of the machine (core count, CPU
     speed), timing slack, or another test.
 - **Coverage follows.** Line and branch coverage of `DnDGen.Stress.dll` stays at 100%. An
-  uncovered line is either a missing case or unreachable code, and unreachable code is deleted.
+  uncovered line is either a missing case or code that can never run. Code that can never run is
+  removed only after showing why it can't run, what it was originally there for, and that removing
+  it changes nothing a consumer can observe, and after the maintainer agrees.
 
 ### III. Leave It Better Than You Found It
 
