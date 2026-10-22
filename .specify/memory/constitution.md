@@ -13,23 +13,28 @@ the other DnDGen repositories before inventing one: what's new to this repositor
 established elsewhere. Confirm a pattern from more than one example before treating it as the
 convention.
 
-- *Example:* RollGen's caching was added as a caching proxy that follows the structure in
-  DnDGen.Infrastructure, not as caching inside the generator itself.
+- *Example:* RollGen's expression evaluation gained caching through
+  `ExpressionEvaluatorCachingProxy`, a caching proxy around `AlbatrossExpressionEvaluator` that
+  follows the proxy structure in DnDGen.Infrastructure, instead of caching inside the evaluator.
 
 **I.2 A new pattern must be worth everyone conforming to it.** Adopting one is a decision for the
-whole codebase, though the move happens incrementally as code is touched (III.2). If the benefit
-doesn't justify that, the existing pattern stays. IDE and analyzer suggestions are new patterns
-too, and new ones keep arriving as the language changes, so each is judged by three criteria
-rather than a fixed list. A suggestion is applied only if all three hold:
+whole codebase, though the move happens incrementally as code is touched (III.2). A pattern is
+worth it when it is clearer (I.2.a) or measurably better (I.2.b), and gives one answer the whole
+codebase can follow (I.2.c); otherwise the existing pattern stays. IDE and analyzer suggestions are
+new patterns too, judged the same way, and only when the IDE offers a quick fix (Ctrl+.) that
+doesn't change behaviour. A suggestion with no fix is ignored.
 
-- **I.2.a Safe, one-step fix.** The IDE offers a quick fix (Ctrl+.) and applying it doesn't change
-  behaviour. A suggestion with no fix is ignored.
-  - *Example:* Making an `async` test helper synchronous changes how its exceptions reach
-    `StressAsync`, so it is not a style fix.
-- **I.2.b Clearer to a reader**, not just shorter or more explicit.
+- *Example:* Making an `async` test helper synchronous changes how its exceptions reach
+  `StressAsync`, so it is not a style fix.
+- **I.2.a Clearer to a reader**, not just shorter or more explicit.
   - *Examples:* Collection expressions and removing a redundant cast pass. Explicit types instead
     of `var` fail, because a good name should already say what the variable is; so do ternaries
     in place of `if`, and `_ =` in front of every ignored return value.
+- **I.2.b Measurably better.** The benefit can be measured and is big enough to notice: a change
+  within about ±10% counts as no change. Work like this is its own change, not part of another
+  (III.3).
+  - *Example:* In CreatureGen, pre-caching template-based creature groups made the verifier much
+    faster. A 17% speed-up would qualify; a 7% one would not.
 - **I.2.c One answer the whole codebase can follow.**
   - *Examples:* Block and expression bodies flip-flop with each other, so neither is enforced;
     expression bodies are preferred for one-line members. Braces may be left off only when every
@@ -70,9 +75,12 @@ fail for the expected reason, then change the code until they pass.
       10 templates isn't realistic.
   - **II.2.b.ii** A wide range is tested at each order of magnitude.
     - *Example:* For 1 to 1,000,000: 1, 2, 10, 100, 1,000, 10,000, 100,000, and 1,000,000.
-  - **II.2.b.iii** Every boundary and limit is tested, along with the values either side of it.
-    - *Example:* For an upper limit of 1,000,000, also 999,999 and 1,000,001. For a lower limit of
-      1, also 0 and 2.
+  - **II.2.b.iii** Every boundary and limit is tested, along with the value just inside it and
+    values one step and more than one step past it: 0, 1, and many applied to the distance from
+    the boundary.
+    - *Example:* For a lower limit of 1: 2, 1, 0, and -1.
+    - *Example:* Converting a double to a bool, 1 and 2 are true and 0 is false. Testing past the
+      boundary showed that -1, 0.5, and -0.5 are all true: only 0 is false.
 - **II.2.c** Coverage confirms nothing was missed. Line and branch coverage of `DnDGen.Stress.dll`
   stays at 100%. An uncovered line is either a missing case or code that can never run. Code that
   can never run is removed only after showing why it can't run, what it was originally there for,
@@ -82,6 +90,9 @@ fail for the expected reason, then change the code until they pass.
 
 - **II.3.a** Use the strongest assertion available: compare the whole observed value, so the
   failure shows what actually happened.
+  - *Example:* Compare the entire collection, not just its count.
+  - *Example:* For a complex object, a run of assertions on each of its properties is fine, as
+    long as together they cover the whole object.
 - **II.3.b** No implied assertions: everything a test relies on is written down in the test.
   - *Example:* The current pattern of chained mocks (input → mock A → mock B → mock C → result),
     each answering only its exact expected input, counts as written down, because a correct result
@@ -108,8 +119,9 @@ behaviour.
   true. New comments still follow I.3.
 
 **III.2 Improve where you are, in its own commit.** Improvements are made in the code already being
-changed, each in its own commit. Improving one file doesn't oblige anyone to make the same
-improvement everywhere; the rest of the codebase gets it the next time it is touched.
+changed, each in its own commit. An improvement made in one place, especially a new pattern, does
+commit the codebase to the same improvement everywhere, but not immediately: the rest of the
+codebase gets it the next time it is touched.
 
 **III.3 Out of scope: behaviour.** Bug fixes, performance work, or features discovered along the
 way are recorded as GitHub issues so they aren't lost, and handled as their own changes.
