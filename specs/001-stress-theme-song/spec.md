@@ -37,6 +37,10 @@
   merging.
 - Q: When the song is remixed, what happens to the previous version? → A: It is replaced. The record shows only
   the current song; git history and Suno keep the old versions.
+- Q: Should the rules for the README and the record be enforced by automated tests? → A: Yes, the mechanical ones,
+  as integration tests that read the real README and record. They never judge the song's ideas, vibe, or chosen
+  take, and never need the network. Tests that the README documents the whole public API are a separate feature,
+  recorded as a GitHub issue.
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -101,6 +105,8 @@ instructions on their own and can follow them.
    needs updating and, if it does, which lyrics, sources, record entries, and links to update and who remixes the
    song.
 3. **Given** a change that doesn't touch the README, **When** it is reviewed, **Then** no song change is expected.
+4. **Given** a README change that rewords or removes a phrase the song quotes, **When** the tests run, **Then**
+   they fail, name each missing phrase, and point to the update procedure.
 
 ---
 
@@ -131,6 +137,8 @@ the note on support libraries.
   reach the song and its record.
 - **The person changing the README can't remix the song**, for example because they have no access to the Suno
   account. They update the lyrics and source table, and the maintainer remixes before merging.
+- **A README change shifts the README's ideas or vibe without touching any phrase the song quotes.** The tests
+  pass, so the human half of the song check still applies.
 - **The README changes only where it mentions the song**, such as a new Suno link after a remix. That isn't a
   README change the song follows, or every remix would call for another.
 - **The two repositories merge at different times.** Neither change links to something the other has not yet
@@ -182,6 +190,16 @@ the note on support libraries.
   they are.
 - **FR-013**: The DnDGen.Stress change MUST be released as the constitution requires for documentation changes.
 
+**Checking it automatically**
+
+- **FR-014**: Automated tests MUST fail when a phrase quoted in the source table no longer appears in the README,
+  naming each missing phrase and pointing to the update procedure.
+- **FR-015**: Automated tests MUST also check that every lyric line has a source entry and every source entry's
+  lyric is in the lyrics; that the title and style are within Suno's limits; that the README and the record link to
+  the same song; and that the README's links are absolute and its link to the record leads to a file that exists.
+- **FR-016**: The automated tests MUST NOT judge the song's ideas, vibe, or chosen take, and MUST NOT need the
+  network.
+
 ### Key Entities
 
 - **Theme song**: the published song. It has a title, a Suno link, a genre, a style prompt, and lyrics.
@@ -196,7 +214,7 @@ the note on support libraries.
 ### Measurable Outcomes
 
 - **SC-001**: Every lyric line, 100%, has an entry in the source table that traces it to the README or marks it as
-  not from the README.
+  not from the README, and the automated tests confirm it on every build.
 - **SC-002**: From the README, on GitHub or NuGet, a reader gets to the song in one click and to its record in one
   click.
 - **SC-003**: Someone changing the README for the first time finds the update instructions without being told where
@@ -220,5 +238,7 @@ the note on support libraries.
   constitution describes.
 - Changes to DnDGen/.github are a separate pull request in that repository, made by the maintainer from their
   personal account.
+- Tests that the README documents every public method and option, with the right defaults, are out of scope here.
+  They are recorded as a GitHub issue for a later feature (III.3).
 - The package's code and behaviour do not change. The README is packed into the package, so the change still ships
   as a PATCH release under the constitution's versioning rules.

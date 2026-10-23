@@ -11,10 +11,10 @@ criterion it proves.
 
 ## Before generating
 
-1. **Limits (FR-001)**: measure the Title, Style, and Lyrics with `wc -m`. Title ≤ 80, Style ≤ 1,000, Lyrics about
-   2,800 to 3,400.
-2. **Sources (FR-003, SC-001)**: every lyric line is covered by exactly one row of the Sources table, and every row
-   quotes a phrase that is really in the README, or says it is not from the README.
+1. **Limits (FR-001)**: `dotnet test --filter FullyQualifiedName~ThemeSong` passes its Suno limit tests (Title ≤ 80,
+   Style ≤ 1,000). Measure the Lyrics with `wc -m`; aim for about 2,800 to 3,400.
+2. **Sources (FR-003, FR-014, FR-015, SC-001)**: the same test run passes its source tests: every lyric line has a
+   row, and every quoted phrase is in the README. Read the rows marked as not from the README by eye.
 3. **Maintainer review (SC-006)**: the maintainer agrees the lyrics capture the README's high-level ideas and vibe
    before anything is generated.
 
@@ -29,7 +29,8 @@ criterion it proves.
    msedge --headless --hide-scrollbars --allow-file-access-from-files --window-size=1500,1500 --screenshot=cover.png cover.html
    ```
 
-6. **Package (FR-013)**: `dotnet test -c Stress` passes and `dotnet pack` includes the README. The version is 5.0.3,
+6. **Package (FR-013, FR-015)**: `dotnet test -c Stress` passes, including every theme song test, and `dotnet pack`
+   includes the README. The version is 5.0.3,
    and the release notes are for 5.0.3 only.
 
 ## On GitHub, before merging

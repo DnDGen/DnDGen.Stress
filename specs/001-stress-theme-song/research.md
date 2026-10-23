@@ -105,6 +105,35 @@ Decisions for the "how" that the spec left open. Each records what was chosen, w
   the exact text in [contracts/org-pages.md](contracts/org-pages.md). It merges after this one.
 - **Rationale**: This pull request links only to Suno and to itself, so it can merge first. The `.github` pull
   request links to the record on DnDGen.Stress `main`, which exists only once this one merges.
-- **Also included**: a Stress row in the organization profile's Soundtrack table. The spec names only the
+- **Also included**: a Stress row in the organization profile's Soundtrack table.
+
+## R9. Automated tests for the README and the record
+
+- **Decision**: NUnit tests in `DnDGen.Stress.Tests/Integration/ThemeSongTests.cs`, in three groups:
+  1. **The song follows the README**: every phrase quoted in the Sources table appears in `README.md`; every lyric
+     line has a Sources row, and every row's lyric is in the Lyrics. A failure lists every missing phrase or line
+     at once and points to the Updating section.
+  2. **The record is ready for Suno**: the Title is 80 characters or fewer, and the Style 1,000 or fewer. The
+     lyrics' 2,800 to 3,400 characters is a target for a good length, not a rule, so it isn't tested.
+  3. **The README works wherever it's read**: the Theme Song badge and the record link to the same Suno song; every
+     link in `README.md` is absolute; its link to the record is to `docs/theme-song/README.md`, which exists.
+- **Rationale**: These are the spec's mechanical rules (FR-014, FR-015). The first group automates the first step
+  of the song check, so a contributor who breaks a quoted phrase is told by the build, where they make the change.
+- **Placement**: `Integration/`, not `Unit/`. The tests read real files copied into the build output, rather than
+  exercising code in isolation, and the folder already exists, so this adds no new folder.
+- **Reading the files**: the test project copies `..\README.md` and `..\docs\theme-song\README.md` into its build
+  output, as the package project already does for `README.md`. That keeps the tests independent of the working
+  directory.
+- **Parsing**: minimal. Code blocks under the `## Style`, `## Lyrics`, and title headings, the rows of the `## Sources`
+  table, and the links in `README.md`. Those headings become part of the record's contract
+  ([contracts/song-record.md](contracts/song-record.md)).
+- **Out of bounds (FR-016)**: the song's ideas, vibe, and take, and anything needing the network, such as whether
+  the Suno link plays or nuget.org shows the badge. Those stay in [quickstart.md](quickstart.md).
+- **Alternatives considered**: Manual checks only, as first planned. Rejected because the source check is exactly
+  the kind of rule people forget. A separate test project. Rejected as more structure than a handful of tests
+  needs.
+- **Follow-up**: tests that `README.md` documents every public `Stressor` method and `StressorOptions` property,
+  with defaults matching `new StressorOptions()`, belong to the constitution's README contract rather than the
+  song. They are recorded as a GitHub issue for their own feature (III.3). The spec names only the
   theme-song page (FR-012), but the profile's table is where User Story 4's reader first meets the soundtrack, and
   adding the row follows the existing pattern (I.1).
