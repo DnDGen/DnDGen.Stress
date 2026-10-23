@@ -26,6 +26,17 @@
   that choice.
 - Added User Story 3: changing the README comes with clear instructions to update the song, and changes that
   don't touch the README need no song change.
+- Q: How much of the README does the song need to cover? → A: The writer chooses. The test is whether the song
+  captures the README's high-level ideas and vibe, not whether every section gets a line. A README change that
+  touches only the song's own badge, links, or mentions doesn't count, so the song never has to follow itself.
+- Q: Which README changes require the song to be updated? → A: Every README change gets a song check. The song is
+  updated only if the change alters the README's high-level ideas or vibe, or changes or removes a phrase the
+  source table cites.
+- Q: Does the song update land in the same pull request as the README change that prompts it? → A: Yes. The
+  contributor updates the lyrics and source table, and the maintainer remixes and updates the song link before
+  merging.
+- Q: When the song is remixed, what happens to the previous version? → A: It is replaced. The record shows only
+  the current song; git history and Suno keep the old versions.
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -119,7 +130,9 @@ the note on support libraries.
 - **The README is read on NuGet**, where links relative to the repository don't resolve. Links in the README still
   reach the song and its record.
 - **The person changing the README can't remix the song**, for example because they have no access to the Suno
-  account. The procedure says who does it.
+  account. They update the lyrics and source table, and the maintainer remixes before merging.
+- **The README changes only where it mentions the song**, such as a new Suno link after a remix. That isn't a
+  README change the song follows, or every remix would call for another.
 - **The two repositories merge at different times.** Neither change links to something the other has not yet
   published.
 
@@ -132,16 +145,18 @@ the note on support libraries.
 - **FR-001**: DnDGen.Stress MUST have a theme song published on Suno, with a title and a style prompt within Suno's
   limits.
 - **FR-002**: The song MUST be forge folk metal, aiming for the vibe of Wind Rose's "Diggy Diggy Hole".
-- **FR-003**: The lyrics MUST be in English and describe the DnDGen.Stress README as it is. Every lyric MUST come
-  from the README, except lines explicitly marked as not from the README in the source table, as the main theme
-  marks its *Nibelungenlied* opening.
+- **FR-003**: The lyrics MUST be in English and capture the high-level ideas and vibe of the DnDGen.Stress README
+  as it is. The writer chooses which ideas to sing; the song doesn't have to cover every section. Every lyric MUST
+  come from the README, except lines explicitly marked as not from the README in the source table, as the main
+  theme marks its *Nibelungenlied* opening.
 - **FR-004**: The song MUST NOT need a leitmotif. Stress is a support library, so it has no anagram name.
 
 **The record**
 
 - **FR-005**: The song MUST have a written record in the DnDGen.Stress repository, containing its title, Suno link,
   style, lyrics, source table, update procedure, lessons learned while generating it, and album art with
-  instructions to render the art again.
+  instructions to render the art again. It MUST show only the current song: a remix replaces the previous version,
+  which git history and Suno keep.
 - **FR-006**: The album art MUST be square, MUST be recognizably part of the same family as the main theme's cover,
   and MUST credit and license everything it reuses.
 
@@ -149,11 +164,14 @@ the note on support libraries.
 
 - **FR-007**: Someone changing the DnDGen.Stress README MUST be told, where they make the change, that the theme
   song follows the README and where its update procedure is.
-- **FR-008**: The update procedure MUST say which README changes need the song updated, and the steps when they do:
-  [NEEDS CLARIFICATION: does every README change need a song update, or only changes to what the song sings about?]
-- **FR-009**: The song update MUST land [NEEDS CLARIFICATION: in the same pull request as the README change, or in
-  a follow-up after it merges?]
-- **FR-010**: A change that doesn't touch the README MUST NOT require a song change.
+- **FR-008**: Every README change MUST get a song check. The song MUST be updated when the change alters the
+  README's high-level ideas or vibe, or changes or removes a phrase the source table cites, and not otherwise. The
+  update procedure MUST give both the check and the steps for updating.
+- **FR-009**: The song update MUST land in the same pull request as the README change that prompts it. The
+  contributor updates the lyrics and source table; the maintainer remixes the song and updates its link before
+  merging.
+- **FR-010**: A change that doesn't touch the README MUST NOT require a song change. Neither does a README change
+  that touches only the song's own badge, links, or mentions.
 
 **Linking it in**
 
@@ -168,7 +186,7 @@ the note on support libraries.
 
 - **Theme song**: the published song. It has a title, a Suno link, a genre, a style prompt, and lyrics.
 - **Source entry**: one lyric line and the README phrase it came from.
-- **Song record**: the written page that holds the song's details, its art, and its update procedure.
+- **Song record**: the written page that holds the current song's details, its art, and its update procedure.
 - **Update procedure**: the steps for deciding whether a README change needs the song updated, and for updating it.
 - **Soundtrack plan entry**: a repository's row in the organization's plan. It has a genre, an area, and a link to
   the song once it exists.
@@ -185,7 +203,8 @@ the note on support libraries.
   to look.
 - **SC-004**: Someone who did not write the song can update it after a README change using only its record.
 - **SC-005**: The organization's soundtrack plan no longer shows Stress's genre as a proposal.
-- **SC-006**: The theme song is the take the maintainer picks, and the maintainer approves the album art.
+- **SC-006**: The theme song is the take the maintainer picks. The maintainer judges that its lyrics capture the
+  README's high-level ideas and vibe, and approves the album art.
 
 ## Assumptions
 
