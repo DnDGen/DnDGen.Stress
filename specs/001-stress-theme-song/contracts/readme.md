@@ -30,8 +30,8 @@ Every link is absolute (R6).
 
 The **README as contract** bullet gains a sentence (R2):
 
-> Every README change also gets the theme song check in `docs/theme-song/README.md`, and any song update lands in
-> the same pull request.
+> Documents derived from the README, such as the theme song in `docs/theme-song`, say how they are kept in step
+> with it, and are updated in the same pull request as the README change that affects them.
 
 Version 1.0.0 → 1.1.0 (MINOR: an added obligation), and **Last Amended** set to the date this merges. The
 amendment is its own commit, separate from the ratification-line fix (III.2).

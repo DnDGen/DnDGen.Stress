@@ -11,7 +11,8 @@ README's high-level ideas and vibe, and record it in `docs/theme-song/` beside t
 the shape of the main theme's record in DnDGen/.github, minus the parts that only make sense for the main theme
 (translation, leitmotifs, soundtrack plan), and adds an update procedure. The Stress README gains the main theme's
 badge style and a short Theme Song section linking to both the song and the record. The constitution's README
-contract gains the song check, so every plan and pull request applies it. A separate pull request in
+contract gains a general rule that documents derived from the README are kept in step with it, with the song as
+its example, so every plan and pull request applies the song check. A separate pull request in
 DnDGen/.github confirms the genre, links the song, and says support libraries have no leitmotif. The lyrics and
 style are drafted with the pr-song skill's Suno mechanics, overridden where a theme song differs from a PR song
 ([research.md](research.md) R3).
@@ -57,7 +58,7 @@ DnDGen.Stress, and edits to two pages in DnDGen/.github.
 | **III.2** Improve where you are, in its own commit | Yes | Pass. The ratification fix and the constitution amendment are separate commits. |
 | **III.3** Behaviour out of scope | Yes | Pass. No behaviour changes. |
 | **Versioning and release** | Yes | Pass. PATCH: 5.0.3. The README is packed into the package, so the release notes say the package changes only in its README, and that 5.0.1 was the last version with code changes. Pull request titled `5.0.3: Theme song`. |
-| **README as contract** | Yes | Pass. The README still documents every constructor, method, and option. The Theme Song section links to supporting documentation, and the amendment adds the song check to this rule ([research.md](research.md) R2). |
+| **README as contract** | Yes | Pass. The README still documents every constructor, method, and option. The Theme Song section links to supporting documentation, and the amendment adds that documents derived from the README are kept in step with it ([research.md](research.md) R2). |
 | **Development workflow** | Yes | Pass. Branch and pull request to `main`, reviewed by the maintainer; the description is written from the diff. |
 | **Governance: amendments** | Yes | Pass. The amendment is made by this pull request, with its reasoning in the description. It adds an obligation, so it is MINOR: constitution 1.0.0 → 1.1.0. |
 

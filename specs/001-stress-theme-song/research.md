@@ -17,9 +17,13 @@ Decisions for the "how" that the spec left open. Each records what was chosen, w
 - **Decision**: Two places.
   1. A short **Theme Song section at the end of the README**, saying the song follows the README and linking to
      the record's update procedure. Someone editing the README sees it, and so does anyone reading it.
-  2. An **amendment to the constitution's README contract**, adding the song check and the same-pull-request rule.
-     Every plan and pull request is already checked against the constitution, so the maintainer's review and any
-     Spec Kit plan both apply it. Adding an obligation is MINOR: 1.0.0 → 1.1.0.
+  2. An **amendment to the constitution's README contract**: documents derived from the README say how they are
+     kept in step with it, and are updated in the same pull request. Every plan and pull request is already
+     checked against the constitution, so the maintainer's review and any Spec Kit plan both apply it. Adding an
+     obligation is MINOR: 1.0.0 → 1.1.0.
+     - The amendment names the theme song only as an example. The song's own details stay in its record, so the
+       constitution stays at the level of the rest of it, and the rule still reads correctly in a repository with
+       no song, or if the constitution later becomes organization-wide.
 - **Rationale**: The README section reaches a first-time contributor (SC-003); the constitution makes the check
   part of review, so it doesn't rely on the contributor noticing.
 - **Alternatives considered**:
@@ -52,13 +56,17 @@ Decisions for the "how" that the spec left open. Each records what was chosen, w
 
 ## R4. How much Suno detail goes in the update procedure
 
-- **Decision**: Map the record to Suno's fields, but don't describe clicks. The record's Title, Style, and Lyrics
-  blocks are named for the Suno fields they are pasted into (Custom mode), so a remix is copy and paste. Click paths
-  and menu names are left out, because Suno's interface changes and those steps would go stale.
-- **Rationale**: SC-004 needs someone new to be able to remix from the record alone; the field mapping is the part
-  that doesn't go stale.
-- **Open for the maintainer**: The maintainer has their own idea of the update process. The draft procedure in
-  [contracts/song-record.md](contracts/song-record.md) is a starting point to revise before implementation.
+- **Decision**: Name the Suno features and settings that matter, but don't describe clicks. The record's Title,
+  Style, and Lyrics blocks are named for the Suno fields they are pasted into (Custom mode), and the maintainer
+  added the settings that keep the song consistent: Cover the current song, leave the Style unchanged, turn
+  Variety all the way down, and publish the result. Click paths and menu locations are left out, because Suno's
+  interface changes and those steps would go stale.
+- **Rationale**: SC-004 needs someone new to be able to remix from the record alone. Feature and setting names
+  last longer than click paths, and they carry the intent: the song evolves without being replaced by a different
+  one.
+- **Alternatives considered**: Field mapping only, as first drafted. The maintainer's Suno steps were added on
+  review, because without Cover and low Variety a remix can come back as a different-sounding song.
+- **Initial generation**: The same settings apply except Cover, since there is no current song to cover yet.
 
 ## R5. Album art
 

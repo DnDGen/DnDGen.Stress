@@ -23,7 +23,7 @@ Custom mode fields of the same names exactly as they are (R4).
 
 ## Updating (draft)
 
-This is a starting point for the maintainer to revise (R4). Proposed text:
+Reviewed by the maintainer, who added the Suno steps (R4). Text:
 
 > This song follows the [DnDGen.Stress README](https://github.com/DnDGen/DnDGen.Stress/blob/main/README.md). Every
 > pull request that changes the README gets a song check:
@@ -35,8 +35,12 @@ This is a starting point for the maintainer to revise (R4). Proposed text:
 > When the song needs updating, it happens in the same pull request:
 >
 > 1. The contributor updates the Lyrics and Sources here to match the new README.
-> 2. The maintainer generates the song again in Suno's Custom mode, with the Title, Style, and Lyrics from this
->    page, and picks the take. The new take replaces the old one.
+> 2. The maintainer makes the new song in Suno:
+>    - **Cover the current song**, so the theme stays recognizably the same song as it evolves.
+>    - Use the Title, Style, and Lyrics from this page. **Leave the Style as it is**: only the lyrics change.
+>    - **Turn Variety all the way down**, so Suno keeps to the Style instead of straying from it.
+>    - Pick the take. The new take replaces the old one.
+>    - **Publish it**, so anyone with the link can find and hear it.
 > 3. The maintainer updates the Suno link here and in the README, and adds anything learned to the Suno Notes.
 
 ## Album Art section

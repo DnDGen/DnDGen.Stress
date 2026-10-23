@@ -142,8 +142,8 @@ the note on support libraries.
 
 **The song**
 
-- **FR-001**: DnDGen.Stress MUST have a theme song published on Suno, with a title and a style prompt within Suno's
-  limits.
+- **FR-001**: DnDGen.Stress MUST have a theme song published publicly on Suno, so anyone with the link can find and
+  hear it, with a title and a style prompt within Suno's limits.
 - **FR-002**: The song MUST be forge folk metal, aiming for the vibe of Wind Rose's "Diggy Diggy Hole".
 - **FR-003**: The lyrics MUST be in English and capture the high-level ideas and vibe of the DnDGen.Stress README
   as it is. The writer chooses which ideas to sing; the song doesn't have to cover every section. Every lyric MUST
@@ -169,7 +169,7 @@ the note on support libraries.
   update procedure MUST give both the check and the steps for updating.
 - **FR-009**: The song update MUST land in the same pull request as the README change that prompts it. The
   contributor updates the lyrics and source table; the maintainer remixes the song and updates its link before
-  merging.
+  merging. A remix keeps the song recognizably the same song: its style stays the same and only its lyrics change.
 - **FR-010**: A change that doesn't touch the README MUST NOT require a song change. Neither does a README change
   that touches only the song's own badge, links, or mentions.
 

@@ -20,8 +20,9 @@ criterion it proves.
 
 ## After generating
 
-4. **The song (FR-001, FR-002, SC-006)**: the maintainer picks a take. Anything it drops or changes is in the Suno
-   Notes.
+4. **The song (FR-001, FR-002, SC-006)**: the maintainer picks a take, generated with Variety all the way down.
+   Anything it drops or changes is in the Suno Notes. The song is published: its link plays in a private browser
+   window, signed out of Suno.
 5. **Album art (FR-006)**: render it, then check that `cover.png` is 1500 × 1500 and the maintainer approves it:
 
    ```
