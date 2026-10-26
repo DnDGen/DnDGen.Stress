@@ -22,19 +22,26 @@ namespace DnDGen.Stress.Tests.Integration.Docs.ThemeSong
         }
 
         [Test]
-        public void HasSectionsInOrder()
+        public void HasCorrectSectionsInOrder()
         {
-            var headings = GetLinesOutsideCodeBlocks(_record).Where(line => line.StartsWith("## "));
-            Assert.That(headings, Is.EqualTo(
+            string[] sectionNames =
             [
-                "## Updating",
-                "## Title",
-                "## Style",
-                "## Lyrics",
-                "## Sources",
-                "## Suno Notes",
-                "## Album Art",
-            ]));
+                "Updating",
+                "Title",
+                "Style",
+                "Lyrics",
+                "Sources",
+                "Suno Notes",
+                "Album Art",
+            ];
+            var headings = GetLinesOutsideCodeBlocks(_record).Where(line => line.StartsWith("## "));
+            Assert.That(headings, Is.EqualTo(sectionNames.Select(s => $"## {s}")));
+
+            foreach (var sectionName in sectionNames)
+            {
+                var section = GetSection(sectionName);
+                Assert.That(section, Is.Not.Empty, sectionName);
+            }
         }
 
         [TestCase("Title", SunoTitleLimit)]
@@ -55,10 +62,11 @@ namespace DnDGen.Stress.Tests.Integration.Docs.ThemeSong
             Assert.That(columns, Is.EqualTo(["Lyric", "From the README"]));
 
             string[] sourcedLyrics = [.. table.Skip(1).SelectMany(row => row[0].Split("<br>"))];
-            Assert.That(sourcedLyrics, Is.EqualTo(GetLyricLines()), "Each lyric line needs one Sources row, in the order it is first sung");
+            var lyrics = GetDistinctLyricLines();
+            Assert.That(sourcedLyrics, Is.EqualTo(lyrics), "Each lyric line needs one Sources row, in the order it is first sung");
         }
 
-        private string[] GetLyricLines()
+        private string[] GetDistinctLyricLines()
         {
             var lines = GetCodeBlock("Lyrics")
                 .Split('\n')
@@ -97,7 +105,7 @@ namespace DnDGen.Stress.Tests.Integration.Docs.ThemeSong
 
                 if (!inCodeBlock && line.StartsWith("## "))
                     inSection = line == $"## {heading}";
-                else if (inSection)
+                else if (inSection && !string.IsNullOrWhiteSpace(line))
                     section.Add(line);
             }
 
