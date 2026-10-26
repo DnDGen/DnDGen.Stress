@@ -30,7 +30,9 @@ to render the cover; the pr-song skill for drafting the style and lyrics.
 
 **Storage**: Files in the repository under `docs/theme-song/`. The song itself lives on Suno.
 
-**Testing**: NUnit integration tests in `DnDGen.Stress.Tests/Integration/ThemeSongTests.cs`. The test project
+**Testing**: NUnit integration tests, each file mirroring the path of the file it tests:
+`DnDGen.Stress.Tests/Integration/docs/theme-song/ReadmeTests.cs` for the record and
+`DnDGen.Stress.Tests/Integration/ReadmeTests.cs` for the README. The test project
 copies `README.md` and `docs/theme-song/README.md` into its build output, and the tests read those copies (R9).
 They run in the existing pipeline step. The package's code doesn't change, so its 100% coverage is unaffected.
 What the tests can't judge, such as the vibe, the take, the art, and anything needing the network, is checked by
@@ -104,7 +106,10 @@ DnDGen.Stress (this pull request)
 ├── .specify/memory/constitution.md    # README contract gains the song check; version 1.1.0
 ├── DnDGen.Stress.Tests/
 │   ├── DnDGen.Stress.Tests.csproj     # Copies README.md and docs/theme-song/README.md to the build output
-│   └── Integration/ThemeSongTests.cs  # Tests for the README and the record
+│   └── Integration/
+│       ├── ReadmeTests.cs             # Tests for README.md
+│       └── docs/theme-song/
+│           └── ReadmeTests.cs         # Tests for docs/theme-song/README.md
 └── docs/theme-song/
     ├── README.md                      # The song record
     ├── cover.html                     # Album art source

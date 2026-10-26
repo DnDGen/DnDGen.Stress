@@ -109,18 +109,24 @@ Decisions for the "how" that the spec left open. Each records what was chosen, w
 
 ## R9. Automated tests for the README and the record
 
-- **Decision**: NUnit tests in `DnDGen.Stress.Tests/Integration/ThemeSongTests.cs`, in three groups:
-  1. **The song follows the README**: every phrase quoted in the Sources table appears in `README.md`; every lyric
-     line has a Sources row, and every row's lyric is in the Lyrics. A failure lists every missing phrase or line
-     at once and points to the Updating section.
-  2. **The record is ready for Suno**: the Title is 80 characters or fewer, and the Style 1,000 or fewer. The
-     lyrics' 2,800 to 3,400 characters is a target for a good length, not a rule, so it isn't tested.
-  3. **The README works wherever it's read**: the Theme Song badge and the record link to the same Suno song; every
-     link in `README.md` is absolute; its link to the record is to `docs/theme-song/README.md`, which exists.
+- **Decision**: NUnit tests in three groups, in two test files:
+  1. **The song follows the README** (record tests): every phrase quoted in the Sources table appears in
+     `README.md`; every lyric line has a Sources row, and every row's lyric is in the Lyrics. A failure lists every
+     missing phrase or line at once and points to the Updating section.
+  2. **The record is ready for Suno** (record tests): the Title is 80 characters or fewer, and the Style 1,000 or
+     fewer. The lyrics' 2,800 to 3,400 characters is a target for a good length, not a rule, so it isn't tested.
+  3. **The README works wherever it's read** (README tests): the Theme Song badge and the record link to the same
+     Suno song; every link in `README.md` is absolute; its link to the record is to `docs/theme-song/README.md`,
+     which exists.
 - **Rationale**: These are the spec's mechanical rules (FR-014, FR-015). The first group automates the first step
   of the song check, so a contributor who breaks a quoted phrase is told by the build, where they make the change.
-- **Placement**: `Integration/`, not `Unit/`. The tests read real files copied into the build output, rather than
-  exercising code in isolation, and the folder already exists, so this adds no new folder.
+- **Placement**: `Integration/`, not `Unit/`, because the tests read real files copied into the build output.
+  Within it, each test file mirrors the path of the file it tests, one test file per file under test (the
+  maintainer's convention, for separation of concerns):
+  - `docs/theme-song/README.md` → `DnDGen.Stress.Tests/Integration/docs/theme-song/ReadmeTests.cs`, in namespace
+    `DnDGen.Stress.Tests.Integration.Docs.ThemeSong`
+  - `README.md` → `DnDGen.Stress.Tests/Integration/ReadmeTests.cs`, in namespace `DnDGen.Stress.Tests.Integration`
+- **Shared code**: none. Each file reads what it needs; the README tests only need the record's Suno link from it.
 - **Reading the files**: the test project copies `..\README.md` and `..\docs\theme-song\README.md` into its build
   output, as the package project already does for `README.md`. That keeps the tests independent of the working
   directory.
