@@ -30,7 +30,9 @@ final phase, per [quickstart.md](quickstart.md).
 - The README: `README.md` at the repository root
 - The tests mirror the path of the file they test, under `DnDGen.Stress.Tests/Integration/`, one test file per file
   under test:
-  - `docs/theme-song/README.md` (the record) → `DnDGen.Stress.Tests/Integration/docs/theme-song/ReadmeTests.cs`
+  - `docs/theme-song/README.md` (the record) → `DnDGen.Stress.Tests/Integration/Docs/ThemeSong/ReadmeTests.cs`
+    (folder names become namespace names, so the folder matches the namespace
+    `DnDGen.Stress.Tests.Integration.Docs.ThemeSong`)
   - `README.md` (the repository README) → `DnDGen.Stress.Tests/Integration/ReadmeTests.cs`
 - DnDGen/.github: changed only by the maintainer, from a patch prepared here
 
@@ -52,9 +54,9 @@ or describes it.
 
 **⚠️ CRITICAL**: No user story can be completed until the song is published (T011).
 
-- [ ] T003 Create `DnDGen.Stress.Tests/Integration/docs/theme-song/ReadmeTests.cs` for the record, matching the style of `DnDGen.Stress.Tests/Integration/StressorTests.cs` (an `internal` NUnit class, here in `DnDGen.Stress.Tests.Integration.Docs.ThemeSong`). It reads `docs/theme-song/README.md` and `README.md` from `TestContext.CurrentContext.TestDirectory`, with minimal private helpers that return the text of the code block under a heading and the rows of the `## Sources` table (R9)
-- [ ] T004 Add the "record is ready for Suno" tests to `DnDGen.Stress.Tests/Integration/docs/theme-song/ReadmeTests.cs`: the Title (the code block under the title heading) is "80 characters or fewer", and the Style (under `## Style`) is "1,000 characters or fewer". Run them and see them fail because the record doesn't exist yet
-- [ ] T005 Create the record skeleton `docs/theme-song/README.md` with the sections, in order, from [contracts/song-record.md](contracts/song-record.md): title heading, cover image, introduction, Listen on Suno, Updating, `## Style`, `## Lyrics`, `## Sources`, Suno Notes, Album Art. Title, Style, and Lyrics each go in a code block of their own
+- [ ] T003 Create `DnDGen.Stress.Tests/Integration/Docs/ThemeSong/ReadmeTests.cs` for the record, matching the style of `DnDGen.Stress.Tests/Integration/StressorTests.cs` (an `internal` NUnit class, here in `DnDGen.Stress.Tests.Integration.Docs.ThemeSong`). It reads `docs/theme-song/README.md` and `README.md` from `TestContext.CurrentContext.TestDirectory`, with minimal private helpers that return the text of the code block under a heading and the rows of the `## Sources` table (R9)
+- [ ] T004 Add the "record is ready for Suno" tests to `DnDGen.Stress.Tests/Integration/Docs/ThemeSong/ReadmeTests.cs`: the Title (the code block under the title heading) is "80 characters or fewer", and the Style (under `## Style`) is "1,000 characters or fewer". Run them and see them fail because the record doesn't exist yet
+- [ ] T005 Create the record skeleton `docs/theme-song/README.md` with the sections, in order, from [contracts/song-record.md](contracts/song-record.md): title heading, cover image, introduction, Listen on Suno, `## Updating`, `## Style`, `## Lyrics`, `## Sources`, Suno Notes, Album Art. Title, Style, and Lyrics each go in a code block of their own
 - [ ] T006 Draft the Style in `docs/theme-song/README.md` with the pr-song skill's style rules, overridden per R3: forge folk metal, in the vibe of "Diggy Diggy Hole"; "1,000 characters or fewer, measured; names the sound, not bands". Name the three example tracks it is based on ("Diggy Diggy Hole" and two more) when handing it over
 - [ ] T007 Draft the Lyrics in `docs/theme-song/README.md` with the pr-song skill's lyric format and length budget, overridden per R3: "English; captures the README's high-level ideas and vibe; about 2,800 to 3,400 characters, measured; Suno formatting". Every lyric comes from `README.md`, and anything checkable (method names, option names, defaults, commands) is exact. Keep a note of the README phrase behind each line, for T016
 - [ ] T008 Draft the Title in `docs/theme-song/README.md` in the form `<Name> -DnDGen.Stress Theme-`, "80 characters or fewer, measured". Run the T004 tests and see them pass
@@ -88,7 +90,7 @@ tests pass.
 **Independent Test**: Someone who did not write the song matches every lyric to the README using only the record;
 the US2 tests pass.
 
-- [ ] T015 [US2] Add the lyric coverage tests to `DnDGen.Stress.Tests/Integration/docs/theme-song/ReadmeTests.cs`: "Every lyric line is covered by exactly one row (SC-001)" of `## Sources`, and every line in a row's Lyric cell (split on ` / `) is in the Lyrics. Section markers in square brackets, and lines wholly in parentheses, need no row ([data-model.md](data-model.md)). A failure lists every uncovered or unknown line. Run them and see them fail because the Sources table is empty
+- [ ] T015 [US2] Add the lyric coverage tests to `DnDGen.Stress.Tests/Integration/Docs/ThemeSong/ReadmeTests.cs`: "Every lyric line is covered by exactly one row (SC-001)" of `## Sources`, and every line in a row's Lyric cell (split on ` / `) is in the Lyrics. Section markers in square brackets, and lines wholly in parentheses, need no row ([data-model.md](data-model.md)). A failure lists every uncovered or unknown line. Run them and see them fail because the Sources table is empty
 - [ ] T016 [US2] Write the Sources table in `docs/theme-song/README.md`, with columns `Lyric` and `From the README`. Each row quotes the README phrase in double quotes, with its section, or says `Not from the README:` and where the line came from. Run the T015 tests and see them pass
 - [ ] T017 [P] [US2] Create `docs/theme-song/cover.html` from the main theme's `cover.html` in DnDGen/.github `theme-song/`: the same d20 and ghost copies and a Cinzel title, recoloured for the forge (ember orange and hot metal on soot black), with the ghost copies read as repeated strikes, the song's name as the title, and the header comment updated for this song (R5)
 - [ ] T018 [US2] Render `docs/theme-song/cover.png` at 1500 × 1500 from `docs/theme-song/cover.html` with `msedge --headless --hide-scrollbars --allow-file-access-from-files --window-size=1500,1500 --screenshot=cover.png cover.html`, run from `docs/theme-song/`; then (maintainer) approve the art, revising T017 until approved
@@ -105,7 +107,7 @@ the US2 tests pass.
 **Independent Test**: Reword a phrase the song quotes; the build fails, names the phrase, and points to the update
 procedure. Someone asked to make a README change finds the procedure (quickstart step 8).
 
-- [ ] T020 [US3] Add the "song follows the README" test to `DnDGen.Stress.Tests/Integration/docs/theme-song/ReadmeTests.cs` (it tests the record's Sources, so it belongs with the record): every phrase in double quotes in the `From the README` column (rows not starting `Not from the README:`) appears in `README.md`, comparing with runs of whitespace collapsed to one space, since the README wraps lines. A failure lists every missing phrase and says to follow the Updating section of `docs/theme-song/README.md`. The Sources table already exists, so see it fail for the expected reason by temporarily rewording a quoted phrase in `README.md`, then revert
+- [ ] T020 [US3] Add the "song follows the README" test to `DnDGen.Stress.Tests/Integration/Docs/ThemeSong/ReadmeTests.cs` (it tests the record's Sources, so it belongs with the record): every phrase in double quotes in the `From the README` column (rows not starting `Not from the README:`) appears in `README.md`, comparing with runs of whitespace collapsed to one space, since the README wraps lines. A failure lists every missing phrase and says to follow the Updating section of `docs/theme-song/README.md`. Also add a test that the record has an `## Updating` section, since that message sends people there; it checks only that the section exists, not its content. The Sources table and the `## Updating` heading already exist (T005, T016), so see each test fail for the expected reason by temporarily rewording a quoted phrase in `README.md` and temporarily renaming the heading, then revert
 - [ ] T021 [US3] Write the Updating section of `docs/theme-song/README.md` with the text from [contracts/song-record.md](contracts/song-record.md), including the maintainer's Suno steps: Cover the current song, leave the Style as it is, turn Variety all the way down, pick the take, and publish it
 - [ ] T022 [P] [US3] Amend `.specify/memory/constitution.md` with the `/speckit-constitution` skill: add the derived-documents sentence from [contracts/readme.md](contracts/readme.md) to the README as contract bullet, bump the version from 1.0.0 to 1.1.0 (MINOR), and set Last Amended to today. Commit it on its own (III.2)
 
@@ -161,7 +163,7 @@ note on support libraries.
 
 - Tests first: write them, run them, and see them fail for the expected reason before the change that makes them
   pass (II).
-- `DnDGen.Stress.Tests/Integration/docs/theme-song/ReadmeTests.cs` is edited by T003, T004, T015, and T020, one
+- `DnDGen.Stress.Tests/Integration/Docs/ThemeSong/ReadmeTests.cs` is edited by T003, T004, T015, and T020, one
   after another. `DnDGen.Stress.Tests/Integration/ReadmeTests.cs` is created by T012 alone.
 - `docs/theme-song/README.md` is edited by T005 to T008, T011, T016, T019, and T021, one after another.
 

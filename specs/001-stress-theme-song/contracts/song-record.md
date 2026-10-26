@@ -21,8 +21,8 @@ section, except where noted.
 The Title, Style, and Lyrics are each written in a code block on their own, so they can be copied into Suno's
 Custom mode fields of the same names exactly as they are (R4).
 
-The tests read the record by its headings: the title heading, `## Style`, `## Lyrics`, and the `## Sources` table
-with columns `Lyric` and `From the README` (R9). Renaming any of these means changing the tests too.
+The tests read the record by its headings: the title heading, `## Updating`, `## Style`, `## Lyrics`, and the
+`## Sources` table with columns `Lyric` and `From the README` (R9). Renaming any of these means changing the tests too.
 
 ## Updating (draft)
 

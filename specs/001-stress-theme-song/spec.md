@@ -194,8 +194,8 @@ the note on support libraries.
 
 - **FR-014**: Automated tests MUST fail when a phrase quoted in the source table no longer appears in the README,
   naming each missing phrase and pointing to the update procedure.
-- **FR-015**: Automated tests MUST also check that every lyric line has a source entry and every source entry's
-  lyric is in the lyrics; that the title and style are within Suno's limits; that the README and the record link to
+- **FR-015**: Automated tests MUST also check that the record has its update procedure, where FR-014's failures
+  point; that every lyric line has a source entry and every source entry's lyric is in the lyrics; that the title and style are within Suno's limits; that the README and the record link to
   the same song; and that the README's links are absolute and its link to the record leads to a file that exists.
 - **FR-016**: The automated tests MUST NOT judge the song's ideas, vibe, or chosen take, and MUST NOT need the
   network.

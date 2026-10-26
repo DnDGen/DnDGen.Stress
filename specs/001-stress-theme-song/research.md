@@ -112,7 +112,8 @@ Decisions for the "how" that the spec left open. Each records what was chosen, w
 - **Decision**: NUnit tests in three groups, in two test files:
   1. **The song follows the README** (record tests): every phrase quoted in the Sources table appears in
      `README.md`; every lyric line has a Sources row, and every row's lyric is in the Lyrics. A failure lists every
-     missing phrase or line at once and points to the Updating section.
+     missing phrase or line at once and points to the Updating section, so a test also checks that the record has
+     an `## Updating` section. Only that it exists: its content is for people to judge.
   2. **The record is ready for Suno** (record tests): the Title is 80 characters or fewer, and the Style 1,000 or
      fewer. The lyrics' 2,800 to 3,400 characters is a target for a good length, not a rule, so it isn't tested.
   3. **The README works wherever it's read** (README tests): the Theme Song badge and the record link to the same
@@ -122,8 +123,9 @@ Decisions for the "how" that the spec left open. Each records what was chosen, w
   of the song check, so a contributor who breaks a quoted phrase is told by the build, where they make the change.
 - **Placement**: `Integration/`, not `Unit/`, because the tests read real files copied into the build output.
   Within it, each test file mirrors the path of the file it tests, one test file per file under test (the
-  maintainer's convention, for separation of concerns):
-  - `docs/theme-song/README.md` → `DnDGen.Stress.Tests/Integration/docs/theme-song/ReadmeTests.cs`, in namespace
+  maintainer's convention, for separation of concerns). Folder names become valid namespace names, such as
+  `Docs/ThemeSong` for `docs/theme-song`, so that each test file's folder matches its namespace:
+  - `docs/theme-song/README.md` → `DnDGen.Stress.Tests/Integration/Docs/ThemeSong/ReadmeTests.cs`, in namespace
     `DnDGen.Stress.Tests.Integration.Docs.ThemeSong`
   - `README.md` → `DnDGen.Stress.Tests/Integration/ReadmeTests.cs`, in namespace `DnDGen.Stress.Tests.Integration`
 - **Shared code**: none. Each file reads what it needs; the README tests only need the record's Suno link from it.
