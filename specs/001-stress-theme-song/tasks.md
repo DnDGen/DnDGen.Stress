@@ -42,8 +42,8 @@ final phase, per [quickstart.md](quickstart.md).
 
 **Purpose**: The folder for the record, and a test project that can read it.
 
-- [ ] T001 Create `docs/theme-song/` and copy `Cinzel.ttf` and `Cinzel-OFL.txt` into it unchanged from DnDGen/.github `theme-song/` (for example with `gh api repos/DnDGen/.github/contents/theme-song/<file> --jq .content`, base64-decoded), per [research.md](research.md) R5
-- [ ] T002 [P] In `DnDGen.Stress.Tests/DnDGen.Stress.Tests.csproj`, copy `..\README.md` and `..\docs\theme-song\README.md` into the build output as `README.md` and `docs\theme-song\README.md` (`None` items with `Link` and `CopyToOutputDirectory="PreserveNewest"`), per R9
+- [X] T001 Create `docs/theme-song/` and copy `Cinzel.ttf` and `Cinzel-OFL.txt` into it unchanged from DnDGen/.github `theme-song/` (for example with `gh api repos/DnDGen/.github/contents/theme-song/<file> --jq .content`, base64-decoded), per [research.md](research.md) R5
+- [X] T002 [P] In `DnDGen.Stress.Tests/DnDGen.Stress.Tests.csproj`, copy `..\README.md` and `..\docs\theme-song\README.md` into the build output as `README.md` and `docs\theme-song\README.md` (`None` items with `Link` and `CopyToOutputDirectory="PreserveNewest"`), per R9
 
 ---
 
