@@ -126,6 +126,8 @@ the note on support libraries.
    links to the song.
 2. **Given** the leitmotif section, **When** a reader looks for Stress, **Then** it says that the support libraries
    (Stress, Infrastructure, Web) have no leitmotif, and that their songs describe their READMEs as they are.
+3. **Given** a repository with no theme song yet, including one added in future, **When** someone starts its
+   song, **Then** the theme-song page tells them how, including which snippet of the main theme to Sample.
 
 ### Edge Cases
 
@@ -187,7 +189,9 @@ the note on support libraries.
   and MUST link to the song's record. Both links MUST work wherever the README is read, including NuGet.
 - **FR-012**: The organization theme-song page MUST show Stress's confirmed genre and song link in its soundtrack
   plan, and MUST say that the support libraries have no leitmotif and that their songs describe their READMEs as
-  they are.
+  they are. It MUST also say how any repository's first theme song is made, including new repositories added
+  later: planned in the soundtrack, written from its README and recorded in that repository, and started from a
+  Sample of the main theme's "Rogante Marendor" snippet (3:00.0 to 3:17.1).
 - **FR-013**: The DnDGen.Stress change MUST be released as the constitution requires for documentation changes.
 
 **Checking it automatically**

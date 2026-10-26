@@ -67,6 +67,10 @@ Decisions for the "how" that the spec left open. Each records what was chosen, w
 - **Alternatives considered**: Field mapping only, as first drafted. The maintainer's Suno steps were added on
   review, because without Cover and low Variety a remix can come back as a different-sounding song.
 - **Initial generation**: The same settings apply except Cover, since there is no current song to cover yet.
+  Instead, the first version Samples the main theme's "Rogante Marendor" snippet, 3:00.0 to 3:17.1 of the org theme
+  song, so every repository's song starts from the same motif. Later versions Cover the current song, which carries
+  the sample forward. This applies to every repository's first song, so it is recorded on the organization's
+  theme-song page ([contracts/org-pages.md](contracts/org-pages.md)).
 
 ## R5. Album art
 
