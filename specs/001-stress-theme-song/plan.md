@@ -63,7 +63,7 @@ DnDGen.Stress, and edits to two pages in DnDGen/.github.
 | **I.3** Code reads like prose; comments only by a human | Partly | Pass. No code changes. The cover's HTML comment header is copied from the main theme's cover, so it is an existing pattern rather than a new comment. No `INFO:` comment is added to the README ([research.md](research.md) R2). |
 | **II** Tests Are the Spec | Yes | Pass. The record's mechanical rules are tests, written first and seen to fail because the record doesn't exist yet (R9). |
 | **II.1** What to test: what a consumer does and sees | Yes | Pass. The consumers are a contributor changing the README and a reader following its links; each case is named for what they see. |
-| **II.2** How much to test | Yes | Pass. Limits are tested at the boundary by the real values; coverage of `DnDGen.Stress.dll` stays at 100% because no package code changes. |
+| **II.2** How much to test | Partly | Pass. II.2.a and II.2.b don't apply: the tests check one real document each, not code across a range of inputs, so there is no range to sample or boundary to probe. II.2.c holds: coverage of `DnDGen.Stress.dll` stays at 100% because no package code changes. |
 | **II.3** How a test fails | Yes | Pass. Assertions compare whole lists, such as every missing phrase at once, and each failure says what to do. No test needs the network, so none fails because of the machine (II.3.c). |
 | **III.1** Maintenance in scope | Yes | Pass. The ratification-line fix (`c490d9b`) is a stale-docs correction where we already are. |
 | **III.2** Improve where you are, in its own commit | Yes | Pass. The ratification fix and the constitution amendment are separate commits. |

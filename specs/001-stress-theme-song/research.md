@@ -132,8 +132,9 @@ Decisions for the "how" that the spec left open. Each records what was chosen, w
 - **Reading the files**: the test project copies `..\README.md` and `..\docs\theme-song\README.md` into its build
   output, as the package project already does for `README.md`. That keeps the tests independent of the working
   directory.
-- **Parsing**: minimal. Code blocks under the `## Style`, `## Lyrics`, and title headings, the rows of the `## Sources`
-  table, and the links in `README.md`. Those headings become part of the record's contract
+- **Parsing**: minimal. Code blocks under the `## Title`, `## Style`, and `## Lyrics` headings, the rows of the
+  `## Sources` table, and the links in `README.md`. Quoted README phrases are compared as raw Markdown, with only
+  whitespace collapsed. Those headings become part of the record's contract
   ([contracts/song-record.md](contracts/song-record.md)).
 - **Out of bounds (FR-016)**: the song's ideas, vibe, and take, and anything needing the network, such as whether
   the Suno link plays or nuget.org shows the badge. Those stay in [quickstart.md](quickstart.md).

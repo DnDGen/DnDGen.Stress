@@ -22,7 +22,7 @@ One row of the record's Sources table, for each lyric line.
 | Field | Rule |
 |-------|------|
 | Lyric | The line as sung, or a run of consecutive lines with one source, separated by ` / ` as in the main theme |
-| From the README | The README phrase it came from, in double quotes, with its section; or `Not from the README:` and where it came from |
+| From the README | The README phrase it came from, in double quotes, with its section; or `Not from the README:` and where it came from. The phrase is copied exactly from the raw Markdown of `README.md`, backticks and all, apart from line breaks |
 
 Every lyric line is covered by exactly one row (SC-001). Section markers, and lines wholly in parentheses (backing
 vocals and echoes), need no row of their own. These rules are what the tests check (R9).

@@ -10,6 +10,7 @@ section, except where noted.
 | Introduction | Genre, and where the lyrics come from | Same: forge folk metal, lyrics from the DnDGen.Stress README, and a link back to the README |
 | **Listen on Suno** | Yes | Same |
 | Remixing | Short steps | Replaced by **Updating**, below |
+| Title | None: the heading is the only title | **New**: `## Title`, with the title in a code block, headed for the Suno field it goes in |
 | Style | Code block | Same, headed for the Suno field it goes in |
 | Lyrics | Code block | Same, headed for the Suno field it goes in |
 | Translation | Lyric, language, English, source | Replaced by **Sources**: lyric and the README phrase it came from |
@@ -18,11 +19,12 @@ section, except where noted.
 | Suno Notes | Lessons from generating | Same, for this song |
 | Album Art | How to render, and credits | Same, for this cover |
 
-The Title, Style, and Lyrics are each written in a code block on their own, so they can be copied into Suno's
-Custom mode fields of the same names exactly as they are (R4).
+The Title, Style, and Lyrics are each written in a code block on their own, under `## Title`, `## Style`, and
+`## Lyrics`, so they can be copied into Suno's Custom mode fields of the same names exactly as they are (R4). The
+`# <Title>` heading at the top shows the same title for readers; the code block is what the tests measure.
 
-The tests read the record by its headings: the title heading, `## Updating`, `## Style`, `## Lyrics`, and the
-`## Sources` table with columns `Lyric` and `From the README` (R9). Renaming any of these means changing the tests too.
+The tests read the record by its headings: `## Updating`, `## Title`, `## Style`, `## Lyrics`, and the `## Sources`
+table with columns `Lyric` and `From the README` (R9). Renaming any of these means changing the tests too.
 
 ## Updating (draft)
 
