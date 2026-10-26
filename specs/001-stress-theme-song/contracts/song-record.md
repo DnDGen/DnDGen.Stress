@@ -23,8 +23,10 @@ The Title, Style, and Lyrics are each written in a code block on their own, unde
 `## Lyrics`, so they can be copied into Suno's Custom mode fields of the same names exactly as they are (R4). The
 `# <Title>` heading at the top shows the same title for readers; the code block is what the tests measure.
 
-The tests read the record by its headings: `## Updating`, `## Title`, `## Style`, `## Lyrics`, and the `## Sources`
-table with columns `Lyric` and `From the README` (R9). Renaming any of these means changing the tests too.
+The record's level-2 headings are exactly, in order: `## Updating`, `## Title`, `## Style`, `## Lyrics`,
+`## Sources`, `## Suno Notes`, `## Album Art`. The `# <Title>` heading, cover image, introduction, and Listen on
+Suno line come before them, without headings of their own. The `## Sources` table has columns `Lyric` and
+`From the README`, and the cover image is `cover.png`, linked to the song. The tests check all of this (R9). Renaming any of these means changing the tests too.
 
 ## Updating (draft)
 

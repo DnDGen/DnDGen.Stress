@@ -105,20 +105,35 @@ Decisions for the "how" that the spec left open. Each records what was chosen, w
   the exact text in [contracts/org-pages.md](contracts/org-pages.md). It merges after this one.
 - **Rationale**: This pull request links only to Suno and to itself, so it can merge first. The `.github` pull
   request links to the record on DnDGen.Stress `main`, which exists only once this one merges.
-- **Also included**: a Stress row in the organization profile's Soundtrack table.
+- **Also included**: a Stress row in the organization profile's Soundtrack table. The spec names only the
+  theme-song page (FR-012), but the profile's table is where User Story 4's reader first meets the soundtrack, and
+  adding the row follows the existing pattern (I.1).
 
 ## R9. Automated tests for the README and the record
 
-- **Decision**: NUnit tests in three groups, in two test files:
-  1. **The song follows the README** (record tests): every phrase quoted in the Sources table appears in
-     `README.md`; every lyric line has a Sources row, and every row's lyric is in the Lyrics. A failure lists every
-     missing phrase or line at once and points to the Updating section, so a test also checks that the record has
-     an `## Updating` section. Only that it exists: its content is for people to judge.
-  2. **The record is ready for Suno** (record tests): the Title is 80 characters or fewer, and the Style 1,000 or
-     fewer. The lyrics' 2,800 to 3,400 characters is a target for a good length, not a rule, so it isn't tested.
-  3. **The README works wherever it's read** (README tests): the Theme Song badge and the record link to the same
-     Suno song; every link in `README.md` is absolute; its link to the record is to `docs/theme-song/README.md`,
-     which exists.
+- **Decision**: 15 NUnit test cases in two test files, approved by the maintainer as a list before any were
+  written. Each is named for what its persona observes.
+  - **The record** (`Docs/ThemeSong/ReadmeTests.cs`):
+
+    | Persona | Test |
+    |---------|------|
+    | Anyone maintaining the record | `Record_HasSectionsInOrder`: the whole ordered list of level-2 headings is `## Updating`, `## Title`, `## Style`, `## Lyrics`, `## Sources`, `## Suno Notes`, `## Album Art` |
+    | | `SunoField_HasOneCodeBlock`, one case each for Title, Style, and Lyrics |
+    | | `Sources_HasLyricAndFromTheReadmeColumns` |
+    | A reader viewing the record | `AlbumArt_LinksToTheSong`: the cover links to the same song as Listen on Suno |
+    | | `AlbumArt_ImageExists` |
+    | The maintainer, pasting into Suno | `Title_FitsSunoLimit` (80 characters or fewer) |
+    | | `Style_FitsSunoLimit` (1,000 characters or fewer) |
+    | A reader tracing lyrics to the README | `Lyrics_EveryLineHasASource` |
+    | | `Sources_EveryLyricIsInTheSong` |
+    | A contributor changing the README | `Sources_EveryQuotedPhraseIsStillInTheReadme`: a failure lists every missing phrase and points to the Updating section |
+
+  - **The README** (`ReadmeTests.cs`), for a reader on GitHub or NuGet: `ThemeSong_HasBadgeBesideTheBuildBadge`,
+    `ThemeSong_HasSectionAtTheEnd`, `ThemeSong_LinksToTheRecord`, `ThemeSong_LinksToTheSameSongAsTheRecord`, and
+    `DocumentLinks_AreAbsolute`. The last scans every link and image, since a relative link can only point at a
+    repository document.
+  - The lyrics' 2,800 to 3,400 characters is a target for a good length, not a rule, so it isn't tested. Each
+    failure compares the whole value, such as every offending line or link at once.
 - **Rationale**: These are the spec's mechanical rules (FR-014, FR-015). The first group automates the first step
   of the song check, so a contributor who breaks a quoted phrase is told by the build, where they make the change.
 - **Placement**: `Integration/`, not `Unit/`, because the tests read real files copied into the build output.
@@ -129,9 +144,9 @@ Decisions for the "how" that the spec left open. Each records what was chosen, w
     `DnDGen.Stress.Tests.Integration.Docs.ThemeSong`
   - `README.md` → `DnDGen.Stress.Tests/Integration/ReadmeTests.cs`, in namespace `DnDGen.Stress.Tests.Integration`
 - **Shared code**: none. Each file reads what it needs; the README tests only need the record's Suno link from it.
-- **Reading the files**: the test project copies `..\README.md` and `..\docs\theme-song\README.md` into its build
-  output, as the package project already does for `README.md`. That keeps the tests independent of the working
-  directory.
+- **Reading the files**: the test project copies `..\README.md`, and every Markdown and PNG file under `..\docs\`,
+  into its build output. That keeps the tests independent of the working directory, and the wildcard builds cleanly
+  before the record exists, so the tests fail at run time for the expected reason.
 - **Parsing**: minimal. Code blocks under the `## Title`, `## Style`, and `## Lyrics` headings, the rows of the
   `## Sources` table, and the links in `README.md`. Quoted README phrases are compared as raw Markdown, with only
   whitespace collapsed. Those headings become part of the record's contract
@@ -143,6 +158,6 @@ Decisions for the "how" that the spec left open. Each records what was chosen, w
   needs.
 - **Follow-up**: tests that `README.md` documents every public `Stressor` method and `StressorOptions` property,
   with defaults matching `new StressorOptions()`, belong to the constitution's README contract rather than the
-  song. They are recorded as a GitHub issue for their own feature (III.3). The spec names only the
-  theme-song page (FR-012), but the profile's table is where User Story 4's reader first meets the soundtrack, and
-  adding the row follows the existing pattern (I.1).
+  song. They are recorded as a GitHub issue for their own feature (III.3), along with a possible test of the
+  README's overall structure. Only the README's Theme Song section is tested here, because pinning the README's
+  whole structure would make every restructure fail a test.
