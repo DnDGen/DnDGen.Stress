@@ -197,8 +197,8 @@ the note on support libraries.
 - **FR-015**: Automated tests MUST also check:
   - **The record**: it has its sections in order, including the update procedure FR-014's failures point to; the
     title, style, and lyrics each have a block to paste into Suno; the source table has its columns; the album art
-    exists and links to the song; the title and style are within Suno's limits; and every lyric line has a source
-    entry and every source entry's lyric is in the lyrics.
+    exists and links to the song; the title, style, and lyrics are within Suno's limits; and every lyric line has a
+    source entry and every source entry's lyric is in the lyrics.
   - **The README**: it has the theme song badge beside the build badge and the Theme Song section at the end; it
     links to the record, and to the same song as the record; and its document links are absolute.
 - **FR-016**: The automated tests MUST NOT judge the song's ideas, vibe, or chosen take, and MUST NOT need the

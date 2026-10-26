@@ -111,29 +111,27 @@ Decisions for the "how" that the spec left open. Each records what was chosen, w
 
 ## R9. Automated tests for the README and the record
 
-- **Decision**: 15 NUnit test cases in two test files, approved by the maintainer as a list before any were
-  written. Each is named for what its persona observes.
+- **Decision**: NUnit test cases in two test files, approved by the maintainer as a list before any were written,
+  then consolidated by the maintainer during implementation. Each is named for what its persona observes.
   - **The record** (`Docs/ThemeSong/ReadmeTests.cs`):
 
     | Persona | Test |
     |---------|------|
-    | Anyone maintaining the record | `Record_HasSectionsInOrder`: the whole ordered list of level-2 headings is `## Updating`, `## Title`, `## Style`, `## Lyrics`, `## Sources`, `## Suno Notes`, `## Album Art` |
-    | | `SunoField_HasOneCodeBlock`, one case each for Title, Style, and Lyrics |
-    | | `Sources_HasLyricAndFromTheReadmeColumns` |
+    | Anyone maintaining the record | `HasSectionsInOrder`: the whole ordered list of level-2 headings is `## Updating`, `## Title`, `## Style`, `## Lyrics`, `## Sources`, `## Suno Notes`, `## Album Art` |
+    | The maintainer, pasting into Suno | `SunoField_FitsSunoLimit`, one case each: Title (80 characters), Style (1,000), and Lyrics (5,000); each has exactly one code block, which isn't empty |
+    | A reader tracing lyrics to the README | `Sources_HasCorrectTable`: the columns are `Lyric` and `From the README`, and the rows' lyric lines are exactly the song's lyric lines, each once, in the order first sung |
     | A reader viewing the record | `AlbumArt_LinksToTheSong`: the cover links to the same song as Listen on Suno |
     | | `AlbumArt_ImageExists` |
-    | The maintainer, pasting into Suno | `Title_FitsSunoLimit` (80 characters or fewer) |
-    | | `Style_FitsSunoLimit` (1,000 characters or fewer) |
-    | A reader tracing lyrics to the README | `Lyrics_EveryLineHasASource` |
-    | | `Sources_EveryLyricIsInTheSong` |
     | A contributor changing the README | `Sources_EveryQuotedPhraseIsStillInTheReadme`: a failure lists every missing phrase and points to the Updating section |
 
   - **The README** (`ReadmeTests.cs`), for a reader on GitHub or NuGet: `ThemeSong_HasBadgeBesideTheBuildBadge`,
     `ThemeSong_HasSectionAtTheEnd`, `ThemeSong_LinksToTheRecord`, `ThemeSong_LinksToTheSameSongAsTheRecord`, and
     `DocumentLinks_AreAbsolute`. The last scans every link and image, since a relative link can only point at a
     repository document.
-  - The lyrics' 2,800 to 3,400 characters is a target for a good length, not a rule, so it isn't tested. Each
-    failure compares the whole value, such as every offending line or link at once.
+  - The lyrics' 2,800 to 3,400 characters is a target for a good length, not a rule, so only Suno's 5,000 limit
+    is tested. Each failure compares the whole value, such as every offending line or link at once.
+  - The unit tests in `Unit/StressorTests.cs` count every test in the assembly (`TestCount`, `TestCaseCount`), so
+    adding or removing a test means updating those counts, and the full suite is run, not just these tests.
 - **Rationale**: These are the spec's mechanical rules (FR-014, FR-015). The first group automates the first step
   of the song check, so a contributor who breaks a quoted phrase is told by the build, where they make the change.
 - **Placement**: `Integration/`, not `Unit/`, because the tests read real files copied into the build output.

@@ -6,10 +6,11 @@ using System.Text.RegularExpressions;
 
 namespace DnDGen.Stress.Tests.Integration.Docs.ThemeSong
 {
-    internal class ReadmeTests
+    internal partial class ReadmeTests
     {
         private const int SunoTitleLimit = 80;
         private const int SunoStyleLimit = 1000;
+        private const int SunoLyricsLimit = 5000;
 
         private string[] _record;
 
@@ -21,11 +22,11 @@ namespace DnDGen.Stress.Tests.Integration.Docs.ThemeSong
         }
 
         [Test]
-        public void Record_HasSectionsInOrder()
+        public void HasSectionsInOrder()
         {
             var headings = GetLinesOutsideCodeBlocks(_record).Where(line => line.StartsWith("## "));
-            Assert.That(headings, Is.EqualTo(new[]
-            {
+            Assert.That(headings, Is.EqualTo(
+            [
                 "## Updating",
                 "## Title",
                 "## Style",
@@ -33,37 +34,41 @@ namespace DnDGen.Stress.Tests.Integration.Docs.ThemeSong
                 "## Sources",
                 "## Suno Notes",
                 "## Album Art",
-            }));
+            ]));
         }
 
-        [TestCase("Title")]
-        [TestCase("Style")]
-        [TestCase("Lyrics")]
-        public void SunoField_HasOneCodeBlock(string field)
+        [TestCase("Title", SunoTitleLimit)]
+        [TestCase("Style", SunoStyleLimit)]
+        [TestCase("Lyrics", SunoLyricsLimit)]
+        public void SunoField_FitsSunoLimit(string field, int limit)
         {
-            var blocks = GetCodeBlocks(GetSection(field));
-            Assert.That(blocks, Has.Exactly(1).Items);
-        }
-
-        [Test]
-        public void Sources_HasLyricAndFromTheReadmeColumns()
-        {
-            string[] columns = GetTable(GetSection("Sources")).FirstOrDefault() ?? [];
-            Assert.That(columns, Is.EqualTo(new[] { "Lyric", "From the README" }));
+            var block = GetCodeBlock(field);
+            Assert.That(block, Has.Length.LessThanOrEqualTo(limit).And.Not.Empty);
         }
 
         [Test]
-        public void Title_FitsSunoLimit()
+        public void Sources_HasCorrectTable()
         {
-            var title = GetCodeBlock("Title");
-            Assert.That(title.Length, Is.LessThanOrEqualTo(SunoTitleLimit), title);
+            var sources = GetSection("Sources");
+            var table = GetTable(sources);
+            string[] columns = table.FirstOrDefault() ?? [];
+            Assert.That(columns, Is.EqualTo(["Lyric", "From the README"]));
+
+            string[] sourcedLyrics = [.. table.Skip(1).SelectMany(row => row[0].Split("<br>"))];
+            Assert.That(sourcedLyrics, Is.EqualTo(GetLyricLines()), "Each lyric line needs one Sources row, in the order it is first sung");
         }
 
-        [Test]
-        public void Style_FitsSunoLimit()
+        private string[] GetLyricLines()
         {
-            var style = GetCodeBlock("Style");
-            Assert.That(style.Length, Is.LessThanOrEqualTo(SunoStyleLimit), style);
+            var lines = GetCodeBlock("Lyrics")
+                .Split('\n')
+                .Select(line => line.Trim())
+                .Where(line => line.Length > 0)
+                .Where(line => !line.StartsWith('['))
+                .Where(line => !(line.StartsWith('(') && line.EndsWith(')')))
+                .Distinct();
+
+            return [.. lines];
         }
 
         private static IEnumerable<string> GetLinesOutsideCodeBlocks(IEnumerable<string> lines)
@@ -126,7 +131,8 @@ namespace DnDGen.Stress.Tests.Integration.Docs.ThemeSong
 
         private string GetCodeBlock(string field)
         {
-            var blocks = GetCodeBlocks(GetSection(field));
+            var section = GetSection(field);
+            var blocks = GetCodeBlocks(section);
             Assert.That(blocks, Has.Exactly(1).Items, $"## {field} needs exactly one code block");
 
             return blocks[0];
@@ -134,13 +140,22 @@ namespace DnDGen.Stress.Tests.Integration.Docs.ThemeSong
 
         private static List<string[]> GetTable(List<string> section)
         {
-            return section
+            var cells = section
                 .Where(line => line.StartsWith('|'))
                 .Select(GetCells)
-                .Where(cells => !cells.All(cell => Regex.IsMatch(cell, "^:?-+:?$")))
+                .Where(cells => !cells.All(cell => CellPartialRegex().IsMatch(cell)))
                 .ToList();
+
+            return [.. cells];
         }
 
-        private static string[] GetCells(string row) => row.Trim().Trim('|').Split('|').Select(cell => cell.Trim()).ToArray();
+        private static string[] GetCells(string row)
+        {
+            var cells = row.Trim().Trim('|').Split('|').Select(cell => cell.Trim());
+            return [.. cells];
+        }
+
+        [GeneratedRegex("^:?-+:?$")]
+        private static partial Regex CellPartialRegex();
     }
 }
