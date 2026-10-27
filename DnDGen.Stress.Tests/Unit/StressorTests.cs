@@ -11,7 +11,7 @@ namespace DnDGen.Stress.Tests.Unit
     public class StressorTests
     {
         //Unit + Integration
-        public const int TestCount = 82 + 8;
+        public const int TestCount = 82 + 10;
         public const int TestCaseCount = 149 + 3;
 
         private Stressor stressor;
@@ -191,11 +191,11 @@ namespace DnDGen.Stress.Tests.Unit
             Assert.That(stressor.TimeLimit, Is.EqualTo(TimeSpan.FromSeconds(timeLimitSeconds)).Within(1).Seconds);
         }
 
-        [TestCase(1, 5)]
-        [TestCase(.95, 4.9)]
-        [TestCase(.9, 4.5)]
-        [TestCase(.8, 4)]
-        [TestCase(.5, 2.5)]
+        [TestCase(1, 4.1)]
+        [TestCase(.95, 3.9)]
+        [TestCase(.9, 3.7)]
+        [TestCase(.8, 3.3)]
+        [TestCase(.5, 2)]
         public void ConstructWithCountFromRunningAssembly(double percentage, double timeLimitSeconds)
         {
             options.IsFullStress = true;
@@ -251,11 +251,11 @@ namespace DnDGen.Stress.Tests.Unit
             Assert.Fail("This test should be ignored");
         }
 
-        [TestCase(1, 5.1)]
-        [TestCase(.95, 4.9)]
-        [TestCase(.9, 4.6)]
-        [TestCase(.8, 4.1)]
-        [TestCase(.5, 2.5)]
+        [TestCase(1, 4.1)]
+        [TestCase(.95, 3.9)]
+        [TestCase(.9, 3.7)]
+        [TestCase(.8, 3.3)]
+        [TestCase(.5, 2)]
         public void DurationIsTotalDurationDividedByTestCount(double percentage, double timeLimitSeconds)
         {
             options.IsFullStress = true;

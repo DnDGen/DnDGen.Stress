@@ -66,6 +66,24 @@ namespace DnDGen.Stress.Tests.Integration.Docs.ThemeSong
             Assert.That(sourcedLyrics, Is.EqualTo(lyrics), "Each lyric line needs one Sources row, in the order it is first sung");
         }
 
+        [Test]
+        public void AlbumArt_LinksToTheSong()
+        {
+            var lines = GetLinesOutsideCodeBlocks(_record).ToArray();
+            string[] coverLinks = [.. lines.Select(line => CoverPartialRegex().Match(line)).Where(m => m.Success).Select(m => m.Groups[1].Value)];
+            string[] listenLinks = [.. lines.Select(line => ListenPartialRegex().Match(line)).Where(m => m.Success).Select(m => m.Groups[1].Value)];
+
+            Assert.That(listenLinks, Has.Exactly(1).Items.And.All.StartsWith("https://suno.com/s/"), "Listen on Suno needs one share link to the song");
+            Assert.That(coverLinks, Is.EqualTo(listenLinks), "The cover needs to link to the same song as Listen on Suno");
+        }
+
+        [Test]
+        public void AlbumArt_ImageExists()
+        {
+            var path = Path.Combine(TestContext.CurrentContext.TestDirectory, "docs", "theme-song", "cover.png");
+            Assert.That(path, Does.Exist);
+        }
+
         private string[] GetDistinctLyricLines()
         {
             var lines = GetCodeBlock("Lyrics")
@@ -165,5 +183,11 @@ namespace DnDGen.Stress.Tests.Integration.Docs.ThemeSong
 
         [GeneratedRegex("^:?-+:?$")]
         private static partial Regex CellPartialRegex();
+
+        [GeneratedRegex(@"\[!\[[^\]]*\]\(cover\.png\)\]\(([^)]+)\)")]
+        private static partial Regex CoverPartialRegex();
+
+        [GeneratedRegex(@"\*\*Listen on \[Suno\]\(([^)]+)\)\.\*\*")]
+        private static partial Regex ListenPartialRegex();
     }
 }
