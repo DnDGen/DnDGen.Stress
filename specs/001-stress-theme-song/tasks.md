@@ -123,7 +123,7 @@ procedure. Someone asked to make a README change finds the procedure (quickstart
 note on support libraries.
 
 - [X] T023 [US4] Prepare the DnDGen/.github changes: clone DnDGen/.github into the scratchpad, apply the edits in [contracts/org-pages.md](contracts/org-pages.md) to `theme-song/README.md` and `profile/README.md` with the real title and Suno link, and save the `git diff` as `specs/001-stress-theme-song/dndgen-github.patch`
-- [ ] T024 [US4] (maintainer) From the maintainer's personal account, apply `specs/001-stress-theme-song/dndgen-github.patch` to DnDGen/.github, open its pull request, and merge it only after the DnDGen.Stress pull request has merged (R8)
+- [ ] T024 [US4] (maintainer) From the maintainer's personal account, apply `specs/001-stress-theme-song/dndgen-github.patch` to DnDGen/.github (with `git apply --ignore-whitespace`, since a Windows checkout gives the patch CRLF line endings), open its pull request, and merge it only after the DnDGen.Stress pull request has merged (R8)
 
 **Checkpoint**: The organization's pages link to the Stress song and record.
 
@@ -135,8 +135,8 @@ note on support libraries.
 
 - [X] T025 [P] Set `<Version>` to 5.0.3 and replace `<PackageReleaseNotes>` with the 5.0.3 notes from [contracts/readme.md](contracts/readme.md) in `DnDGen.Stress/DnDGen.Stress.csproj`
 - [ ] T026 [P] Create a GitHub issue in DnDGen/DnDGen.Stress for tests that `README.md` documents the public API: every public `Stressor` constructor and method appears in the Methods table, and every `StressorOptions` property appears in the Options table with a default matching `new StressorOptions()`. Mention a possible test of the README's overall structure as a candidate case (R9). Link it to the constitution's README as contract rule and to [research.md](research.md) R9 as its origin (III.3). Confirm the title and body with the maintainer before creating it
-- [ ] T027 Run `dotnet test -c Stress` and `dotnet pack` for `DnDGen.Stress.sln`; confirm every test passes, including both new `ReadmeTests` classes, and the package contains `README.md` (quickstart step 6)
-- [ ] T028 Run quickstart steps 1, 2, 4, and 5 against `docs/theme-song/README.md` and `docs/theme-song/cover.png`: the lyrics length, the rows marked as not from the README, a published take, and the rendered art
+- [X] T027 Run `dotnet test -c Stress` and `dotnet pack` for `DnDGen.Stress.sln`; confirm every test passes, including both new `ReadmeTests` classes, and the package contains `README.md` (quickstart step 6)
+- [X] T028 Run quickstart steps 1, 2, 4, and 5 against `docs/theme-song/README.md` and `docs/theme-song/cover.png`: the lyrics length, the rows marked as not from the README, a published take, and the rendered art
 - [ ] T029 Run the fresh-eyes check (quickstart step 8): a new agent session, given only the repository, is asked to make a small change to `README.md`, and reports whether it found the update procedure and what it would do
 - [ ] T030 Push the branch and open the pull request titled `5.0.3: Theme song`, with `cidthecoatrack` as reviewer and a description written from the diff against `main` that states what was verified and what wasn't, and gives the reasoning for constitution amendment 1.1.0, as the constitution's Governance section requires; then check `README.md` renders on GitHub with the badge and both links (quickstart step 7). Confirm with the maintainer before pushing
 - [ ] T031 (maintainer) After the release: check the badge and links on the nuget.org page for 5.0.3, and the DnDGen/.github pages once that pull request merges (quickstart steps 9 and 10)
