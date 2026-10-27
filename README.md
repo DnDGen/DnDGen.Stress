@@ -1,7 +1,7 @@
 # DnDGen.Stress
 A framework for running stress tests against random generators
 
-[![Build Status](https://dev.azure.com/dndgen/DnDGen/_apis/build/status%2FDnDGen.Stress%20-%20Build?branchName=main)](https://dev.azure.com/dndgen/DnDGen/_build/latest?definitionId=11&branchName=main)
+[![Build Status](https://dev.azure.com/dndgen/DnDGen/_apis/build/status%2FDnDGen.Stress%20-%20Build?branchName=main)](https://dev.azure.com/dndgen/DnDGen/_build/latest?definitionId=11&branchName=main) [![Theme Song](https://img.shields.io/badge/theme_song-Suno-ff69b4)](https://suno.com/s/TLKVK477Efrel4u8)
 
 Random generators are hard to test: a bug might only show up once in a few thousand runs. `Stressor` runs a test over and over,
 until either a time limit expires or enough iterations have completed to be confident in the result.
@@ -107,3 +107,9 @@ dotnet test -c Stress
 ```
 
 This repository's own build pipeline does exactly that.
+
+## Theme Song
+
+DnDGen.Stress has its own theme song: [Over and Over -DnDGen.Stress Theme-](https://suno.com/s/TLKVK477Efrel4u8).
+It follows this README, so a change here may need the song updated too.
+See the song's [lyrics, notes, and update procedure](https://github.com/DnDGen/DnDGen.Stress/blob/main/docs/theme-song/README.md).

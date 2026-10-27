@@ -149,7 +149,9 @@ routine cleanup safe in this repository, and improving only where you are keeps 
 - **README as contract**: The README is packed into the NuGet package and is the only
   documentation consumers see. It documents every `Stressor` constructor and method and every
   `StressorOptions` setting with its default, states which .NET and NUnit versions each major
-  version requires, and is updated in the same pull request as any change to them.
+  version requires, and is updated in the same pull request as any change to them. Documents
+  derived from the README, such as the theme song in `docs/theme-song`, say how they are kept in
+  step with it, and are updated in the same pull request as the README change that affects them.
 
 ## Development Workflow
 
@@ -178,5 +180,4 @@ This constitution supersedes other practices for this repository.
 - **Compliance**: Every plan and pull request is checked against these principles, citing them by
   label. A deviation MUST be justified in the pull request, or the change is not merged.
 
-**Version**: 1.0.0 | **Ratified**: 2026.10.23: the date this constitution is first
-merged to `main` | **Last Amended**: 2026-10-23
+**Version**: 1.1.0 | **Ratified**: 2026-10-23 | **Last Amended**: 2026-10-27

@@ -11,8 +11,8 @@ namespace DnDGen.Stress.Tests.Unit
     public class StressorTests
     {
         //Unit + Integration
-        public const int TestCount = 82 + 6;
-        public const int TestCaseCount = 149 + 0;
+        public const int TestCount = 82 + 16;
+        public const int TestCaseCount = 149 + 3;
 
         private Stressor stressor;
         private StressorOptions options;
@@ -76,7 +76,7 @@ namespace DnDGen.Stress.Tests.Unit
         public void ThrowExceptionIfOptionsAreNotValid()
         {
             options.RunningAssembly = null;
-            Assert.That((Func<Stressor>)(() => new Stressor(options)), Throws.ArgumentException.With.Message.EqualTo("Stressor Options are not valid"));
+            Assert.That(() => new Stressor(options), Throws.ArgumentException.With.Message.EqualTo("Stressor Options are not valid"));
         }
 
         [TestCase(true)]
@@ -191,20 +191,21 @@ namespace DnDGen.Stress.Tests.Unit
             Assert.That(stressor.TimeLimit, Is.EqualTo(TimeSpan.FromSeconds(timeLimitSeconds)).Within(1).Seconds);
         }
 
-        [TestCase(1, 5)]
-        [TestCase(.95, 4.9)]
-        [TestCase(.9, 4.5)]
-        [TestCase(.8, 4)]
-        [TestCase(.5, 2.5)]
-        public void ConstructWithCountFromRunningAssembly(double percentage, double timeLimitSeconds)
+        [TestCase(1)]
+        [TestCase(.95)]
+        [TestCase(.9)]
+        [TestCase(.8)]
+        [TestCase(.5)]
+        public void ConstructWithCountFromRunningAssembly(double percentage)
         {
             options.IsFullStress = true;
             options.TimeLimitPercentage = percentage;
 
             stressor = new Stressor(options, mockLogger.Object);
 
+            var timeLimitSeconds = options.BuildTimeLimitInSeconds * percentage / (TestCount + TestCaseCount);
             Assert.That(stressor.Options.IsFullStress, Is.True);
-            Assert.That(stressor.TimeLimit, Is.EqualTo(TimeSpan.FromSeconds(timeLimitSeconds)).Within(1).Seconds);
+            Assert.That(stressor.TimeLimit, Is.EqualTo(TimeSpan.FromSeconds(timeLimitSeconds)));
         }
 
         [Test]
@@ -251,20 +252,21 @@ namespace DnDGen.Stress.Tests.Unit
             Assert.Fail("This test should be ignored");
         }
 
-        [TestCase(1, 5.1)]
-        [TestCase(.95, 4.9)]
-        [TestCase(.9, 4.6)]
-        [TestCase(.8, 4.1)]
-        [TestCase(.5, 2.5)]
-        public void DurationIsTotalDurationDividedByTestCount(double percentage, double timeLimitSeconds)
+        [TestCase(1)]
+        [TestCase(.95)]
+        [TestCase(.9)]
+        [TestCase(.8)]
+        [TestCase(.5)]
+        public void DurationIsTotalDurationDividedByTestCount(double percentage)
         {
             options.IsFullStress = true;
             options.TimeLimitPercentage = percentage;
 
             stressor = new Stressor(options, mockLogger.Object);
 
+            var timeLimitSeconds = options.BuildTimeLimitInSeconds * percentage / (TestCount + TestCaseCount);
             Assert.That(stressor.Options.IsFullStress, Is.True);
-            Assert.That(stressor.TimeLimit, Is.EqualTo(TimeSpan.FromSeconds(timeLimitSeconds)).Within(1).Seconds);
+            Assert.That(stressor.TimeLimit, Is.EqualTo(TimeSpan.FromSeconds(timeLimitSeconds)));
         }
 
         [TestCase(1)]
