@@ -123,7 +123,7 @@ option's case fails, showing `0.5` and `1` (quickstart check 3).
   matches when it equals the default "written as the README writes values: `false`, `null`, `0`,
   `1`, `3600`" (data-model.md, Stated default; research R5). Add 2 to `TestCount` and 8 to
   `TestCaseCount` in `DnDGen.Stress.Tests/Unit/StressorTests.cs`
-- [ ] T009 [US2] Run the full `dotnet test`. Today's Options table is already right, so these
+- [X] T009 [US2] Run the full `dotnet test`. Today's Options table is already right, so these
   tests pass at once; see each fail for the expected reason with the temporary edits in
   quickstart check 3 (a wrong default, a deleted `[TestCase]`), then revert them
 
@@ -133,7 +133,7 @@ option's case fails, showing `0.5` and `1` (quickstart check 3).
 
 ## Phase 5: Polish & Release
 
-- [ ] T010 In `DnDGen.Stress/DnDGen.Stress.csproj`, set `<Version>` to `5.0.4` and replace
+- [X] T010 In `DnDGen.Stress/DnDGen.Stress.csproj`, set `<Version>` to `5.0.4` and replace
   `<PackageReleaseNotes>` as in [contracts/readme.md](contracts/readme.md)
 - [ ] T011 Run the remaining quickstart checks: 3 (failures name the fix), 4 (structure is free),
   and 5 (100% line and branch coverage of `DnDGen.Stress.dll`, with `-c Stress --collect "Code
