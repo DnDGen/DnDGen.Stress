@@ -95,10 +95,10 @@ exist.
 
 ### Implementation for User Story 1
 
-- [ ] T005 [US1] In `README.md`, add the Constructors table, the `CountStressTestsIn` row, and both
+- [X] T005 [US1] In `README.md`, add the Constructors table, the `CountStressTestsIn` row, and both
   Properties tables, worded and placed as in [contracts/readme.md](contracts/readme.md), leaving
   every existing sentence as it is
-- [ ] T006 [US1] Run the full `dotnet test` and see every test pass, including the theme song tests
+- [X] T006 [US1] Run the full `dotnet test` and see every test pass, including the theme song tests
   (research R7)
 
 **Checkpoint**: US1 is done: the README documents every member, and the tests hold it there.

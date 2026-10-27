@@ -64,6 +64,14 @@ public class MyGeneratorStressTests
 }
 ```
 
+### Constructors
+
+| Constructor | What it does |
+| --- | --- |
+| `Stressor(options)` | Creates a stressor that logs to the console. Throws an `ArgumentException` if `options` aren't valid or count no tests. |
+| `Stressor(options, logger)` | Same as above, but logs through your own `ILogger`. |
+| `StressorOptions()` | Creates options with the defaults in the Options table below. |
+
 ### Methods
 
 | Method | What it does |
@@ -74,9 +82,20 @@ public class MyGeneratorStressTests
 | `StressAsync(setup, test, teardown)` | Async version with per-iteration setup and teardown. |
 | `Generate(generate, isValid)` | Calls `generate` until `isValid` returns `true`, then returns the result. It has no time limit of its own, so use it inside `Stress` or `GenerateOrFail`. |
 | `GenerateOrFail(generate, isValid)` | Calls `generate` until `isValid` returns `true`, and fails the test if the time limit is reached first. Useful for verifying that a rare result *can* be generated. |
+| `CountStressTestsIn(runningAssembly)` | Static. Counts the active (non-ignored) `[Test]` and `[TestCase]` methods in `runningAssembly`, the way `RunningAssembly` is counted. |
 
 After each run, `Stressor` logs a summary (duration, iterations, iterations per second, and likely status) through `ILogger`.
 By default it logs to the console; pass your own `ILogger` to the `Stressor(options, logger)` constructor to change that.
+
+### Properties
+
+| Property | What it is |
+| --- | --- |
+| `Options` | The options the stressor was created with. |
+| `StressTestCount` | The number of stress tests the build time limit is divided among. |
+| `TimeLimit` | The time limit for each stress test. |
+| `TestDuration` | How long the current or most recent stress test has run. |
+| `TestIterations` | How many iterations the current or most recent stress test has completed. |
 
 ## Options
 
@@ -96,6 +115,15 @@ In full stress mode, each test's time limit is:
 ```
 min(BuildTimeLimitInSeconds * TimeLimitPercentage / testCount, OutputTimeLimitInSeconds * TimeLimitPercentage)
 ```
+
+`StressorOptions` also has:
+
+| Property | What it is |
+| --- | --- |
+| `AreValid` | `true` when exactly one of `RunningAssembly` or a positive `TestCount` is set, `TestCount` isn't negative, and `TimeLimitPercentage` is greater than 0 and at most 1. The `Stressor` constructors throw if it is `false`. |
+| `DefaultBuildTimeLimitInSeconds` | 3600, the default `BuildTimeLimitInSeconds`. |
+| `DefaultOutputTimeLimitInSeconds` | 600, the default `OutputTimeLimitInSeconds`. |
+| `DefaultConfidenceIterations` | 1,000,000, the default `ConfidenceIterations`. |
 
 ## Running a full stress build
 
