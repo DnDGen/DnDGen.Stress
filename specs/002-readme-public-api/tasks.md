@@ -114,9 +114,9 @@ option's case fails, showing `0.5` and `1` (quickstart check 3).
 
 ### Tests for User Story 2 ⚠️
 
-- [ ] T007 [US2] Add `Options_AreAllDocumented` to `DnDGen.Stress.Tests/Integration/ReadmeTests.cs`,
+- [X] T007 [US2] Add `Options_AreAllDocumented` to `DnDGen.Stress.Tests/Integration/ReadmeTests.cs`,
   as in T003
-- [ ] T008 [US2] Add `OptionDefault_IsDocumented` with a `[TestCase]` per option by `nameof`, and
+- [X] T008 [US2] Add `OptionDefault_IsDocumented` with a `[TestCase]` per option by `nameof`, and
   `OptionDefault_IsCheckedForEveryOption`, to `DnDGen.Stress.Tests/Integration/ReadmeTests.cs`.
   The stated default is "the cell, without backticks, a trailing parenthetical, or thousands
   separators", evaluated if it is "a known named value (`Environment.ProcessorCount`)", and

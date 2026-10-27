@@ -1,6 +1,7 @@
 using NUnit.Framework;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -98,6 +99,62 @@ namespace DnDGen.Stress.Tests.Integration
             Assert.That(GetDocumented("Property"), Is.EquivalentTo(fields.Concat(readOnlyProperties)));
         }
 
+        [Test]
+        public void Options_AreAllDocumented()
+        {
+            Assert.That(GetDocumented("Option"), Is.EquivalentTo(GetOptions()));
+        }
+
+        [TestCase(nameof(StressorOptions.IsFullStress))]
+        [TestCase(nameof(StressorOptions.RunningAssembly))]
+        [TestCase(nameof(StressorOptions.TestCount))]
+        [TestCase(nameof(StressorOptions.BuildTimeLimitInSeconds))]
+        [TestCase(nameof(StressorOptions.OutputTimeLimitInSeconds))]
+        [TestCase(nameof(StressorOptions.TimeLimitPercentage))]
+        [TestCase(nameof(StressorOptions.ConfidenceIterations))]
+        [TestCase(nameof(StressorOptions.MaxAsyncBatch))]
+        public void OptionDefault_IsDocumented(string option)
+        {
+            var row = GetTableRows("Option").FirstOrDefault(cells => cells[0] == $"`{option}`");
+            Assert.That(row, Is.Not.Null, $"The Options table has no row for {option}");
+
+            var defaultValue = typeof(StressorOptions).GetProperty(option).GetValue(new StressorOptions());
+            Assert.That(ReadStatedDefault(row[1]), Is.EqualTo(WriteValue(defaultValue)), $"The README states the wrong default for {option}");
+        }
+
+        [Test]
+        public void OptionDefault_IsCheckedForEveryOption()
+        {
+            var testCases = GetType()
+                .GetMethod(nameof(OptionDefault_IsDocumented))
+                .GetCustomAttributes<TestCaseAttribute>()
+                .Select(testCase => testCase.Arguments[0]);
+
+            Assert.That(testCases, Is.EquivalentTo(GetOptions()));
+        }
+
+        private static IEnumerable<string> GetOptions() => typeof(StressorOptions)
+            .GetProperties(DeclaredPublicMembers)
+            .Where(property => property.SetMethod?.IsPublic == true)
+            .Select(property => property.Name);
+
+        private static string ReadStatedDefault(string cell)
+        {
+            var stated = TrailingParentheticalPartialRegex().Replace(cell.Replace("`", string.Empty), string.Empty).Replace(",", string.Empty);
+
+            if (stated == "Environment.ProcessorCount")
+                return WriteValue(Environment.ProcessorCount);
+
+            return stated;
+        }
+
+        private static string WriteValue(object value) => value switch
+        {
+            null => "null",
+            bool boolean => boolean ? "true" : "false",
+            _ => Convert.ToString(value, CultureInfo.InvariantCulture),
+        };
+
         private string[] GetDocumented(string kind) => [.. GetTableRows(kind).Select(row => row[0].Trim('`'))];
 
         private IEnumerable<string[]> GetTableRows(string kind)
@@ -158,5 +215,8 @@ namespace DnDGen.Stress.Tests.Integration
 
         [GeneratedRegex(@"(?:href|src)=""([^""]+)""")]
         private static partial Regex HtmlLinkPartialRegex();
+
+        [GeneratedRegex(@"\s*\(.*\)$")]
+        private static partial Regex TrailingParentheticalPartialRegex();
     }
 }
