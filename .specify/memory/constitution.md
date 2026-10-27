@@ -44,8 +44,9 @@ No additions.
   NUnit major version. On `main`, `cicd/build.yml` builds and runs every test in the `Stress`
   configuration with code coverage, then tags the commit with `<Version>`; `cicd/release.yml`
   publishes to NuGet.org and creates a GitHub release.
-- **README as contract**: The README documents every `Stressor` constructor and method and every
-  `StressorOptions` setting with its default, and states which .NET and NUnit versions each major
+- **README as contract**: The README documents every public member of `Stressor` and
+  `StressorOptions`, including every constructor, method, and constant, and every
+  `StressorOptions` setting with its default. It states which .NET and NUnit versions each major
   version requires. The theme song is in `docs/theme-song`.
 
 ## Governance
@@ -53,4 +54,4 @@ No additions.
 This repository follows the DnDGen constitution's Governance. The additions in this file are
 amended by pull request to this repository and versioned the same way.
 
-**Version**: 2.0.0 | **Ratified**: 2026-10-23 | **Last Amended**: 2026-10-28
+**Version**: 2.0.1 | **Ratified**: 2026-10-23 | **Last Amended**: 2026-10-28
