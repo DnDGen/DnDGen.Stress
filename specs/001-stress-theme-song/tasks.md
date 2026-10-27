@@ -122,7 +122,7 @@ procedure. Someone asked to make a README change finds the procedure (quickstart
 **Independent Test**: On the organization theme-song page, find Stress's confirmed genre and song link, and the
 note on support libraries.
 
-- [ ] T023 [US4] Prepare the DnDGen/.github changes: clone DnDGen/.github into the scratchpad, apply the edits in [contracts/org-pages.md](contracts/org-pages.md) to `theme-song/README.md` and `profile/README.md` with the real title and Suno link, and save the `git diff` as `specs/001-stress-theme-song/dndgen-github.patch`
+- [X] T023 [US4] Prepare the DnDGen/.github changes: clone DnDGen/.github into the scratchpad, apply the edits in [contracts/org-pages.md](contracts/org-pages.md) to `theme-song/README.md` and `profile/README.md` with the real title and Suno link, and save the `git diff` as `specs/001-stress-theme-song/dndgen-github.patch`
 - [ ] T024 [US4] (maintainer) From the maintainer's personal account, apply `specs/001-stress-theme-song/dndgen-github.patch` to DnDGen/.github, open its pull request, and merge it only after the DnDGen.Stress pull request has merged (R8)
 
 **Checkpoint**: The organization's pages link to the Stress song and record.
