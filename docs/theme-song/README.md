@@ -1,14 +1,34 @@
 # Over and Over -DnDGen.Stress Theme-
 
-[![Album art](cover.png)](https://suno.com/)
+[![Over and Over album art](cover.png)](https://suno.com/s/TLKVK477Efrel4u8)
 
-The DnDGen.Stress theme song: forge folk metal. Its lyrics come from the
-[DnDGen.Stress README](https://github.com/DnDGen/DnDGen.Stress/blob/main/README.md).
+The DnDGen.Stress theme song: forge folk metal, where steel is proven by striking it over and over.
+Its lyrics come from the [DnDGen.Stress README](https://github.com/DnDGen/DnDGen.Stress/blob/main/README.md), sung in plain English,
+and it Samples the "Rogante Marendor" motif from the [DnDGen main theme](https://github.com/DnDGen/.github/blob/main/theme-song/README.md).
 
-**Listen on [Suno](https://suno.com/).**
+**Listen on [Suno](https://suno.com/s/TLKVK477Efrel4u8).**
 
 ## Updating
 
+This song follows the [DnDGen.Stress README](https://github.com/DnDGen/DnDGen.Stress/blob/main/README.md).
+Every pull request that changes the README gets a song check:
+
+1. If the change rewords or removes a phrase in the Sources table below, the song needs updating.
+   The tests catch this one: they fail and list every quoted phrase that is no longer in the README.
+2. Otherwise, if the change alters the README's high-level ideas or vibe, the song needs updating.
+3. Otherwise, it doesn't. Changes to the README's Theme Song badge or section never need a song update.
+
+When the song needs updating, it happens in the same pull request:
+
+1. The contributor updates the Lyrics and Sources here to match the new README.
+   Names are sung as words, never as code.
+2. The maintainer makes the new song in Suno:
+   - **Cover the current song**, so the theme stays recognizably the same song as it evolves.
+   - Use the Title, Style, and Lyrics from this page. **Leave the Style as it is**: only the lyrics change.
+   - **Turn Variety all the way down**, so Suno keeps to the Style instead of straying from it.
+   - Pick the take. The new take replaces the old one.
+   - **Publish it**, so anyone with the link can find and hear it.
+3. The maintainer updates the Suno link here and in the README, and adds anything learned to the Suno Notes.
 ## Title
 
 ```
@@ -177,4 +197,33 @@ Or to a logger of your own
 
 ## Suno Notes
 
+Lessons from generating this song, for the next update:
+
+- **Drafts and the Sample.** Every draft before this song first merged (v0.1 to v0.4) was a fresh generation from
+  the same inputs, Sampling the main theme's "Rogante Marendor" snippet (3:00.0 to 3:17.1), with Variety all the way
+  down. The sample came through every time: "Over and over" is sung on the Rogante Marendor melody, and it brings the
+  main theme's orchestral colour into the intro. This take is v0.4, chosen because it leans on the sample in the outro.
+- **No code in the lyrics.** v0.1 and v0.2 sang code literals. Rewriting them as plain English for v0.3 sounded much
+  better, and from then on Suno didn't drop a single call-and-response.
+- **No anvils.** The Style asks for anvil strikes, but no draft played one. Instead, the final chorus of v0.3 and
+  v0.4 drops to pounding drums on every other beat, which gives the slow anvil feel anyway.
+- **Folk metal and the orchestral sample blend.** Folk metal already wants fiddle and strings, so the orchestral
+  sample sits naturally in the song.
+- **Suno hears power metal.** Suno summarized the style as power metal every time. It fits the song, but it shows
+  how strongly Suno pulls towards metal.
+
 ## Album Art
+
+[cover.png](cover.png) is rendered from [cover.html](cover.html), which you can open in any browser.
+To render it again at 1500 × 1500, from this folder:
+
+```
+msedge --headless --hide-scrollbars --allow-file-access-from-files --window-size=1500,1500 --screenshot=cover.png cover.html
+```
+
+If Edge reads `cover.html` as a web address, pass it as a full `file:///` URL instead.
+
+- It is the main theme's [cover](https://github.com/DnDGen/.github/blob/main/theme-song/cover.html), recoloured for the forge.
+  The d20 strikes an anvil, glowing like hot metal, and the ghost copies above it are its repeated strikes: the same test, over and over.
+- The d20 is the dndgen.com loading spinner, from [DnDGen.Web](https://github.com/DnDGen/DnDGen.Web/blob/main/dndgen-web/src/assets/loadingDice.svg), originally from [a gist by hperantunes](https://gist.github.com/hperantunes/f4c2fd407c2ea74c6c9d).
+- The title is set in [Cinzel](https://github.com/NDISCOVER/Cinzel), included as [Cinzel.ttf](Cinzel.ttf) under the [SIL Open Font License](Cinzel-OFL.txt).
