@@ -109,7 +109,7 @@ procedure. Someone asked to make a README change finds the procedure (quickstart
 
 - [X] T020 [US3] Add `Sources_EveryQuotedPhraseIsStillInTheReadme` to `DnDGen.Stress.Tests/Integration/Docs/ThemeSong/ReadmeTests.cs` (it tests the record's Sources, so it belongs with the record): every phrase in double quotes in the `From the README` column (rows not starting `Not from the README:`) appears in the raw Markdown of `README.md`, comparing with runs of whitespace collapsed to one space, since the README wraps lines, and with nothing else stripped or rendered. A failure lists every missing phrase and says to follow the Updating section of `docs/theme-song/README.md`, whose existence `Record_HasSectionsInOrder` already checks. The Sources table already exists (T016), so see the test fail for the expected reason by temporarily rewording a quoted phrase in `README.md`, then revert
 - [X] T021 [US3] Write the Updating section of `docs/theme-song/README.md` with the text from [contracts/song-record.md](contracts/song-record.md), including the maintainer's Suno steps: Cover the current song, leave the Style as it is, turn Variety all the way down, pick the take, and publish it
-- [ ] T022 [P] [US3] Amend `.specify/memory/constitution.md` with the `/speckit-constitution` skill: add the derived-documents sentence from [contracts/readme.md](contracts/readme.md) to the README as contract bullet, bump the version from 1.0.0 to 1.1.0 (MINOR), and set Last Amended to today. Commit it on its own (III.2)
+- [X] T022 [P] [US3] Amend `.specify/memory/constitution.md` with the `/speckit-constitution` skill: add the derived-documents sentence from [contracts/readme.md](contracts/readme.md) to the README as contract bullet, bump the version from 1.0.0 to 1.1.0 (MINOR), and set Last Amended to today. Commit it on its own (III.2)
 
 **Checkpoint**: The build, the README section, the record, and the constitution all point to the song check.
 
@@ -133,7 +133,7 @@ note on support libraries.
 
 **Purpose**: Version, record the follow-up, validate, and open the pull request.
 
-- [ ] T025 [P] Set `<Version>` to 5.0.3 and replace `<PackageReleaseNotes>` with the 5.0.3 notes from [contracts/readme.md](contracts/readme.md) in `DnDGen.Stress/DnDGen.Stress.csproj`
+- [X] T025 [P] Set `<Version>` to 5.0.3 and replace `<PackageReleaseNotes>` with the 5.0.3 notes from [contracts/readme.md](contracts/readme.md) in `DnDGen.Stress/DnDGen.Stress.csproj`
 - [ ] T026 [P] Create a GitHub issue in DnDGen/DnDGen.Stress for tests that `README.md` documents the public API: every public `Stressor` constructor and method appears in the Methods table, and every `StressorOptions` property appears in the Options table with a default matching `new StressorOptions()`. Mention a possible test of the README's overall structure as a candidate case (R9). Link it to the constitution's README as contract rule and to [research.md](research.md) R9 as its origin (III.3). Confirm the title and body with the maintainer before creating it
 - [ ] T027 Run `dotnet test -c Stress` and `dotnet pack` for `DnDGen.Stress.sln`; confirm every test passes, including both new `ReadmeTests` classes, and the package contains `README.md` (quickstart step 6)
 - [ ] T028 Run quickstart steps 1, 2, 4, and 5 against `docs/theme-song/README.md` and `docs/theme-song/cover.png`: the lyrics length, the rows marked as not from the README, a published take, and the rendered art
