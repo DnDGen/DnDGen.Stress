@@ -11,7 +11,7 @@ namespace DnDGen.Stress.Tests.Unit
     public class StressorTests
     {
         //Unit + Integration
-        public const int TestCount = 82 + 10;
+        public const int TestCount = 82 + 16;
         public const int TestCaseCount = 149 + 3;
 
         private Stressor stressor;
@@ -76,7 +76,7 @@ namespace DnDGen.Stress.Tests.Unit
         public void ThrowExceptionIfOptionsAreNotValid()
         {
             options.RunningAssembly = null;
-            Assert.That((Func<Stressor>)(() => new Stressor(options)), Throws.ArgumentException.With.Message.EqualTo("Stressor Options are not valid"));
+            Assert.That(() => new Stressor(options), Throws.ArgumentException.With.Message.EqualTo("Stressor Options are not valid"));
         }
 
         [TestCase(true)]

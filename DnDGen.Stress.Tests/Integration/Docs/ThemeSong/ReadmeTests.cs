@@ -67,6 +67,22 @@ namespace DnDGen.Stress.Tests.Integration.Docs.ThemeSong
         }
 
         [Test]
+        public void Sources_EveryQuotedPhraseIsStillInTheReadme()
+        {
+            var readmePath = Path.Combine(TestContext.CurrentContext.TestDirectory, "README.md");
+            var readme = WhitespacePartialRegex().Replace(File.ReadAllText(readmePath), " ");
+
+            var quotedPhrases = GetTable(GetSection("Sources"))
+                .Skip(1)
+                .Select(row => row[1])
+                .Where(source => !source.StartsWith("Not from the README:"))
+                .SelectMany(source => QuotePartialRegex().Matches(source).Select(match => match.Groups[1].Value));
+            string[] missingPhrases = [.. quotedPhrases.Where(phrase => !readme.Contains(phrase)).Distinct()];
+
+            Assert.That(missingPhrases, Is.Empty, "The README changed under the song. Follow the Updating section of docs/theme-song/README.md");
+        }
+
+        [Test]
         public void AlbumArt_LinksToTheSong()
         {
             var lines = GetLinesOutsideCodeBlocks(_record).ToArray();
@@ -189,5 +205,11 @@ namespace DnDGen.Stress.Tests.Integration.Docs.ThemeSong
 
         [GeneratedRegex(@"\*\*Listen on \[Suno\]\(([^)]+)\)\.\*\*")]
         private static partial Regex ListenPartialRegex();
+
+        [GeneratedRegex("\"([^\"]+)\"")]
+        private static partial Regex QuotePartialRegex();
+
+        [GeneratedRegex(@"\s+")]
+        private static partial Regex WhitespacePartialRegex();
     }
 }
