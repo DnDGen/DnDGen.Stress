@@ -45,9 +45,13 @@ Decisions for the "how" that the spec left open. Each records what was chosen, w
   - The genre is fixed: forge folk metal, in the vibe of "Diggy Diggy Hole". No random draw. "Diggy Diggy Hole" is
     the first example track; the other two are chosen when drafting, and the maintainer may name them.
   - The source is the README as it is, not a pull request diff.
-  - The lyrics capture the README's high-level ideas and vibe. pr-song packs in specifics for comedy; here a few
-    real names (`Stressor`, `dotnet test -c Stress`) can carry the "sung completely straight" joke, but coverage of
-    every option is not the goal.
+  - The lyrics capture the README's high-level ideas and vibe, and coverage of every option is not the goal.
+  - **No code literals.** pr-song's "leave code raw" is overridden: names are sung as words ("the Stressor",
+    "full stress"), and code is sung in plain English ("Assert the name is never empty", not
+    `Assert.That(thing.Name, Is.Not.Empty)`). The first drafts did sing code; the maintainer dropped it after hearing
+    v0.1 and v0.2, because Suno botching code is a joke you only enjoy once, while a theme song is replayed, and
+    because code is the part of a README most likely to change, so it would trigger the most remixes. The source
+    table can still quote code, since it quotes the README.
   - Not "let the AI be AI": drafts are reviewed and revised with the maintainer before generating, because theme
     songs last.
   - The title is the song's own name, in the main theme's form: `<Name> -DnDGen.Stress Theme-`.
@@ -67,8 +71,10 @@ Decisions for the "how" that the spec left open. Each records what was chosen, w
 - **Alternatives considered**: Field mapping only, as first drafted. The maintainer's Suno steps were added on
   review, because without Cover and low Variety a remix can come back as a different-sounding song.
 - **Initial generation**: The same settings apply except Cover, since there is no current song to cover yet.
-  Instead, the first version Samples the main theme's "Rogante Marendor" snippet, 3:00.0 to 3:17.1 of the org theme
-  song, so every repository's song starts from the same motif. Later versions Cover the current song, which carries
+  Instead, every draft before the song first merges (v0.1, v0.2, and so on) is a fresh generation from the same
+  inputs that Samples the main theme's "Rogante Marendor" snippet, 3:00.0 to 3:17.1 of the org theme
+  song, so every repository's song starts from the same motif. The take that merges to `main` is v1. Later versions
+  Cover the current song, which carries
   the sample forward. This applies to every repository's first song, so it is recorded on the organization's
   theme-song page ([contracts/org-pages.md](contracts/org-pages.md)).
 

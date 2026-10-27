@@ -58,13 +58,14 @@ With the original stack trace preserved
 Over and over, again and again!
 
 [Verse 2]
-dotnet add package DnDGen.Stress
+Add DnDGen.Stress to your tests
 Version five needs .NET ten and NUnit five
+Use version four if you're still on .NET eight
 Create a Stressor once per test fixture
 Then call it from your tests
-stressor.Stress, and the hammer falls
-Assert.That(thing.Name, Is.Not.Empty)
-(Is not empty!)
+Call on the Stressor, and the hammer falls
+Assert the name is never empty
+(Never empty!)
 
 [Pre-Chorus]
 Setup before and teardown after
@@ -85,34 +86,34 @@ With the original stack trace preserved
 Over and over, again and again!
 
 [Verse 3 - faster, galloping]
-StressAsync, batch after batch
-MaxAsyncBatch tests at a time
+Async, batch after batch
+A batch of tests at a time
 As many as the processor count
 Running side by side
-Generate, until isValid returns true
-GenerateOrFail if the time limit comes first
+Generate until the result is valid
+Or fail if the time runs out first
 A rare result can be generated
 And we'll prove it, or we'll fail!
 
 [Breakdown - anvil and choir alone, slow and heavy]
-IsFullStress false
+Without full stress
 One second for every test
 (One second!)
-IsFullStress true
+With full stress
 One hour for the build
 Divided evenly among them
 Ten minutes at most for a single test
 So the build never sits in silence
-dotnet test, dash c, Stress!
-(Dash c, Stress!)
+Build it in the Stress configuration!
+(Full stress!)
 
 [Verse 4 - building back up]
 Count the active tests in the running assembly
-Or set the TestCount yourself
+Or set the count yourself
 Set exactly one of them, never both
-TimeLimitPercentage leaves the headroom
+Scale the time to leave some headroom
 Greater than zero, and at most one
-min(BuildTimeLimitInSeconds * TimeLimitPercentage / testCount, OutputTimeLimitInSeconds * TimeLimitPercentage)
+Whichever limit is smaller
 (That is the time limit!)
 
 [Final Chorus - key change up, full band and choir at full power]
@@ -132,6 +133,8 @@ Duration!
 Iterations!
 Iterations per second!
 And the likely status...
+Logged to the console by default
+Or to a logger of your own
 (Over and over...)
 [A last anvil strike rings out]
 ```
@@ -149,27 +152,28 @@ And the likely status...
 | Strike it again! | Introduction: "`Stressor` runs a test over and over" |
 | Any failure on any iteration<br>Fails the test!<br>With the original stack trace preserved | Introduction: "Any failure on any iteration fails the test, with the original stack trace preserved." |
 | Over and over, again and again! | Introduction: "`Stressor` runs a test over and over" |
-| dotnet add package DnDGen.Stress | Installing: "dotnet add package DnDGen.Stress" |
-| Version five needs .NET ten and NUnit five | Installing: "Version 5 requires .NET 10 and NUnit 5." |
+| Add DnDGen.Stress to your tests | Installing: "dotnet add package DnDGen.Stress" |
+| Version five needs .NET ten and NUnit five<br>Use version four if you're still on .NET eight | Installing: "Version 5 requires .NET 10 and NUnit 5. Use version 4.x if you are still on .NET 8 or NUnit 4." |
 | Create a Stressor once per test fixture<br>Then call it from your tests | Usage: "Create a `Stressor` once per test fixture, then call it from your tests." |
-| stressor.Stress, and the hammer falls | Usage: "stressor.Stress(() =>" |
-| Assert.That(thing.Name, Is.Not.Empty) | Usage: "Assert.That(thing.Name, Is.Not.Empty);" |
+| Call on the Stressor, and the hammer falls | Usage: "stressor.Stress(() =>" |
+| Assert the name is never empty | Usage: "Assert.That(thing.Name, Is.Not.Empty);" |
 | Setup before and teardown after<br>Every iteration, every one<br>And the teardown runs<br>Even if the test throws! | Methods: "runs `setup` before and `teardown` after every iteration. `teardown` runs even if `test` throws." |
-| StressAsync, batch after batch<br>MaxAsyncBatch tests at a time | Methods: "Runs `MaxAsyncBatch` tests concurrently per batch." |
+| Async, batch after batch<br>A batch of tests at a time | Methods: "Async version of `Stress`. Runs `MaxAsyncBatch` tests concurrently per batch." |
 | As many as the processor count<br>Running side by side | Options: "`Environment.ProcessorCount`" and "How many async tests run concurrently per batch." |
-| Generate, until isValid returns true | Methods: "Calls `generate` until `isValid` returns `true`, then returns the result." |
-| GenerateOrFail if the time limit comes first<br>A rare result can be generated<br>And we'll prove it, or we'll fail! | Methods: "fails the test if the time limit is reached first. Useful for verifying that a rare result *can* be generated." |
-| IsFullStress false<br>One second for every test | Options: "When `false`, every stress test runs for 1 second." |
-| IsFullStress true | Options: "When `true`, the time limits below apply." |
+| Generate until the result is valid | Methods: "Calls `generate` until `isValid` returns `true`, then returns the result." |
+| Or fail if the time runs out first<br>A rare result can be generated<br>And we'll prove it, or we'll fail! | Methods: "fails the test if the time limit is reached first. Useful for verifying that a rare result *can* be generated." |
+| Without full stress<br>One second for every test | Options: "When `false`, every stress test runs for 1 second." |
+| With full stress | Options: "When `true`, the time limits below apply." |
 | One hour for the build<br>Divided evenly among them | Options: "3600 (1 hour)" and "The total time budget for all stress tests, divided evenly among them." |
 | Ten minutes at most for a single test<br>So the build never sits in silence | Options: "600 (10 minutes)" and "The maximum time a single stress test may run. Useful for build systems that fail a step with no output for too long." |
-| dotnet test, dash c, Stress! | Running a full stress build: "dotnet test -c Stress" |
+| Build it in the Stress configuration! | Running a full stress build: "building with a configuration named `Stress` is enough" |
 | Count the active tests in the running assembly | Options: "Used to count the active (non-ignored) `[Test]` and `[TestCase]` methods in it." |
-| Or set the TestCount yourself<br>Set exactly one of them, never both | Options: "The number of stress tests, if you would rather set it directly. Set exactly one of `RunningAssembly` or `TestCount`." |
-| TimeLimitPercentage leaves the headroom<br>Greater than zero, and at most one | Options: "Scales both time limits, to leave headroom for setup and non-stress tests. Must be greater than 0 and at most 1." |
-| min(BuildTimeLimitInSeconds * TimeLimitPercentage / testCount, OutputTimeLimitInSeconds * TimeLimitPercentage) | Options: "min(BuildTimeLimitInSeconds * TimeLimitPercentage / testCount, OutputTimeLimitInSeconds * TimeLimitPercentage)" |
+| Or set the count yourself<br>Set exactly one of them, never both | Options: "The number of stress tests, if you would rather set it directly. Set exactly one of `RunningAssembly` or `TestCount`." |
+| Scale the time to leave some headroom<br>Greater than zero, and at most one | Options: "Scales both time limits, to leave headroom for setup and non-stress tests. Must be greater than 0 and at most 1." |
+| Whichever limit is smaller | Options: "min(BuildTimeLimitInSeconds * TimeLimitPercentage / testCount, OutputTimeLimitInSeconds * TimeLimitPercentage)" |
 | A million iterations<br>And we're confident it holds! | Options: "1,000,000" and "A stress test stops early once it completes this many iterations." |
 | Duration!<br>Iterations!<br>Iterations per second!<br>And the likely status... | Methods: "logs a summary (duration, iterations, iterations per second, and likely status)" |
+| Logged to the console by default<br>Or to a logger of your own | Methods: "By default it logs to the console; pass your own `ILogger` to the `Stressor(options, logger)` constructor to change that." |
 
 ## Suno Notes
 

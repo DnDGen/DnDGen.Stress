@@ -41,11 +41,13 @@ Every repository gets a theme song, including any new one:
 
 1. **Plan it.** Add the repository to the Soundtrack Plan with a proposed genre and area. A generator also gets a
    leitmotif, an anagram of its repository name; the support libraries don't.
-2. **Write it from the README.** The lyrics come from the repository's README, and the song is recorded in that
-   repository's `docs/theme-song/README.md`, with its sources, album art, and update procedure.
+2. **Write it from the README.** The lyrics come from the repository's README, sung as words, never as code: no
+   method calls, property names, commands, or formulas. The song is recorded in that repository's
+   `docs/theme-song/README.md`, with its sources, album art, and update procedure.
    [DnDGen.Stress](https://github.com/DnDGen/DnDGen.Stress/blob/main/docs/theme-song/README.md) is the first example.
-3. **Start from the main theme.** Generate the first version with Suno's Sample of this song's "Rogante Marendor"
-   snippet, 3:00.0 to 3:17.1. After that, each update Covers the repository's current song instead.
+3. **Start from the main theme.** Every draft before the song first merges (v0.1, v0.2, and so on) is a fresh
+   generation that Samples this song's "Rogante Marendor" snippet, 3:00.0 to 3:17.1. The take that merges is v1,
+   and each update after that Covers the repository's current song instead.
 ```
 
 ## profile/README.md

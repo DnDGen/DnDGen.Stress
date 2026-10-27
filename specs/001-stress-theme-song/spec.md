@@ -37,6 +37,11 @@
   merging.
 - Q: When the song is remixed, what happens to the previous version? → A: It is replaced. The record shows only
   the current song; git history and Suno keep the old versions.
+- Q: Do theme song lyrics sing code literals, as PR songs do? → A: No. Suno botching code is part of a PR song's
+  joke, but a theme song is replayed and lasts. Names are sung as words, and code (method calls, property names,
+  commands, formulas) is sung in plain English. This applies to every repository's theme song.
+- Q: What are the song's versions before it merges? → A: Drafts are v0.1, v0.2, and so on, each a fresh Suno
+  generation from the same inputs. The take that merges to `main` is v1; later updates Cover it.
 - Q: Should the rules for the README and the record be enforced by automated tests? → A: Yes, the mechanical ones,
   as integration tests that read the real README and record. They never judge the song's ideas, vibe, or chosen
   take, and never need the network. Tests that the README documents the whole public API are a separate feature,
@@ -156,7 +161,8 @@ the note on support libraries.
   hear it, with a title and a style prompt within Suno's limits.
 - **FR-002**: The song MUST be forge folk metal, aiming for the vibe of Wind Rose's "Diggy Diggy Hole".
 - **FR-003**: The lyrics MUST be in English and capture the high-level ideas and vibe of the DnDGen.Stress README
-  as it is. The writer chooses which ideas to sing; the song doesn't have to cover every section. Every lyric MUST
+  as it is. The writer chooses which ideas to sing; the song doesn't have to cover every section. Names MUST be sung
+  as words, never as code: no method calls, property names, commands, or formulas. Every lyric MUST
   come from the README, except lines explicitly marked as not from the README in the source table, as the main
   theme marks its *Nibelungenlied* opening.
 - **FR-004**: The song MUST NOT need a leitmotif. Stress is a support library, so it has no anagram name.
