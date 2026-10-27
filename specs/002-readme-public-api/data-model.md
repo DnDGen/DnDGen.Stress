@@ -10,7 +10,7 @@ What a member is to a consumer, and the first header cell of the README tables t
 
 | Kind | Members from the code | README tables |
 |------|-----------------------|---------------|
-| Constructor | `Stressor`'s public constructors | `Constructor` |
+| Constructor | Public constructors of `Stressor` and `StressorOptions` | `Constructor` |
 | Method | Public methods declared on `Stressor` or `StressorOptions`, static or not, excluding property accessors | `Method` |
 | Property | Public fields, constants, and read-only properties declared on `Stressor` or `StressorOptions` | `Property`, one under Usage and one under Options |
 | Option | Public settable properties declared on `StressorOptions` | `Option` |

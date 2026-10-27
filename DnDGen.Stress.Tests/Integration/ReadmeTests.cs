@@ -1,7 +1,9 @@
 using NUnit.Framework;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text.RegularExpressions;
 
 namespace DnDGen.Stress.Tests.Integration
@@ -10,6 +12,9 @@ namespace DnDGen.Stress.Tests.Integration
     {
         private const string ThemeSongBadge = "[![Theme Song](https://img.shields.io/badge/theme_song-Suno-ff69b4)]";
         private const string RecordUrl = "https://github.com/DnDGen/DnDGen.Stress/blob/main/docs/theme-song/README.md";
+        private const BindingFlags DeclaredPublicMembers = BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static | BindingFlags.DeclaredOnly;
+
+        private static readonly Type[] PublicTypes = [typeof(Stressor), typeof(StressorOptions)];
 
         private string[] _readme;
 
@@ -61,6 +66,67 @@ namespace DnDGen.Stress.Tests.Integration
         {
             var relativeLinks = GetLinks(_readme).Where(link => !link.StartsWith("http://") && !link.StartsWith("https://"));
             Assert.That(relativeLinks, Is.Empty, "Relative links don't work on NuGet");
+        }
+
+        [Test]
+        public void Constructors_AreAllDocumented()
+        {
+            var constructors = PublicTypes.SelectMany(type => type.GetConstructors()).Select(WriteMember);
+            Assert.That(GetDocumented("Constructor"), Is.EquivalentTo(constructors));
+        }
+
+        [Test]
+        public void Methods_AreAllDocumented()
+        {
+            var methods = PublicTypes
+                .SelectMany(type => type.GetMethods(DeclaredPublicMembers))
+                .Where(method => !method.IsSpecialName)
+                .Select(WriteMember);
+
+            Assert.That(GetDocumented("Method"), Is.EquivalentTo(methods));
+        }
+
+        [Test]
+        public void Properties_AreAllDocumented()
+        {
+            var fields = PublicTypes.SelectMany(type => type.GetFields(DeclaredPublicMembers)).Select(field => field.Name);
+            var readOnlyProperties = PublicTypes
+                .SelectMany(type => type.GetProperties(DeclaredPublicMembers))
+                .Where(property => property.SetMethod?.IsPublic != true)
+                .Select(property => property.Name);
+
+            Assert.That(GetDocumented("Property"), Is.EquivalentTo(fields.Concat(readOnlyProperties)));
+        }
+
+        private string[] GetDocumented(string kind) => [.. GetTableRows(kind).Select(row => row[0].Trim('`'))];
+
+        private IEnumerable<string[]> GetTableRows(string kind)
+        {
+            string[] header = [];
+
+            foreach (var line in GetLinesOutsideCodeBlocks(_readme))
+            {
+                if (!line.StartsWith('|'))
+                {
+                    header = [];
+                    continue;
+                }
+
+                string[] cells = [.. line.Trim().Trim('|').Split('|').Select(cell => cell.Trim())];
+
+                if (header.Length == 0)
+                    header = cells;
+                else if (header[0] == kind && !cells[0].StartsWith("---"))
+                    yield return cells;
+            }
+        }
+
+        private static string WriteMember(MethodBase member)
+        {
+            var name = member is ConstructorInfo ? member.DeclaringType.Name : member.Name;
+            var parameters = member.GetParameters().Select(parameter => parameter.Name);
+
+            return $"{name}({string.Join(", ", parameters)})";
         }
 
         private static bool IsSunoLink(string link) => link.StartsWith("https://suno.com/");

@@ -13,6 +13,7 @@ Every existing sentence stays as it is (research R7). Every link stays absolute.
 | --- | --- |
 | `Stressor(options)` | Creates a stressor that logs to the console. Throws an `ArgumentException` if `options` aren't valid or count no tests. |
 | `Stressor(options, logger)` | Same as above, but logs through your own `ILogger`. |
+| `StressorOptions()` | Creates options with the defaults in the Options table below. |
 ```
 
 **In the Methods table, as its last row:**

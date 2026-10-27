@@ -43,7 +43,7 @@ None. `README.md` is already copied to the test output, and `ReadmeTests` alread
 
 **⚠️ CRITICAL**: No test code is written until T001 is done.
 
-- [ ] T001 (maintainer) Approve the test list, each case a consumer sentence (II.1.a), with the
+- [X] T001 (maintainer) Approve the test list, each case a consumer sentence (II.1.a), with the
   maintainer changing the code as the consumer:
   1. `Constructors_AreAllDocumented`: if I add, remove, or change a `Stressor` constructor, I
      expect the README's Constructor tables to list exactly the constructors there are, and I'll
@@ -61,7 +61,7 @@ None. `README.md` is already copied to the test output, and `ReadmeTests` alread
      the stated value with the value on a new `StressorOptions`.
   6. `OptionDefault_IsCheckedForEveryOption`: if I add an option, I expect a default case for it,
      and I'll confirm that by comparing case 5's `[TestCase]` names with the options.
-- [ ] T002 In `DnDGen.Stress.Tests/Integration/ReadmeTests.cs`, add private helpers, reusing
+- [X] T002 In `DnDGen.Stress.Tests/Integration/ReadmeTests.cs`, add private helpers, reusing
   `GetLinesOutsideCodeBlocks`: one that returns the first-column code spans of every README table
   whose first header cell is a given kind, merged across tables (research R1), and one that writes
   a member "`Name(parameter, names)` for constructors and methods, with the type name for
@@ -82,12 +82,13 @@ exist.
 
 ### Tests for User Story 1 ⚠️
 
-- [ ] T003 [US1] Add `Constructors_AreAllDocumented`, `Methods_AreAllDocumented`, and
+- [X] T003 [US1] Add `Constructors_AreAllDocumented`, `Methods_AreAllDocumented`, and
   `Properties_AreAllDocumented` to `DnDGen.Stress.Tests/Integration/ReadmeTests.cs`, each comparing
   the documented list with the code's using `Is.EquivalentTo` (research R4), with kinds as in
   data-model.md, Kind. Add 3 to `TestCount` in `DnDGen.Stress.Tests/Unit/StressorTests.cs`
-- [ ] T004 [US1] Run the full `dotnet test` and see the three tests fail for the expected reason:
-  Constructors lists `Stressor(options)` and `Stressor(options, logger)` as missing; Methods lists
+- [X] T004 [US1] Run the full `dotnet test` and see the three tests fail for the expected reason:
+  Constructors lists `Stressor(options)`, `Stressor(options, logger)`, and `StressorOptions()` as
+  missing; Methods lists
   `CountStressTestsIn(runningAssembly)`; Properties lists `Options`, `StressTestCount`,
   `TimeLimit`, `TestDuration`, `TestIterations`, `AreValid`, and the three `Default…` constants.
   Every other test passes
