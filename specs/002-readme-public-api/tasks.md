@@ -138,7 +138,7 @@ option's case fails, showing `0.5` and `1` (quickstart check 3).
 - [X] T011 Run the remaining quickstart checks: 3 (failures name the fix), 4 (structure is free),
   and 5 (100% line and branch coverage of `DnDGen.Stress.dll`, with `-c Stress --collect "Code
   Coverage" --settings CodeCoverage.runsettings`), reverting every temporary edit
-- [ ] T012 (maintainer) Review the branch and approve pushing it and opening the pull request
+- [X] T012 (maintainer) Review the branch and approve pushing it and opening the pull request
   `5.0.4: README documents the public API` against `DnDGen/DnDGen.Stress` `main`, with
   `cidthecoatrack` as reviewer and the description written from the diff, including the DnDGen
   constitution adoption
