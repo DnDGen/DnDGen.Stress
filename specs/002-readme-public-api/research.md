@@ -95,3 +95,17 @@ labels ending in (Stress) cite this repository's additions.
   sentence as it is, so no phrase in the record's Sources table is reworded or removed (check 1),
   and the README's high-level ideas and vibe don't change (check 2). The theme song tests confirm
   check 1.
+- **Confirmed against the diff** (2026-10-28): `git diff main -- README.md` adds 28 lines and
+  removes none, and the theme song tests pass (check 1). For check 2, each addition is reference
+  detail for an idea the song already sings:
+
+  | Addition | Already in the song |
+  |---|---|
+  | Constructors table | "Create a Stressor once per test fixture", "Or to a logger of your own" |
+  | `CountStressTestsIn` row | "Count the active tests in the running assembly" |
+  | `Stressor` Properties table | The time limit (Breakdown, Verse 4), and duration and iterations (Outro) |
+  | `AreValid` row | "Set exactly one of them, never both", "Greater than zero, and at most one" |
+  | `Default…` constants | "One hour for the build", "Ten minutes at most", "A million iterations" |
+
+  The one new fact, that the constructors throw on invalid options, is an error case, not a
+  high-level idea. So the song needs no update (check 3), and the record stays as it is.
