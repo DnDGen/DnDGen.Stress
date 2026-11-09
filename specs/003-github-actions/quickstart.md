@@ -29,8 +29,10 @@ its own names ([spec.md](spec.md) User Story 4).
    dotnet test ../stress-5.0.5/DnDGen.Stress.Tests/DnDGen.Stress.Tests.csproj -c Stress --collect "Code Coverage;Format=cobertura" --settings ../stress-5.0.5/CodeCoverage.runsettings --results-directory ../stress-5.0.5/TestResults
    ```
 
-   Copy the `*.cobertura.xml` it reports to `coverage.cobertura.xml`, confirm its root shows
-   `lines-covered` equal to `lines-valid` and `branches-covered` equal to `branches-valid`, then:
+   Copy the `*.cobertura.xml` it reports to `coverage.cobertura.xml`, and remove the local folder
+   prefix from its `filename` attributes (it can contain your user name, and the release is
+   public), leaving paths like `DnDGen.Stress\Stressor.cs`. Confirm its root shows `lines-covered`
+   equal to `lines-valid` and `branches-covered` equal to `branches-valid`, then:
 
    ```bash
    gh release upload 5.0.5 coverage.cobertura.xml --repo DnDGen/DnDGen.Stress
