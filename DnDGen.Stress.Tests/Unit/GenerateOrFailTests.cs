@@ -91,7 +91,6 @@ namespace DnDGen.Stress.Tests.Unit
         [Test]
         public void StopsWhenGenerated()
         {
-            Assert.Fail("deliberate");
             options.ConfidenceIterations = 10_000;
 
             var count = 0;
