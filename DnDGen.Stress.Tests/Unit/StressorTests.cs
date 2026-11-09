@@ -11,7 +11,7 @@ namespace DnDGen.Stress.Tests.Unit
     public class StressorTests
     {
         //Unit + Integration
-        public const int TestCount = 81 + 21;
+        public const int TestCount = 82 + 21;
         public const int TestCaseCount = 149 + 11;
 
         private Stressor stressor;
