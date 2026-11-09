@@ -1,0 +1,143 @@
+name: Build
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  check:
+    name: check
+    runs-on: windows-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: 10.x
+
+      - name: Test the check scripts
+        run: |
+          Import-Module Pester -MinimumVersion 5.0
+          $configuration = New-PesterConfiguration
+          $configuration.Run.Path = '.github/scripts'
+          $configuration.Run.Exit = $true
+          $configuration.Output.Verbosity = 'Detailed'
+          Invoke-Pester -Configuration $configuration
+
+      - name: Check the version is newer than the latest release
+        id: version
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $version = ([xml](Get-Content -Path DnDGen.Stress/DnDGen.Stress.csproj -Raw)).Project.PropertyGroup.Version
+          $released = @(gh release list --limit 1000 --json tagName --jq '.[].tagName')
+          if ($LASTEXITCODE -ne 0) { throw 'Could not list the releases.' }
+          ./.github/scripts/Assert-VersionIsNewer.ps1 -Version $version -ReleasedVersions $released
+          $latest = $released | Sort-Object { [version]($_ -replace '^v', '') } -Descending | Select-Object -First 1
+          "version=$version" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+          "latest=$latest" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+
+      - name: Build
+        run: dotnet build DnDGen.Stress/DnDGen.Stress.csproj --configuration Release
+
+      - name: Run tests with coverage
+        run: dotnet test DnDGen.Stress.Tests/DnDGen.Stress.Tests.csproj -v normal --configuration Stress --collect "Code Coverage;Format=cobertura" --settings CodeCoverage.runsettings --results-directory TestResults
+
+      - name: Check coverage is no lower than the latest release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          LATEST: ${{ steps.version.outputs.latest }}
+        run: |
+          $report = Get-ChildItem -Path TestResults -Recurse -Filter *.cobertura.xml | Select-Object -First 1
+          if (-not $report) { throw 'The test run produced no coverage report.' }
+          Copy-Item -Path $report.FullName -Destination coverage.cobertura.xml
+          gh release download $env:LATEST --pattern coverage.cobertura.xml --dir baseline
+          if ($LASTEXITCODE -ne 0) {
+            Write-Host "Release $env:LATEST has no coverage report to download."
+            $global:LASTEXITCODE = 0
+          }
+          ./.github/scripts/Assert-CoverageNotLower.ps1 -ReportPath coverage.cobertura.xml -BaselinePath baseline/coverage.cobertura.xml
+
+      - name: Upload coverage report
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: coverage
+          path: coverage.cobertura.xml
+          if-no-files-found: ignore
+
+      - name: Upload package
+        uses: actions/upload-artifact@v7
+        with:
+          name: package
+          path: DnDGen.Stress/bin/Release/DnDGen.Stress.*.nupkg
+          if-no-files-found: error
+
+  publish:
+    name: publish
+    needs: check
+    if: github.repository == 'DnDGen/DnDGen.Stress' && github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    environment: Prod
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - name: Download package
+        uses: actions/download-artifact@v8
+        with:
+          name: package
+          path: package
+
+      - name: Log in to NuGet with Trusted Publishing
+        id: login
+        uses: NuGet/login@v1
+        with:
+          user: cidthecoatrack
+
+      - name: Push to NuGet.org
+        env:
+          NUGET_API_KEY: ${{ steps.login.outputs.NUGET_API_KEY }}
+        run: dotnet nuget push "package/*.nupkg" --api-key "$NUGET_API_KEY" --source https://api.nuget.org/v3/index.json
+
+  release:
+    name: release
+    needs: [check, publish]
+    if: github.repository == 'DnDGen/DnDGen.Stress' && github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download package
+        uses: actions/download-artifact@v8
+        with:
+          name: package
+          path: package
+
+      - name: Download coverage report
+        uses: actions/download-artifact@v8
+        with:
+          name: coverage
+          path: coverage
+
+      - name: Create the GitHub release and tag
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ needs.check.outputs.version }}
+        run: gh release create "$VERSION" package/*.nupkg coverage/coverage.cobertura.xml --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --title "$VERSION" --generate-notes
