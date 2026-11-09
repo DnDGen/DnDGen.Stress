@@ -193,9 +193,9 @@ step can be applied to another package (SC-006).
 **Purpose**: The steps outside the repository, in [quickstart.md](quickstart.md)'s order, around
 the pull request.
 
-- [ ] T018 (maintainer) Create the `Prod` environment in DnDGen/DnDGen.Stress, deployments from
+- [x] T018 (maintainer) Create the `Prod` environment in DnDGen/DnDGen.Stress, deployments from
   `main` only, no required reviewers (quickstart step 1).
-- [ ] T019 (maintainer) Create the nuget.org Trusted Publishing policy: Owner `cidthecoatrack`,
+- [x] T019 (maintainer) Create the nuget.org Trusted Publishing policy: Owner `cidthecoatrack`,
   Repository Owner `DnDGen`, Repository `DnDGen.Stress`, Workflow File `release.yml`, Environment
   `Prod` (quickstart step 2).
 - [X] T020 Produce the 5.0.5 coverage report from tag `5.0.5` with the quickstart step 3 commands,
@@ -211,8 +211,8 @@ the pull request.
   triggered by `push` to `main`, which calls `build.yml` (now `pull_request` and `workflow_call`,
   with output `version`) for `check`. Point the README badge at `release.yml`, and update the
   constitution and this feature's documents to match (R1, R8, R10, FR-002).
-- [ ] T030 Watch the pull request's run after T029: it lists only `check`, and `check` passes.
-- [ ] T023 (maintainer) Enable the `main` ruleset with `check` required and "Require branches to be
+- [x] T030 Watch the pull request's run after T029: it lists only `check`, and `check` passes.
+- [x] T023 (maintainer) Enable the `main` ruleset with `check` required and "Require branches to be
   up to date" off (quickstart step 5, FR-016).
 - [ ] T024 Validate the gates with temporary commits, reverted after (quickstart step 6): version
   `5.0.5` fails in the version step and the merge is blocked; a deliberate `Assert.Fail` shows the
