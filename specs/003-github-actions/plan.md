@@ -40,9 +40,9 @@ merging. The order is in [quickstart.md](quickstart.md) (R11, R13).
 PowerShell 5.1 and PowerShell 7. The package itself stays C# on .NET 10, unchanged.
 
 **Primary Dependencies**:
-- Actions, at major versions: `actions/checkout@v7`, `actions/setup-dotnet@v6`,
+- Actions, at major versions: `actions/checkout@v7`,
   `actions/upload-artifact@v7`, `actions/download-artifact@v8`, `NuGet/login@v1`.
-- The `gh` CLI and Pester 5, both preinstalled on the runners.
+- The .NET 10 SDK, the `gh` CLI, and Pester 5, all preinstalled on the runners.
 - Microsoft's code coverage collector, already used through `Microsoft.NET.Test.Sdk`.
 
 **Storage**: GitHub release assets only: `coverage.cobertura.xml` on each release from 5.0.5 on.

@@ -32,11 +32,15 @@ checked on 2026-11-09.
 
 ## R2: Tool versions float
 
-- **Decision**: Runners are `windows-latest` and `ubuntu-latest`; the SDK is `dotnet-version:
-  10.x`. Actions are referenced by their major version tag, the latest on 2026-11-09:
-  `actions/checkout@v7`, `actions/setup-dotnet@v6`, `actions/upload-artifact@v7`,
-  `actions/download-artifact@v8`, `NuGet/login@v1`. The `gh` CLI and Pester are preinstalled on
-  both runner images.
+- **Decision**: Runners are `windows-latest` and `ubuntu-latest`, using the .NET SDK the image
+  already has. Actions are referenced by their major version tag, the latest on 2026-11-09:
+  `actions/checkout@v7`, `actions/upload-artifact@v7`, `actions/download-artifact@v8`,
+  `NuGet/login@v1`. The .NET 10 SDK, the `gh` CLI, and Pester are preinstalled on both runner
+  images.
+- **No `actions/setup-dotnet`**: on the first run it found SDK 10.0.403 already installed on
+  `windows-2025-vs2026` and did nothing. .NET 10 is supported until November 2028, and an image
+  without it would fail the build loudly. Add the step back when the package targets a .NET
+  version the image doesn't have yet.
 - **Rationale**: FR-014. A major tag picks up every minor and patch release automatically. Actions
   publish no `latest` tag; the only floating alternative is a branch such as `@main`, which runs
   unreleased code. A new major version is a one-line change, made as maintenance (III.1.a) when

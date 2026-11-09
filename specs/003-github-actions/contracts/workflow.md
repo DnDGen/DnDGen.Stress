@@ -20,7 +20,7 @@ What the workflow must do, observable from GitHub. The decisions behind it are i
 - **Name shown on pull requests**: `check` (the ruleset requires it, R11).
 - **Runner**: `windows-latest`. **Permissions**: `contents: read`.
 - **Steps, in order** (each failure stops the job):
-  1. Check out; set up the .NET `10.x` SDK.
+  1. Check out. The runner image already has the .NET 10 SDK (R2).
   2. Run the Pester tests in `.github/scripts` (R6).
   3. Find the highest released version (R4) and run `Assert-VersionIsNewer.ps1`. Fails, stating
      both versions, unless `<Version>` is greater (FR-007).
