@@ -198,14 +198,14 @@ the pull request.
 - [ ] T019 (maintainer) Create the nuget.org Trusted Publishing policy: Owner `cidthecoatrack`,
   Repository Owner `DnDGen`, Repository `DnDGen.Stress`, Workflow File `build.yml`, Environment
   `Prod` (quickstart step 2).
-- [ ] T020 Produce the 5.0.5 coverage report from tag `5.0.5` with the quickstart step 3 commands,
+- [X] T020 Produce the 5.0.5 coverage report from tag `5.0.5` with the quickstart step 3 commands,
   and confirm its root shows every line and branch covered. Uploading it to the 5.0.5 release is
   public: ask the maintainer before running `gh release upload 5.0.5 coverage.cobertura.xml`.
-- [ ] T021 Push the branch and open the pull request, titled `5.0.6: Build and release on GitHub
+- [X] T021 Push the branch and open the pull request, titled `5.0.6: Build and release on GitHub
   Actions`, with reviewer `cidthecoatrack`, the description from
   [contracts/repository-changes.md](contracts/repository-changes.md) (the steps outside the
   repository, the theme song check, `Closes #58`), and the session's attribution line.
-- [ ] T022 Watch the pull request's first run: `check` passes, and `publish` and `release` are
+- [X] T022 Watch the pull request's first run: `check` passes, and `publish` and `release` are
   skipped (FR-006).
 - [ ] T023 (maintainer) Enable the `main` ruleset with `check` required and "Require branches to be
   up to date" off (quickstart step 5, FR-016).
