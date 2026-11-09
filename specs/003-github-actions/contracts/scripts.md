@@ -43,4 +43,5 @@ release is used whatever the order of the list; an empty list passes.
 Cases: equal passes; one more covered line passes; one fewer covered line fails; one fewer covered
 branch fails; both dropping reports both; more valid lines at the same fraction passes (for example
 430/430 against 215/215); a lower fraction with more covered lines fails (for example 216/217
-against 215/215); a missing baseline fails; zero valid branches on both sides passes.
+against 215/215); a missing baseline fails; zero valid branches on both sides passes; a change that
+adds an uncovered branch where the release had none fails, because 0/0 counts as 100%.

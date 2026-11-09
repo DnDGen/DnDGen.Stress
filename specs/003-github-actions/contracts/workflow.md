@@ -30,8 +30,9 @@ What the workflow must do, observable from GitHub. The decisions behind it are i
   6. Download `coverage.cobertura.xml` from the highest release and run
      `Assert-CoverageNotLower.ps1`. Fails, stating both figures, if lines or branches dropped, or
      if the release has no report (FR-003).
-  7. Upload the package and `coverage.cobertura.xml` as run artifacts, on every run, so a pull
-     request's report can be inspected too.
+  7. Upload `coverage.cobertura.xml` as the `coverage` artifact unless the run was cancelled, so a
+     failed coverage check's report can be inspected too; then upload the package as the `package`
+     artifact.
 
 ## Job `publish`
 

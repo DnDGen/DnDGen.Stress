@@ -112,8 +112,9 @@ checked on 2026-11-09.
 ## R6: The scripts are tested with Pester
 
 - **Decision**: The version and coverage checks are PowerShell scripts in `.github/scripts/`, each
-  with a Pester 5 test file beside it (`*.Tests.ps1`). `check` runs them with
-  `Invoke-Pester -Path .github/scripts -CI` before the scripts are used. The scripts take their
+  with a Pester 5 test file beside it (`*.Tests.ps1`). `check` runs them with a Pester
+  configuration (`Run.Path = '.github/scripts'`, `Run.Exit = $true`, detailed output, no result
+  file) before the scripts are used. The scripts take their
   inputs as parameters (versions, report paths), and the workflow passes in what `gh` and the
   build produced, so the tests need no network or GitHub.
 - **Rationale**: The two checks are behaviour with boundaries: equal, lower, and higher versions;

@@ -59,7 +59,7 @@ phase, in the order the quickstart requires.
     fails; one fewer covered branch fails; both dropping reports both; 430/430 against 215/215
     passes; 216/217 against 215/215 fails; a missing baseline fails with "No coverage report for
     the latest release: <BaselinePath>."; zero valid branches on both sides passes.
-- [ ] T003 Create `.github/workflows/build.yml` with `name: Build`, triggers `pull_request` to
+- [X] T003 Create `.github/workflows/build.yml` with `name: Build`, triggers `pull_request` to
   `main` and `push` to `main`, workflow-level `permissions: contents: read`, and concurrency group
   `${{ github.workflow }}-${{ github.ref }}` with `cancel-in-progress` only for `pull_request`
   ([contracts/workflow.md](contracts/workflow.md), [research.md](research.md) R8).
@@ -78,31 +78,31 @@ a deleted test that alone covers a branch each make `check` fail and say why (qu
 
 ### Tests for User Story 2 (write first, see fail)
 
-- [ ] T004 [P] [US2] Write `.github/scripts/Assert-VersionIsNewer.Tests.ps1` (Pester 5, Windows
+- [X] T004 [P] [US2] Write `.github/scripts/Assert-VersionIsNewer.Tests.ps1` (Pester 5, Windows
   PowerShell 5.1 and PowerShell 7) with T002's cases, comparing whole messages (II.3.a); run
   `Invoke-Pester -Path .github/scripts/Assert-VersionIsNewer.Tests.ps1` and see every case fail
   because the script doesn't exist.
-- [ ] T005 [P] [US2] Write `.github/scripts/Assert-CoverageNotLower.Tests.ps1` with T002's cases,
+- [X] T005 [P] [US2] Write `.github/scripts/Assert-CoverageNotLower.Tests.ps1` with T002's cases,
   building small Cobertura files in Pester's `TestDrive:` with root attributes `lines-covered`,
   `lines-valid`, `branches-covered`, and `branches-valid`; see every case fail because the script
   doesn't exist.
 
 ### Implementation for User Story 2
 
-- [ ] T006 [US2] Write `.github/scripts/Assert-VersionIsNewer.ps1` with parameters `-Version` and
+- [X] T006 [US2] Write `.github/scripts/Assert-VersionIsNewer.ps1` with parameters `-Version` and
   `-ReleasedVersions`: strip a leading `v`, compare as `[version]`, pass when `-Version` is greater
   than every released version or there are none, otherwise throw "Version <Version> must be
   greater than the highest released version, <highest>."; on success write one line saying what
   passed. T004's tests pass. No comments (I.3).
-- [ ] T007 [US2] Write `.github/scripts/Assert-CoverageNotLower.ps1` with parameters `-ReportPath`
+- [X] T007 [US2] Write `.github/scripts/Assert-CoverageNotLower.ps1` with parameters `-ReportPath`
   and `-BaselinePath`: throw "No coverage report for the latest release: <BaselinePath>." if the
   baseline is missing; compare lines and branches fractions exactly by cross-multiplying the
   counts; throw, for each that dropped, "Line coverage dropped from <b covered>/<b valid> (<b %>)
   to <c covered>/<c valid> (<c %>)." and likewise for branches, both in one message when both
   dropped; on success write one line with both figures. T005's tests pass.
-- [ ] T008 [US2] Run `Invoke-Pester -Path .github/scripts` locally in Windows PowerShell and see
+- [X] T008 [US2] Run `Invoke-Pester -Path .github/scripts` locally in Windows PowerShell and see
   every test pass; commit the scripts and their tests as one commit.
-- [ ] T009 [US2] Add job `check` to `.github/workflows/build.yml`, in the order of
+- [X] T009 [US2] Add job `check` to `.github/workflows/build.yml`, in the order of
   [contracts/workflow.md](contracts/workflow.md): `runs-on: windows-latest`; checkout
   (`actions/checkout@v7`); .NET `10.x` (`actions/setup-dotnet@v6`); `Invoke-Pester -Path
   .github/scripts -CI`, with Pester's result file written under `TestResults/` (or not at all) so
@@ -130,14 +130,14 @@ release and tag, with the package and coverage report attached.
 **Independent Test**: The merge releases 5.0.6 once: NuGet.org lists it, and its GitHub release has
 the package, `coverage.cobertura.xml`, and tag `5.0.6` (quickstart step 10).
 
-- [ ] T010 [US1] Add job `publish` to `.github/workflows/build.yml`: `needs: check`, `if:
+- [X] T010 [US1] Add job `publish` to `.github/workflows/build.yml`: `needs: check`, `if:
   github.repository == 'DnDGen/DnDGen.Stress' && github.event_name == 'push' && github.ref ==
   'refs/heads/main'`, so a fork's own `main` never publishes (FR-006), `runs-on: ubuntu-latest`,
   `environment: Prod`, `permissions: id-token: write, contents: read`; download the package
   artifact (`actions/download-artifact@v8`); `NuGet/login@v1` with `user: cidthecoatrack`;
   `dotnet nuget push` with `${{ steps.login.outputs.NUGET_API_KEY }}` to
   `https://api.nuget.org/v3/index.json`, with no `--skip-duplicate` (FR-005, FR-008, R3).
-- [ ] T011 [US1] Add job `release`: `needs: [check, publish]`, the same `if`, `runs-on:
+- [X] T011 [US1] Add job `release`: `needs: [check, publish]`, the same `if`, `runs-on:
   ubuntu-latest`, `permissions: contents: write`; download the package and coverage artifacts;
   `gh release create <version> <package> coverage.cobertura.xml --target ${{ github.sha }} --title
   <version> --generate-notes`, with the version from `check`'s output and `GH_TOKEN: ${{
@@ -154,18 +154,18 @@ the package, `coverage.cobertura.xml`, and tag `5.0.6` (quickstart step 10).
 **Independent Test**: `dotnet test` passes, including `ReadmeTests`, and
 `git grep -n -e "dev.azure.com" -e "cicd/" -- ":!specs"` finds nothing (quickstart step 11).
 
-- [ ] T012 [P] [US3] Replace the build badge on line 4 of `README.md` with the GitHub Actions badge
+- [X] T012 [P] [US3] Replace the build badge on line 4 of `README.md` with the GitHub Actions badge
   in [contracts/repository-changes.md](contracts/repository-changes.md), keeping the
   `[![Build Status]` alt text and the Theme Song badge after it (FR-009). Commit.
-- [ ] T013 [P] [US3] In `.specify/memory/constitution.md`, replace the Versioning and release
+- [X] T013 [P] [US3] In `.specify/memory/constitution.md`, replace the Versioning and release
   sentence starting "On `main`, `cicd/build.yml`" with the wording in
   [contracts/repository-changes.md](contracts/repository-changes.md), and set the footer to
   `**Version**: 2.0.2 | **Ratified**: 2026-10-23 | **Last Amended**: 2026-11-09` (FR-010). Commit.
-- [ ] T014 [P] [US3] Delete `cicd/build.yml` and `cicd/release.yml` (FR-011). Commit.
-- [ ] T015 [US3] In `DnDGen.Stress/DnDGen.Stress.csproj`, set `<Version>5.0.6</Version>` and
+- [X] T014 [P] [US3] Delete `cicd/build.yml` and `cicd/release.yml` (FR-011). Commit.
+- [X] T015 [US3] In `DnDGen.Stress/DnDGen.Stress.csproj`, set `<Version>5.0.6</Version>` and
   `<PackageReleaseNotes>` to the notes in
   [contracts/repository-changes.md](contracts/repository-changes.md) (FR-015). Commit.
-- [ ] T016 [US3] Run `dotnet test` with no `--filter` and see every test pass, including the README
+- [X] T016 [US3] Run `dotnet test` with no `--filter` and see every test pass, including the README
   and theme song tests; run the `git grep` above and see no reference to `dev.azure.com` or
   `cicd/` outside `specs/`.
 
@@ -181,7 +181,7 @@ outside the repository in order.
 **Independent Test**: Reading spec, plan, research, and quickstart alone, each practice and each
 step can be applied to another package (SC-006).
 
-- [ ] T017 [US4] Compare `.github/workflows/build.yml` and the scripts with
+- [X] T017 [US4] Compare `.github/workflows/build.yml` and the scripts with
   [research.md](research.md), [contracts/](contracts/), and [quickstart.md](quickstart.md), and
   correct the documents wherever the implementation differs, so that they stay an accurate example
   (FR-013). Commit with the spec documents if anything changed.
