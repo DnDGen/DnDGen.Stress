@@ -214,11 +214,14 @@ the pull request.
 - [x] T030 Watch the pull request's run after T029: it lists only `check`, and `check` passes.
 - [x] T023 (maintainer) Enable the `main` ruleset with `check` required and "Require branches to be
   up to date" off (quickstart step 5, FR-016).
-- [ ] T024 Validate the gates with temporary commits, reverted after (quickstart step 6): version
+- [X] T024 Validate the gates with temporary commits, reverted after (quickstart step 6): version
   `5.0.5` fails in the version step and the merge is blocked; a deliberate `Assert.Fail` shows the
   test's name and message in the log; deleting a test that alone covers a branch fails the
   coverage step with both branch figures. Push each only after the previous run finished, since a
-  new push cancels the running check.
+  new push cancels the running check. Results: the version step failed on `5.0.5` and the merge was
+  BLOCKED; the log showed `Failed StopsWhenGenerated` with `deliberate`; deleting
+  `ThrowExceptionIfOptionsAreNotValid` (with `TestCount` lowered by one) failed the coverage step
+  with lines 215/215 to 214/215 and branches 58/58 to 57/58.
 - [ ] T025 (maintainer) Disable the Azure DevOps build and release pipelines for DnDGen.Stress,
   before merging (quickstart step 8).
 - [ ] T026 (maintainer) Merge the pull request.

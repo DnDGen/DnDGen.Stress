@@ -56,8 +56,10 @@ its own names ([spec.md](spec.md) User Story 4).
      and the merge button is blocked (FR-007, FR-016).
    - Add `Assert.Fail("deliberate")` to a test: `check` fails, and the test's name and message are
      in the job's log (FR-002).
-   - Delete one unit test that alone covers a branch: `check` fails in its coverage step, stating
-     both branch figures (FR-003).
+   - Delete one unit test that alone covers a branch, such as
+     `StressorTests.ThrowExceptionIfOptionsAreNotValid`, and lower `StressorTests.TestCount` by one,
+     since the suite counts its own tests and other tests fail otherwise: `check` fails in its
+     coverage step, stating both figures (FR-003).
    - Confirm every run lists only `check`, with no skipped `publish` or `release` (FR-002, FR-006).
    - Not exercised: a publish of a version NuGet.org already has (spec, User Story 1 scenario 6).
      It holds by design, since `publish` passes no `--skip-duplicate` and `release` needs
