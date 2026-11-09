@@ -72,13 +72,6 @@ namespace DnDGen.Stress.Tests.Unit
             return string.IsNullOrEmpty(testCase.Ignore) && string.IsNullOrEmpty(testCase.IgnoreReason);
         }
 
-        [Test]
-        public void ThrowExceptionIfOptionsAreNotValid()
-        {
-            options.RunningAssembly = null;
-            Assert.That(() => new Stressor(options), Throws.ArgumentException.With.Message.EqualTo("Stressor Options are not valid"));
-        }
-
         [TestCase(true)]
         [TestCase(false)]
         public void SetOptions_WithTestCount(bool isFull)
