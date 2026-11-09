@@ -41,12 +41,12 @@ No additions.
   for output.
 - **Versioning and release**: A NuGet package, versioned and released as the DnDGen constitution
   describes. MAJOR also covers changing the time-limit formula and raising the minimum .NET or
-  NUnit major version. `.github/workflows/build.yml` checks every pull request and every push to
-  `main`: it builds and runs every test in the `Stress` configuration with code coverage, and
-  fails if `<Version>` isn't greater than the latest release's, or if coverage is lower than the
-  latest release's coverage report. On `main`, it then publishes to NuGet.org with Trusted
-  Publishing and creates a GitHub release, tagged with `<Version>`, with the package and coverage
-  report attached.
+  NUnit major version. `.github/workflows/build.yml` checks every pull request: it builds and runs
+  every test in the `Stress` configuration with code coverage, and fails if `<Version>` isn't
+  greater than the latest release's, or if coverage is lower than the latest release's coverage
+  report. On every push to `main`, `.github/workflows/release.yml` runs the same check, then
+  publishes to NuGet.org with Trusted Publishing and creates a GitHub release, tagged with
+  `<Version>`, with the package and coverage report attached.
 - **README as contract**: The README documents every public member of `Stressor` and
   `StressorOptions`, including every constructor, method, and constant, and every
   `StressorOptions` setting with its default. It states which .NET and NUnit versions each major
