@@ -1,23 +1,25 @@
-# Contract: `.github/workflows/build.yml`
+# Contract: `.github/workflows/build.yml` and `release.yml`
 
-What the workflow must do, observable from GitHub. The decisions behind it are in
+What the workflows must do, observable from GitHub. The decisions behind them are in
 [research.md](../research.md).
 
 ## Triggers and concurrency
 
-| Event | Jobs that run |
-|---|---|
-| `pull_request` targeting `main` | `check` |
-| `push` to `main` | `check`, then `publish`, then `release` |
-| `push` to a fork's `main` | `check` only |
+| Event | Workflow | Jobs that run |
+|---|---|---|
+| `pull_request` targeting `main` | `Build` (`build.yml`) | `check` only; nothing else is listed |
+| `push` to `main` | `Release` (`release.yml`) | `check` (calling `build.yml`), then `publish`, then `release` |
+| `push` to a fork's `main` | `Release` | `check` only |
 
-- Concurrency group `${{ github.workflow }}-${{ github.ref }}`; `cancel-in-progress` only for
-  `pull_request` (R8).
-- Workflow-level permissions: `contents: read`. Jobs widen only what they need.
+- `Build`: concurrency group `build-${{ github.ref }}`, `cancel-in-progress` only for
+  `pull_request`. It also has a `workflow_call` trigger, with output `version` from `check`.
+- `Release`: concurrency group `${{ github.workflow }}-${{ github.ref }}`, never cancelling (R8).
+- Workflow-level permissions: `contents: read` in both. Jobs widen only what they need.
 
-## Job `check`
+## Job `check` (`build.yml`)
 
-- **Name shown on pull requests**: `check` (the ruleset requires it, R11).
+- **Name shown on pull requests**: `check` (the ruleset requires it, R11). In a `Release` run it
+  shows as `check / check`.
 - **Runner**: `windows-latest`. **Permissions**: `contents: read`.
 - **Steps, in order** (each failure stops the job):
   1. Check out. The runner image already has the .NET 10 SDK (R2).
@@ -34,24 +36,23 @@ What the workflow must do, observable from GitHub. The decisions behind it are i
      failed coverage check's report can be inspected too; then upload the package as the `package`
      artifact.
 
-## Job `publish`
+## Job `publish` (`release.yml`)
 
-- **Runs when**: `push` to `main` in `DnDGen/DnDGen.Stress` (not a fork), after `check` passes.
+- **Runs when**: in `DnDGen/DnDGen.Stress` (not a fork), after `check` passes.
 - **Runner**: `ubuntu-latest`. **Environment**: `Prod`.
   **Permissions**: `id-token: write`, `contents: read`.
 - **Steps**: download the package artifact; `NuGet/login@v1` with `user: cidthecoatrack`;
   `dotnet nuget push` with the login's `NUGET_API_KEY` to `https://api.nuget.org/v3/index.json`,
   with no `--skip-duplicate` (FR-005, FR-008).
 
-## Job `release`
+## Job `release` (`release.yml`)
 
-- **Runs when**: `push` to `main` in `DnDGen/DnDGen.Stress` (not a fork), after `check` and
-  `publish` pass.
+- **Runs when**: in `DnDGen/DnDGen.Stress` (not a fork), after `check` and `publish` pass.
 - **Runner**: `ubuntu-latest`. **Permissions**: `contents: write`.
 - **Steps**: download the package and coverage artifacts;
   `gh release create <Version> <package> coverage.cobertura.xml --target <commit SHA>
-  --title <Version> --generate-notes` (FR-004, R9). The version comes from `check` as a job
-  output.
+  --title <Version> --generate-notes` (FR-004, R9). The version comes from `check`, through
+  `build.yml`'s `workflow_call` output.
 
 ## Recovery
 

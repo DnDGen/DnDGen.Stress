@@ -5,18 +5,27 @@ Decisions made while planning [spec.md](spec.md). Labels such as I.1 and II.3.a 
 labels ending in (Stress) cite this repository's additions. Facts about outside services were
 checked on 2026-11-09.
 
-## R1: One workflow, three jobs
+## R1: Two workflows, three jobs
 
-- **Decision**: One workflow, `.github/workflows/build.yml`, named `Build`, triggered by
-  `pull_request` to `main` and `push` to `main`. It has three jobs:
-  1. **`check`** (`windows-latest`), every run: checks the version (R4), builds, runs every test
-     in the `Stress` configuration with coverage, runs the Pester tests (R6), checks coverage (R5),
-     and uploads the package and coverage report as run artifacts.
-  2. **`publish`** (`ubuntu-latest`), pushes to `main` only, needs `check`, runs in the `Prod`
-     environment: logs in with Trusted Publishing (R3) and pushes the package to NuGet.org, without
-     `--skip-duplicate` (FR-008).
-  3. **`release`** (`ubuntu-latest`), pushes to `main` only, needs `check` and `publish`: creates
-     the GitHub release, which creates the tag (R9).
+- **Decision**: Two workflows.
+  - **`.github/workflows/build.yml`**, named `Build`, triggered by `pull_request` to `main` and by
+    `workflow_call`. It has one job, **`check`** (`windows-latest`): runs the Pester tests (R6),
+    checks the version (R4), builds, runs every test in the `Stress` configuration with coverage,
+    checks coverage (R5), and uploads the package and coverage report as run artifacts. It outputs
+    the version.
+  - **`.github/workflows/release.yml`**, named `Release`, triggered by `push` to `main`. Its three
+    jobs run in one run, in order:
+    1. **`check`**: calls `build.yml`, so the check is defined once.
+    2. **`publish`** (`ubuntu-latest`), needs `check`, runs in the `Prod` environment: logs in with
+       Trusted Publishing (R3) and pushes the package to NuGet.org, without `--skip-duplicate`
+       (FR-008).
+    3. **`release`** (`ubuntu-latest`), needs `check` and `publish`: creates the GitHub release,
+       which creates the tag (R9).
+- **Why two**: GitHub lists every job of a workflow a pull request triggers, and a job whose `if`
+  is false shows as skipped. With all three jobs in one workflow, every pull request showed
+  `publish` and `release` as skipped, and GitHub reported that some checks had not run, which
+  reads as if the pull request had skipped part of its checking (FR-002). A workflow that pull
+  requests never trigger is the only way to keep those jobs off them.
 - **Rationale**: Publishing and releasing are separate jobs so that GitHub's **Re-run failed
   jobs**, which keeps successful jobs and re-runs the failed ones and their dependents, re-runs only
   `release` when it fails after `publish` succeeded (FR-008). `check` runs on Windows, as
@@ -26,9 +35,12 @@ checked on 2026-11-09.
 - **Alternatives considered**:
   - *The prototype's two jobs* (build tags; publish pushes and releases): tags before publishing,
     and a failed release can't be retried without hitting NuGet.org's duplicate rejection.
-  - *Two workflows* (check, then a release workflow triggered by its completion), like
-    `cicd/build.yml` and `cicd/release.yml`: the Trusted Publishing policy names one workflow file,
-    and a `workflow_run` trigger adds indirection without benefit.
+  - *One workflow with all three jobs*, guarded by `if`: the first design, used for the pull
+    request's first run; it showed the skipped jobs described above.
+  - *A release workflow triggered by `Build` completing* (`workflow_run`), like `cicd/build.yml`
+    and `cicd/release.yml`: it would have to find and download another run's artifacts and
+    version, and a failed release couldn't be retried in the same run as its check. Calling
+    `build.yml` keeps the check, publish, and release in one run.
 
 ## R2: Tool versions float
 
@@ -55,7 +67,8 @@ checked on 2026-11-09.
   one hour, and `dotnet nuget push` uses it with `--source https://api.nuget.org/v3/index.json`.
   The `user` input is the nuget.org profile name `cidthecoatrack`, written in the workflow. The
   nuget.org policy is owned by `cidthecoatrack`, the package's only owner, with Repository Owner
-  `DnDGen`, Repository `DnDGen.Stress`, Workflow File `build.yml` (file name only), and
+  `DnDGen`, Repository `DnDGen.Stress`, Workflow File `release.yml` (file name only; `publish` runs
+  in `release.yml`, not in the `build.yml` it calls), and
   Environment `Prod`. `Prod` allows deployments from `main` only.
 - **Rationale**: FR-005. Per Microsoft's
   [Trusted Publishing](https://learn.microsoft.com/en-us/nuget/nuget-org/trusted-publishing) page,
@@ -71,7 +84,7 @@ checked on 2026-11-09.
   repository's, workflow's, and environment's OIDC token. *A repository variable*
   (`vars.NUGET_USER`), GitHub's place for non-secret settings: worth it only if the value changed
   between runs or repositories, and every DnDGen package has the same owner. *No environment*: any branch running
-  `build.yml` could then publish, guarded only by the job's `if`.
+  `release.yml` could then publish, guarded only by its trigger.
 
 ## R4: Version check
 
@@ -145,10 +158,13 @@ checked on 2026-11-09.
 
 ## R8: Concurrency
 
-- **Decision**: The workflow's concurrency group is the workflow and ref
-  (`${{ github.workflow }}-${{ github.ref }}`), with `cancel-in-progress` only for pull requests.
+- **Decision**: `Release`'s concurrency group is the workflow and ref
+  (`${{ github.workflow }}-${{ github.ref }}`), never cancelling. `Build`'s group is
+  `build-${{ github.ref }}`, cancelling only for pull requests. `Build` names its group rather than
+  using `github.workflow`, because a called workflow sees its caller's name: it would share
+  `Release`'s group and wait for the run it is part of.
 - **Rationale**: Pushing to a pull request cancels its superseded hour-long check. On `main`, a
-  run never starts while another is in progress, so releases happen in merge order. GitHub keeps
+  release never starts while another is in progress, so releases happen in merge order. GitHub keeps
   only one pending run per group: with three merges inside one run's time, the middle one is
   cancelled, and its version is skipped, because the third's version check passes. That is
   intended: the third release contains the second's changes, so releasing the second adds nothing.
@@ -171,9 +187,10 @@ checked on 2026-11-09.
 ## R10: README badge
 
 - **Decision**: The badge becomes
-  `[![Build Status](https://github.com/DnDGen/DnDGen.Stress/actions/workflows/build.yml/badge.svg?branch=main)](https://github.com/DnDGen/DnDGen.Stress/actions/workflows/build.yml?query=branch%3Amain)`,
+  `[![Build Status](https://github.com/DnDGen/DnDGen.Stress/actions/workflows/release.yml/badge.svg?branch=main)](https://github.com/DnDGen/DnDGen.Stress/actions/workflows/release.yml?query=branch%3Amain)`,
   with the Theme Song badge after it as today.
-- **Rationale**: FR-009. The alt text stays `Build Status`, which
+- **Rationale**: FR-009. It shows `Release`, the only workflow that runs on `main`; `Build` runs
+  there only as part of it. The alt text stays `Build Status`, which
   `ThemeSong_HasBadgeBesideTheBuildBadge` looks for. nuget.org's
   [allowed image domains](https://learn.microsoft.com/en-us/nuget/nuget-org/package-readme-on-nuget-org)
   include `github.com/.../workflows/.../badge.svg`, so it should render on the package page too;

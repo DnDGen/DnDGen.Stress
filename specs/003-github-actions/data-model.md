@@ -55,7 +55,7 @@ check passed ──► published (on NuGet.org, no tag) ──► released (GitH
 | Owner | `cidthecoatrack` |
 | Repository Owner | `DnDGen` |
 | Repository | `DnDGen.Stress` |
-| Workflow File | `build.yml` |
+| Workflow File | `release.yml` |
 | Environment | `Prod` |
 
 ## Release environment (GitHub)

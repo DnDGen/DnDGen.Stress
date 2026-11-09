@@ -11,7 +11,7 @@ The build badge, line 4, from:
 to:
 
 ```markdown
-[![Build Status](https://github.com/DnDGen/DnDGen.Stress/actions/workflows/build.yml/badge.svg?branch=main)](https://github.com/DnDGen/DnDGen.Stress/actions/workflows/build.yml?query=branch%3Amain) [![Theme Song](...)](...)
+[![Build Status](https://github.com/DnDGen/DnDGen.Stress/actions/workflows/release.yml/badge.svg?branch=main)](https://github.com/DnDGen/DnDGen.Stress/actions/workflows/release.yml?query=branch%3Amain) [![Theme Song](...)](...)
 ```
 
 The Theme Song badge is unchanged. Nothing else in the README changes: "This repository's own
@@ -21,11 +21,12 @@ build pipeline does exactly that" is still true (FR-009, [research.md](../resear
 
 In **Versioning and release**, the sentence starting "On `main`, `cicd/build.yml`…" becomes:
 
-> `.github/workflows/build.yml` checks every pull request and every push to `main`: it builds and
-> runs every test in the `Stress` configuration with code coverage, and fails if `<Version>` isn't
-> greater than the latest release's, or if coverage is lower than the latest release's coverage
-> report. On `main`, it then publishes to NuGet.org with Trusted Publishing and creates a GitHub
-> release, tagged with `<Version>`, with the package and coverage report attached.
+> `.github/workflows/build.yml` checks every pull request: it builds and runs every test in the
+> `Stress` configuration with code coverage, and fails if `<Version>` isn't greater than the latest
+> release's, or if coverage is lower than the latest release's coverage report. On every push to
+> `main`, `.github/workflows/release.yml` runs the same check, then publishes to NuGet.org with
+> Trusted Publishing and creates a GitHub release, tagged with `<Version>`, with the package and
+> coverage report attached.
 
 The footer becomes `**Version**: 2.0.2 | **Ratified**: 2026-10-23 | **Last Amended**: 2026-11-09`
 (PATCH: a correction of fact, FR-010).
@@ -43,7 +44,7 @@ The footer becomes `**Version**: 2.0.2 | **Ratified**: 2026-10-23 | **Last Amend
 
 ## Added
 
-- `.github/workflows/build.yml` ([workflow.md](workflow.md)).
+- `.github/workflows/build.yml` and `.github/workflows/release.yml` ([workflow.md](workflow.md)).
 - `.github/scripts/Assert-VersionIsNewer.ps1` and `Assert-VersionIsNewer.Tests.ps1`.
 - `.github/scripts/Assert-CoverageNotLower.ps1` and `Assert-CoverageNotLower.Tests.ps1`
   ([scripts.md](scripts.md)).

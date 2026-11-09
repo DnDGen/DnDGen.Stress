@@ -18,7 +18,8 @@ its own names ([spec.md](spec.md) User Story 4).
    ([data-model.md](data-model.md)).
 2. **Trusted Publishing policy.** On nuget.org, signed in as `cidthecoatrack` → Trusted
    Publishing → Create: Owner `cidthecoatrack`, Repository Owner `DnDGen`, Repository
-   `DnDGen.Stress`, Workflow File `build.yml`, Environment `Prod`.
+   `DnDGen.Stress`, Workflow File `release.yml`, Environment `Prod`. If the policy was created with
+   `build.yml`, edit that field.
 3. **Baseline coverage report for 5.0.5.** From a clean checkout:
 
    ```bash
@@ -57,7 +58,7 @@ its own names ([spec.md](spec.md) User Story 4).
      in the job's log (FR-002).
    - Delete one unit test that alone covers a branch: `check` fails in its coverage step, stating
      both branch figures (FR-003).
-   - Confirm `publish` and `release` were skipped in every run (FR-006).
+   - Confirm every run lists only `check`, with no skipped `publish` or `release` (FR-002, FR-006).
    - Not exercised: a publish of a version NuGet.org already has (spec, User Story 1 scenario 6).
      It holds by design, since `publish` passes no `--skip-duplicate` and `release` needs
      `publish`; exercising it would mean publishing a throwaway version.
@@ -72,13 +73,13 @@ its own names ([spec.md](spec.md) User Story 4).
 
 ## Merge and verify
 
-9. **Merge.** On `main`, `check`, `publish`, and `release` run in order.
+9. **Merge.** On `main`, the `Release` workflow runs `check`, `publish`, and `release` in order.
 10. **Verify the release (SC-001):**
     - NuGet.org lists `DnDGen.Stress` 5.0.6, and its README shows the new build badge.
     - The 5.0.6 GitHub release has generated notes, `DnDGen.Stress.5.0.6.nupkg`, and
       `coverage.cobertura.xml` attached, and tag `5.0.6` points at the merge commit.
     - Only one 5.0.6 exists everywhere, and Azure DevOps shows no new run.
-    - The README badge on GitHub is green and links to the `Build` workflow.
+    - The README badge on GitHub is green and links to the `Release` workflow.
 11. **Search (SC-005):** `git grep -n -e "dev.azure.com" -e "cicd/" -- ":!specs"` finds nothing.
     (`.gitignore`'s standard Azure publish entries aren't about Azure Pipelines and stay.)
 

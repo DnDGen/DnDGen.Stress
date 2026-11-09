@@ -36,6 +36,10 @@
   is a release, so the latest release is `main`.
 - Q: Should the build's tools be pinned to specific versions? → A: No. A pinned version is more
   likely to go stale than the latest is to break in a way that can't be fixed or worked around.
+- Q: Should a pull request list the publishing and releasing jobs as skipped? → A: No. It looked as
+  if the pull request hadn't done its due diligence ("some checks have not run"). A pull request
+  lists only the check; publishing and releasing run only on `main`, in a run that includes the
+  same check.
 - Q: Should merging a pull request into `main` be blocked until its check passes? → A: Yes. The
   repository's existing `main` ruleset, currently disabled, is enabled and requires the check to
   pass before merging. It doesn't require the branch to be up to date with `main`.
@@ -217,8 +221,8 @@ meets, and could do every step outside the repository in order.
   waits, the waiting one is dropped and its version is skipped, which is intended: the third
   release contains the second's changes, so releasing the second adds nothing. The version check
   still passes for the third, since its version is greater.
-- **New tool versions**: The build uses the latest runner images, the latest .NET 10 SDK, and the
-  latest version of each action rather than pinned ones. When an update breaks the build, fixing it
+- **New tool versions**: The build uses the latest runner images, the .NET 10 SDK they carry, and
+  the latest version of each action rather than pinned ones. When an update breaks the build, fixing it
   is maintenance (DnDGen constitution III.1.a).
 
 ## Requirements *(mandatory)*
@@ -230,7 +234,8 @@ meets, and could do every step outside the repository in order.
   `cicd/build.yml` does today.
 - **FR-002**: The check's pass or fail status MUST show on the pull request, and each failed test's
   name and message MUST be readable in the run without downloading files. Storing results or
-  coverage anywhere but the releases, and showing trends, is out of scope.
+  coverage anywhere but the releases, and showing trends, is out of scope. A pull request MUST list
+  only the check, not publishing or releasing jobs that were skipped.
 - **FR-003**: Every check MUST compare the change's line and branch coverage of `DnDGen.Stress.dll`
   with the coverage report attached to the latest release, and MUST fail, stating both figures, if
   either is lower for the change, or if the latest release has no report. Equal or higher passes.
@@ -266,8 +271,8 @@ meets, and could do every step outside the repository in order.
   justification under I.2. They are the only record: no guide is added, the DnDGen constitution
   doesn't change, and the workflow file lives in this repository only until a second repository
   does the same thing.
-- **FR-014**: The build MUST use the latest runner images, the latest .NET 10 SDK, and the latest
-  version of each action, not pinned versions.
+- **FR-014**: The build MUST use the latest runner images, the .NET 10 SDK they carry, and the
+  latest version of each action, not pinned versions.
 - **FR-015**: The change MUST ship as a PATCH release, `5.0.6`, whose release notes say the package
   changes only in its README's build badge and name 5.0.5 as the last version with other changes,
   as the DnDGen constitution requires.

@@ -6,8 +6,10 @@
 
 ## Summary
 
-One GitHub Actions workflow, `.github/workflows/build.yml`, replaces `cicd/build.yml` and
-`cicd/release.yml` ([research.md](research.md) R1).
+Two GitHub Actions workflows replace `cicd/build.yml` and `cicd/release.yml`
+([research.md](research.md) R1). `Build` (`.github/workflows/build.yml`) holds the `check` job and
+is all a pull request runs or lists. `Release` (`.github/workflows/release.yml`) runs on every
+push to `main`: it calls `Build` for `check`, then runs `publish` and `release`.
 
 - **`check` job:** runs on every pull request and every push to `main`. It fails if `<Version>`
   isn't greater than the highest release (R4), then builds and runs every test in the `Stress`
@@ -25,8 +27,8 @@ The two checks are small PowerShell scripts, specified first by Pester tests (R6
 float (R2).
 
 Other changes in the repository:
-- The README badge points at the new workflow (R10).
-- Stress's constitution names it, as version 2.0.2.
+- The README badge points at `Release`, the workflow that runs on `main` (R10).
+- Stress's constitution names both workflows, as version 2.0.2.
 - `cicd/` is deleted.
 - The release is 5.0.6 (R12).
 
@@ -68,7 +70,7 @@ bounded by the Stress configuration's hour, as today, with no second test run.
 - No change to the package's code, so coverage of `DnDGen.Stress.dll` stays at 100%.
 
 **Scale/Scope**:
-- New: 1 workflow with 3 jobs; 2 scripts with 2 Pester test files.
+- New: 2 workflows with 3 jobs (`check` defined once, in `build.yml`); 2 scripts with 2 Pester test files.
 - Edited: 1 README line, 1 constitution sentence, the csproj version and notes.
 - Deleted: 2 files.
 - Done by hand outside the repository: 6 steps.
@@ -125,7 +127,8 @@ specs/003-github-actions/
 ```text
 .github/
 ├── workflows/
-│   └── build.yml                           # New: check, publish, release
+│   ├── build.yml                           # New: check, on pull requests and when called
+│   └── release.yml                         # New: on main, calls build.yml, then publish, release
 └── scripts/
     ├── Assert-VersionIsNewer.ps1           # New
     ├── Assert-VersionIsNewer.Tests.ps1     # New
