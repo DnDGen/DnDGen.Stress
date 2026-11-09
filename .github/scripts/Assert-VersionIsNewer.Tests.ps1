@@ -121,7 +121,7 @@ Describe 'Assert-VersionIsNewer' {
             $failure.Exception.Message | Should -Be 'Version 2.3.4 must be greater than the highest released version, 2.3.4.'
         }
 
-        It 'Should fail a version lower than the latest release, naming both versions' -TestCases @(
+        It 'Should fail a <Bump> drop to <Version>, naming both versions' -TestCases @(
             @{ Bump = 'major'; Version = '0.0.0' }
             @{ Bump = 'major'; Version = '0.9.10' }
             @{ Bump = 'major'; Version = '1.0.0' }
