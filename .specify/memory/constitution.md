@@ -41,10 +41,12 @@ No additions.
   for output.
 - **Versioning and release**: A NuGet package, versioned and released as the DnDGen constitution
   describes. MAJOR also covers changing the time-limit formula and raising the minimum .NET or
-  NUnit major version. `.github/workflows/build.yml` checks every pull request: it builds and runs
-  every test in the `Stress` configuration with code coverage, and fails if `<Version>` isn't
-  greater than the latest release's, or if coverage is lower than the latest release's coverage
-  report. On every push to `main`, `.github/workflows/release.yml` runs the same check, then
+  NUnit major version. `.github/workflows/build.yml` checks every pull request with the DnDGen
+  organisation's shared `nuget-build.yml`: it builds, runs the `Unit`, `Integration`, and
+  `Integration.Stress` test projects in that order with code coverage, the last in the `Stress`
+  configuration, and fails if `<Version>` isn't greater than the latest release's, or if coverage
+  is lower than the latest release's coverage report. On every push to `main`,
+  `.github/workflows/release.yml` runs the same check, then the shared `nuget-release.yml`
   publishes to NuGet.org with Trusted Publishing and creates a GitHub release, tagged with
   `<Version>`, with the package and coverage report attached.
 - **README as contract**: The README documents every public member of `Stressor` and
@@ -57,4 +59,4 @@ No additions.
 This repository follows the DnDGen constitution's Governance. The additions in this file are
 amended by pull request to this repository and versioned the same way.
 
-**Version**: 2.0.2 | **Ratified**: 2026-10-23 | **Last Amended**: 2026-11-09
+**Version**: 2.0.3 | **Ratified**: 2026-10-23 | **Last Amended**: 2026-11-13

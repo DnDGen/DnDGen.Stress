@@ -1,7 +1,7 @@
 ﻿using NUnit.Framework;
 using System.Threading.Tasks;
 
-namespace DnDGen.Stress.Tests.Integration
+namespace DnDGen.Stress.Tests.Integration.Stress
 {
     internal class StressorTests
     {
