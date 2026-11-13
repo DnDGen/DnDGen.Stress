@@ -134,7 +134,7 @@ build configuration name, so building with a configuration named `Stress` is eno
 dotnet test -c Stress
 ```
 
-This repository's own build pipeline does exactly that.
+This repository's own build does that for its stress tests, in `DnDGen.Stress.Tests.Integration.Stress`.
 
 ## Theme Song
 
